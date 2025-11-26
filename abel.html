@@ -1,1 +1,102 @@
-"Hello world"
+<!DOCTYPE html>
+<html lang="nl">
+
+<body>
+
+
+<h1>
+Hier gaan we berekenen wat de uitstoot is van de vlucht!
+</h1>
+Beste bezoeker, hier berekenen we de uitstoot van uw vlucht!!<br> Selecteer alstublieft de vliegvelden waar u van en naar toe vliegt.
+
+<br><br>
+
+<label for="fly_from">Vertrek van:</label>
+<select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
+    <option value="" disabled selected>Select airport</option>
+</select>
+<label for="fly_to"> Aankomst op:</label>
+<select name="fly_to" id="fly_to"></select>
+<button onclick="berekenUitstoot()">Bereken uitstoot</button><br><br>
+
+
+<div id="result"></div>
+
+
+</body>
+
+<script>
+    function berekenUitstoot(){
+        const fly_from = document.getElementById("fly_from").value
+		const fly_to = document.getElementById("fly_to").value
+
+            // Fetch for fly_from dropdown
+		fetch("http://127.0.0.1:5001/abel/computeEmissions", {
+				method: "POST",
+				headers: {
+				"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ fly_from: fly_from, fly_to: fly_to})
+			})
+			.then(response => response.json())
+			.then(output => {
+                console.log("Response:", output);
+                document.getElementById("result").innerHTML  = `Emissions: ${output.emissions} kg CO2.<br>
+                Let op, deze waarde is nog zonder verdere klimaatimpact zoals Relative Forcing Index (RFI)<br><br>
+                ${output.perspective}`;
+            })
+			.catch(error => console.error("Error:", error));
+	
+    }
+
+    // Fetch for fly_from dropdown
+	fetch("http://127.0.0.1:5001/abel/departureFrom")
+	.then(response => response.json())
+	.then(airports => {
+		const dropdown = document.getElementById("fly_from");
+		airports.forEach(airport => {
+		const option = document.createElement("option");
+		option.value = airport.airportID;
+        option.textContent = airport.airportName;
+		dropdown.appendChild(option);
+		});
+    });
+
+
+    // Send selected value to backend when changed
+    function createDropdownFlyTo() {
+        const selectedValue = document.getElementById("fly_from").value;
+
+        fetch("http://127.0.0.1:5001/abel/arrivalAt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fly_from: selectedValue })
+        })
+        .then(response => response.json())
+        .then(airports => {
+            const dropdown = document.getElementById("fly_to");
+
+            airports.forEach(airport => {
+                const option = document.createElement("option");
+                option.value = airport.airportID;
+                option.textContent = airport.airportName;
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching airports:", error));
+    }
+
+
+        
+
+
+    
+</script>
+
+
+
+
+
+
+
+</html>

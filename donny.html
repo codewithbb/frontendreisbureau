@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Leaflet CSS: nodig voor de kaart styling -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+  /* =======================
+     1. Pagina en kaart styling
+     ======================= */
+  html, body { height: 100%; margin: 0; padding: 0; }
+  
+  /* Laat ruimte voor dropdown erboven */
+  #map { height: 100%; width: 100%; }
+  
+  /* Styling van permanente tekstwolk */
+  .my-tooltip {
+    text-align: center;
+    font-weight: bold;
+    background-color: white;
+    border: 1px solid #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none; /* niet klikbaar */
+  }
+</style>
+</head>
+<body>
+
+<!-- =======================
+     2. Dropdown voor vertrek
+     ======================= -->
+<label for="select-departure">Vertrekluchthaven:</label>
+<select id="select-departure">
+  <option value="">-- Kies een luchthaven --</option>
+</select>
+
+<!-- =======================
+     2b. Dropdown voor aankomst
+     ======================= -->
+<label for="select-arrival">Aankomstluchthaven:</label>
+<select id="select-arrival">
+  <option value="">-- Kies een luchthaven --</option>
+</select>
+
+<!-- =======================
+     3. Div voor Leaflet-kaart
+     ======================= -->
+<div id="map"></div>
+
+<!-- =======================
+     4. Leaflet JS
+     ======================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// =======================
+/* 5. Kaart initialiseren */
+// =======================
+const map = L.map('map').setView([52.37, 4.90], 6); // Start op Amsterdam
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(map);
+
+// =======================
+/* 6. Variabelen voor dropdown en tooltip */
+// =======================
+let airports = [];         // array voor luchthavens
+let currentTooltip = null; // huidige tekstwolk op de kaart
+let currentTooltipArrival = null; // tooltip voor aankomst
+
+// =======================
+/* 7. Fetch luchthavens van backend */
+// =======================
+fetch("http://127.0.0.1:5000/donny")
+  .then(response => response.json())
+  .then(data => {
+    airports = data;
+
+    // Dropdown vertrek
+    const select = document.getElementById('select-departure');
+    airports.forEach(ap => {
+        const option = document.createElement('option');
+        option.value = ap.iata_code;
+        option.text = `(${ap.iata_code}) ${ap.name}`;
+        select.appendChild(option);
+    });
+
+    // Dropdown aankomst
+    const selectArrival = document.getElementById('select-arrival');
+    airports.forEach(ap => {
+        const option = document.createElement('option');
+        option.value = ap.iata_code;
+        option.text = `(${ap.iata_code}) ${ap.name}`;
+        selectArrival.appendChild(option);
+    });
+
+    // Event listener vertrek-dropdown
+    select.addEventListener('change', function() {
+        const iata = this.value;
+
+        if (!iata) {
+            if (currentTooltip) {
+                map.removeLayer(currentTooltip);
+                currentTooltip = null;
+            }
+            return;
+        }
+
+        const airport = airports.find(a => a.iata_code === iata);
+        if (!airport) return;
+
+        if (currentTooltip) map.removeLayer(currentTooltip);
+
+        currentTooltip = L.tooltip({
+            permanent: true,
+            direction: 'top',
+            className: 'my-tooltip',
+            offset: [0, -10]
+        })
+        .setLatLng([airport.latitude, airport.longitude])
+        .setContent(`(${airport.iata_code}) ${airport.name}`)
+        .addTo(map);
+
+        map.setView([airport.latitude, airport.longitude], 6);
+    });
+
+
+    // Event listener aankomst-dropdown (nu binnen dezelfde scope!)
+    selectArrival.addEventListener('change', function() {
+        const iata = this.value;
+
+        if (!iata) {
+            if (currentTooltipArrival) {
+                map.removeLayer(currentTooltipArrival);
+                currentTooltipArrival = null;
+            }
+            return;
+        }
+
+        const airport = airports.find(a => a.iata_code === iata);
+        if (!airport) return;
+
+        if (currentTooltipArrival) map.removeLayer(currentTooltipArrival);
+
+        currentTooltipArrival = L.tooltip({
+            permanent: true,
+            direction: 'top',
+            className: 'my-tooltip',
+            offset: [0, -10]
+        })
+        .setLatLng([airport.latitude, airport.longitude])
+        .setContent(`(${airport.iata_code}) ${airport.name}`)
+        .addTo(map);
+
+        map.setView([airport.latitude, airport.longitude], 6);
+    });
+
+  })
+  .catch(error => console.error('Fout bij ophalen van luchthavens:', error));
+
+
+    // Event listener aankomst-dropdown
+  selectArrival.addEventListener('change', function() {
+      const iata = this.value;
+
+      // Als niets geselecteerd, verwijder oude tooltip
+      if (!iata) {
+          if (currentTooltipArrival) {
+              map.removeLayer(currentTooltipArrival);
+              currentTooltipArrival = null;
+          }
+          return;
+      }
+
+      // Zoek geselecteerde luchthaven
+      const airport = airports.find(a => a.iata_code === iata);
+      if (!airport) return;
+
+      // Verwijder oude tooltip
+      if (currentTooltipArrival) map.removeLayer(currentTooltipArrival);
+
+      // Voeg nieuwe permanente tekstwolk toe
+      currentTooltipArrival = L.tooltip({
+          permanent: true,
+          direction: 'top',
+          className: 'my-tooltip',
+          offset: [0, -10]
+      })
+      .setLatLng([airport.latitude, airport.longitude])
+      .setContent(`(${airport.iata_code}) ${airport.name}`)
+      .addTo(map);
+
+      // Zoom iets in op geselecteerde luchthaven
+      map.setView([airport.latitude, airport.longitude], 6);
+  });
+
+
+</script>
+</body>
+</html>
