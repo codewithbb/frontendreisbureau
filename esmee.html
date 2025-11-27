@@ -22,7 +22,7 @@
       <option>citytrip</option>
       <option>rondreis</option>
     </select>
-    <input name="wanneer" placeholder="Wanneer? (bijv. mei 2026)" required />
+    <input type="date" name="wanneer" required min="2026-01-01" max="2030-12-31" required>
     <input name="aantal_personen" type="number" min="1" placeholder="Aantal personen" required />
     <select name="vervoer" required>
       <option value="">Vervoer</option>
@@ -56,7 +56,7 @@
       payload.budget_pp_eur = Number(payload.budget_pp_eur);
       payload.aantal_dagen = Number(payload.aantal_dagen);
 
-      resultDiv.textContent = "Bezig met genereren...";
+      resultDiv.textContent = "Bezig met het genereren van jouw mystery trip...";
 
       try {
         const res = await fetch("http://127.0.0.1:5001/esmee", {
@@ -70,15 +70,32 @@
 
         resultDiv.innerHTML = `
           <div class="card">
-            <h2>Advies</h2>
-            <p><strong>Klantnaam:</strong> ${data.klantnaam}</p>
-            <p><strong>Bestemming:</strong> ${data.bestemming}</p>
-            <p><strong>Type reis:</strong> ${data.type_reis}</p>
-            <p><strong>Motivatie:</strong> ${data.motivatie}</p>
+            <h2>Teaser</h2>
+            <p><strong>Hey ${data.klantnaam}, Jouw ideale ${data.type_reis} is bepaald!</strong></p>
+            <p>De bestemming is nog een verassing...</p>
+            <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
             <h3>Paklijst</h3>
             <pre>${data.paklijst}</pre>
+
+            <!-- Motivatie knop -->
+            <button id="showMotivatieBtn" style="margin-top:10px;">Lees waarom deze trip perfect bij jou past!</button>
+            <p id="motivatieText" style="display:none; margin-top:10px; font-style:italic;">
+              ${data.motivatie}
+            </p>
           </div>
         `;
+            
+      const btn = document.getElementById("showMotivatieBtn");
+            const motivatieText = document.getElementById("motivatieText");
+
+            btn.addEventListener("click", () => {
+              if (motivatieText.style.display === "none" || motivatieText.style.display === "") {
+                motivatieText.style.display = "block";
+              } else {
+                motivatieText.style.display = "none";
+              }
+            });
+
       } catch (err) {
         resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${err.message}</div>`;
       }
