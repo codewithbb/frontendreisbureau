@@ -10,6 +10,27 @@
     button { padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
     .result { margin-top: 2rem; white-space: pre-wrap; }
     .card { border: 1px solid #ccc; padding: 1rem; border-radius: .5rem; }
+    
+ /* Spinner */
+    #spinner {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
   </style>
 </head>
 <body>
@@ -41,12 +62,19 @@
     <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
     <button type="submit">Advies genereren</button>
   </form>
+  
+  <!-- Spinner -->
+  <div id="spinner">
+    <div class="loader"></div>
+  </div>
 
   <div id="result" class="result"></div>
 
   <script>
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
+    const spinner = document.getElementById('spinner');
+    
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -57,6 +85,8 @@
       payload.aantal_dagen = Number(payload.aantal_dagen);
 
       resultDiv.textContent = "Bezig met het genereren van jouw mystery trip...";
+      spinner.style.display = 'block'; // toon spinner
+
 
       try {
         const res = await fetch("http://127.0.0.1:5001/esmee", {
@@ -70,11 +100,10 @@
 
         resultDiv.innerHTML = `
           <div class="card">
-            <h2>Teaser</h2>
             <p><strong>Hey ${data.klantnaam}, Jouw ideale ${data.type_reis} is bepaald!</strong></p>
             <p>De bestemming is nog een verassing...</p>
             <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
-            <h3>Paklijst</h3>
+            <h2>Paklijst</h2>
             <pre>${data.paklijst}</pre>
 
             <!-- Motivatie knop -->
@@ -98,7 +127,10 @@
 
       } catch (err) {
         resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${err.message}</div>`;
+      } finally {
+        spinner.style.display = 'none'; // verberg spinner ALTIJD
       }
+
     });
   </script>
 </body>
