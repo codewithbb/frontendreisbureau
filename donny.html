@@ -58,9 +58,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// =======================
-/* 5. Kaart initialiseren */
-// =======================
+
+//Kaart initialiseren
 const map = L.map('map').setView([52.37, 4.90], 6); // Start op Amsterdam
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -68,16 +67,14 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19
 }).addTo(map);
 
-// =======================
-/* 6. Variabelen voor dropdown en tooltip */
-// =======================
+
+//Variabelen voor dropdown en tooltip
 let airports = [];         // array voor luchthavens
 let currentTooltip = null; // huidige tekstwolk op de kaart
 let currentTooltipArrival = null; // tooltip voor aankomst
 
-// =======================
-/* 7. Fetch luchthavens van backend */
-// =======================
+// Fetch luchthavens van backend
+
 fetch("http://127.0.0.1:5000/donny")
   .then(response => response.json())
   .then(data => {
