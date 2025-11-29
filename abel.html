@@ -1,102 +1,362 @@
+
 <!DOCTYPE html>
 <html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bereken Vluchtuitstoot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
 
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        select, input[type="date"], input[type="time"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            background-color: #fff;
+            box-sizing: border-box;
+        }
+
+        .date-time-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .date-time-row .field {
+            flex: 1;
+        }
+
+        .button-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            background: #3498db;
+            color: #fff;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .info-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .info-icon {
+            width: 24px;
+            height: 24px;
+            background: #3498db;
+            color: #fff;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.3s;
+            font-size: 14px;
+            pointer-events: auto;
+        }
+
+        .tooltip a {
+            color: #1abc9c;
+            text-decoration: underline;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Suggestiebox styling */
+        #airline_suggestions {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            position: absolute;
+            background: #fff;
+            width: calc(100% - 20px);
+            z-index: 1000;
+            margin-top: 2px;
+            border-radius: 5px;
+        }
+
+        #airline_suggestions div {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        #airline_suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
 <body>
+    <h1>Bereken de uitstoot van uw vlucht</h1>
+    <div class="container">
+        <p>Vul de volgende gegevens in, hoe meer velden u invult hoe accurater de berekening. 
+            Selecteer minimaal een vertrek- en aankomstluchthaven.
+        </p>
 
+        <label for="fly_from">Vertrek van:</label>
+        <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
 
-<h1>
-Hier gaan we berekenen wat de uitstoot is van de vlucht!
-</h1>
-Beste bezoeker, hier berekenen we de uitstoot van uw vlucht!!<br> Selecteer alstublieft de vliegvelden waar u van en naar toe vliegt.
+        <label for="fly_to">Aankomst op:</label>
+        <select name="fly_to" id="fly_to">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
 
-<br><br>
+        <!-- Luchtvaartmaatschappij -->
+        <label for="airline_name">Luchtvaartmaatschappij:</label>
+        <input type="text" id="airline_name" name="airline_name" placeholder="Typ luchtvaartmaatschappij">
+        <div id="airline_suggestions"></div>
 
-<label for="fly_from">Vertrek van:</label>
-<select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
-    <option value="" disabled selected>Select airport</option>
-</select>
-<label for="fly_to"> Aankomst op:</label>
-<select name="fly_to" id="fly_to"></select>
-<button onclick="berekenUitstoot()">Bereken uitstoot</button><br><br>
+        <!-- vertrekdatum en vertrektijdstip op één regel -->
+        <div class="date-time-row">
+            <div class="field">
+                <label for="departure_date">Vertrekdatum:</label>
+                <input type="date" id="departure_date" name="departure_date">
+            </div>
+            <div class="field">
+                <label for="departure_time">Vertrektijdstip:</label>
+                <input type="time" id="departure_time" name="departure_time">
+            </div>
+        </div>
 
+        <!-- Vluchtnummer -->
+        <label for="flight_number">Vluchtnummer:</label>
+        <input type="text" id="flight_number" name="flight_number" placeholder="Bijv. KL1234">
 
-<div id="result"></div>
+        <div class="button-container">
+            <button onclick="berekenUitstoot()">Bereken uitstoot</button>
+            <div class="info-container">
+                <div class="info-icon">i</div>
+                <div class="tooltip">
+                    In deze berekening gebruiken we de volgende waarden: <br>
+                    - <a href="https://co2emissiefactoren.nl/factoren/2024/29/65/brandstoffen-voertuigen-fossiele-brandstoffen-kerosine-jet-a1/" target="_blank">3.203 kg CO₂ per liter kerosine</a><br>
+                    - <a href="https://www.upinthesky.nl/2019/06/06/lufthansa-passagier-verbruikt-365-liter-kerosine-per-100-kilometer/" target="_blank">0.0365 liter kerosine per passagier per km</a>
+                </div>
+            </div>
+        </div>
 
+        <div id="result"></div>
+    </div>
 
-</body>
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:5001";
 
-<script>
-    function berekenUitstoot(){
-        const fly_from = document.getElementById("fly_from").value
-		const fly_to = document.getElementById("fly_to").value
+        function berekenUitstoot() {
+            const fly_from = document.getElementById("fly_from").value;
+            const fly_to = document.getElementById("fly_to").value;
+            const departure_date = document.getElementById("departure_date").value;
+            const departure_time = document.getElementById("departure_time").value;
+            const airline_name = document.getElementById("airline_name").value;
+            const flight_number = document.getElementById("flight_number").value;
 
-            // Fetch for fly_from dropdown
-		fetch("http://127.0.0.1:5001/abel/computeEmissions", {
-				method: "POST",
-				headers: {
-				"Content-Type": "application/json"
-				},
-				body: JSON.stringify({ fly_from: fly_from, fly_to: fly_to})
-			})
-			.then(response => response.json())
-			.then(output => {
-                console.log("Response:", output);
-                document.getElementById("result").innerHTML  = `Emissions: ${output.emissions} kg CO2.<br>
-                Let op, deze waarde is nog zonder verdere klimaatimpact zoals Relative Forcing Index (RFI)<br><br>
-                ${output.perspective}`;
+            if (!fly_from || !fly_to) {
+                document.getElementById("result").innerHTML = `
+                    <span style="color:red; font-weight:bold;">
+                        Fout: Selecteer  een vertrek- en aankomstluchthaven
+                    </span>
+                `;
+                return;
+            }
+
+            fetch(`${API_BASE_URL}/abel/computeEmissions`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fly_from,
+                    fly_to,
+                    departure_date: departure_date || null,
+                    departure_time: departure_time || null,
+                    airline_name: airline_name || null,
+                    flight_number: flight_number || null
+                })
             })
-			.catch(error => console.error("Error:", error));
-	
-    }
+            .then(response => response.json())
+            .then(output => {
+                document.getElementById("result").innerHTML = `
+                    <strong>Emissie:</strong> ${output.emissions} kg CO₂.<br>
+                    <em>Let op:</em> Deze waarde is exclusief extra klimaatimpact zoals Relative Forcing Index (RFI).<br><br>
+                    ${output.perspective}
+                `;
+            })
+            .catch(error => console.error("Error:", error));
+        }
 
-    // Fetch for fly_from dropdown
-	fetch("http://127.0.0.1:5001/abel/departureFrom")
-	.then(response => response.json())
-	.then(airports => {
-		const dropdown = document.getElementById("fly_from");
-		airports.forEach(airport => {
-		const option = document.createElement("option");
-		option.value = airport.airportID;
-        option.textContent = airport.airportName;
-		dropdown.appendChild(option);
-		});
-    });
-
-
-    // Send selected value to backend when changed
-    function createDropdownFlyTo() {
-        const selectedValue = document.getElementById("fly_from").value;
-
-        fetch("http://127.0.0.1:5001/abel/arrivalAt", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fly_from: selectedValue })
-        })
+        // Vul vertrek dropdown
+        fetch(`${API_BASE_URL}/abel/departureFrom`)
         .then(response => response.json())
         .then(airports => {
-            const dropdown = document.getElementById("fly_to");
-
+            const dropdown = document.getElementById("fly_from");
             airports.forEach(airport => {
                 const option = document.createElement("option");
                 option.value = airport.airportID;
                 option.textContent = airport.airportName;
                 dropdown.appendChild(option);
             });
-        })
-        .catch(error => console.error("Error fetching airports:", error));
-    }
+        });
 
+        function createDropdownFlyTo() {
+            const selectedValue = document.getElementById("fly_from").value;
+            const dropdown = document.getElementById("fly_to");
+            dropdown.innerHTML = '<option value="" disabled selected>Selecteer luchthaven</option>'; // reset
 
-        
+            fetch(`${API_BASE_URL}/abel/arrivalAt`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fly_from: selectedValue })
+            })
+            .then(response => response.json())
+            .then(airports => {
+                airports.forEach(airport => {
+                    const option = document.createElement("option");
+                    option.value = airport.airportID;
+                    option.textContent = airport.airportName;
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error fetching airports:", error));
+        }
 
+        // Dynamische suggesties voor luchtvaartmaatschappij
+        const airlineInput = document.getElementById("airline_name");
+        const suggestionBox = document.getElementById("airline_suggestions");
 
-    
-</script>
+        airlineInput.addEventListener("input", () => {
+            const query = airlineInput.value.trim();
+            if (query.length < 1) {
+                suggestionBox.style.display = "none";
+                return;
+            }
 
+            fetch(`${API_BASE_URL}/abel/airlines`)
+                .then(response => response.json())
+                .then(allAirlines => {
+                    const filtered = allAirlines.filter(a =>
+                        a.airlineName.toLowerCase().includes(query.toLowerCase())
+                    );
 
+                    suggestionBox.innerHTML = "";
+                    if (filtered.length === 0) {
+                        suggestionBox.style.display = "none";
+                        return;
+                    }
 
+                    filtered.forEach(airline => {
+                        const div = document.createElement("div");
+                        div.textContent = airline.airlineName;
+                        div.addEventListener("click", () => {
+                            airlineInput.value = airline.airlineName;
+                            suggestionBox.style.display = "none";
+                        });
+                        suggestionBox.appendChild(div);
+                    });
 
+                    suggestionBox.style.display = "block";
+                })
+                .catch(error => console.error("Error fetching airlines:", error));
+        });
 
+        document.addEventListener("click", (e) => {
+            if (!suggestionBox.contains(e.target) && e.target !== airlineInput) {
+                suggestionBox.style.display = "none";
+            }
+        });
 
+        // Tooltip functionaliteit
+        const infoContainer = document.querySelector('.info-container');
+        const tooltip = document.querySelector('.tooltip');
+        let hideTimeout;
 
-</html>
+        infoContainer.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        });
+
+        infoContainer.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = '0';
+            }, 300);
+        });
+
+        tooltip.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        });
+
+        tooltip.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = '0';
+            }, 300);
+        });
+    </script>
+</body>
