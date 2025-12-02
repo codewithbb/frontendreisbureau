@@ -1,0 +1,91 @@
+/* (BB) Algemene paginastijlen */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #e6f2ff);
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+/* (BB) Grote titel bovenaan de pagina */
+h1 {
+    text-align: center;
+    color: #ff6600;
+    margin-bottom: 8px;
+}
+
+/* (BB) Subtitel */
+h3 {
+    text-align: center;
+    color: #000000;
+    margin-bottom: 8px;
+}
+
+/* (BB) Algemene paragraafopmaak */
+p {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+}
+
+/* (BB) Filters sectie (boven de tabel) */
+#filters {
+    background: #fff;
+    padding: 16px;
+    margin: 20px auto;
+    max-width: 1200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* (BB) Dropdownvelden voor filters */
+select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+/* (BB) Visuele feedback zodra gebruiker over select hovert */
+select:hover {
+    border-color: #ff6600;
+}
+
+/* (BB) Professioneel vormgegeven tabel */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #ffe7c7;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* (BB) Tabelkoppen */
+th {
+    background: #ff6600;
+    color: #fff;
+    text-align: left;
+    padding: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+/* (BB) Tabelcellen */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+/* (BB) Hover-effect voor rijen (verbeterde leesbaarheid) */
+tr:hover td {
+    background: #f9f9f9;
+}
