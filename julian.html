@@ -267,6 +267,7 @@
         </div>
     </div>
 
+    <!-- Marked.js for Markdown parsing (More accurately shows bold/italic text from ChatGPT output.)-->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
@@ -299,6 +300,7 @@
         const aiResult        = document.getElementById("ai-result-container");
         const aiMeta          = document.getElementById("ai-meta");
 
+        // ==== Login / App logic ====
         function showLogin() {
             loginSection.classList.remove("hidden");
             appSection.classList.add("hidden");
@@ -307,7 +309,8 @@
             currentUser = null;
             closeAiOverlay();
         }
-
+        
+        // Show the main app section after login
         function showApp() {
             loginSection.classList.add("hidden");
             appSection.classList.remove("hidden");
@@ -333,6 +336,7 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // Handle login form submission
         async function handleLogin(event) {
             event.preventDefault();
             loginError.textContent = "";
@@ -398,6 +402,7 @@
             }
         }
 
+        // Load trips and reviews from /julian
         async function loadJulianData() {
             tripsContainer.innerHTML = "<p class='meta'>Loading trips...</p>";
             reviewsContainer.innerHTML = "<p class='meta'>Loading reviews...</p>";
@@ -444,6 +449,7 @@
             }
         }
 
+        // Render trips into the trips container
         function renderTrips(trips) {
             if (!trips.length) {
                 tripsContainer.innerHTML = "<p class='meta'>You have no recorded trips yet.</p>";
@@ -472,6 +478,7 @@
             tripsContainer.innerHTML = parts.join("");
         }
 
+        // Render reviews into the reviews container
         function renderReviews(reviews) {
             if (!reviews.length) {
                 reviewsContainer.innerHTML = "<p class='meta'>You have not written any reviews yet.</p>";
@@ -501,6 +508,7 @@
             reviewsContainer.innerHTML = parts.join("");
         }
 
+        // Handle logout
         async function handleLogout() {
             try {
                 await fetch("http://127.0.0.1:5001/julian/logout", {
