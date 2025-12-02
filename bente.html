@@ -4,73 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Last Minute Vakanties</title>
-
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 24px;
-            background-color: lightblue;
-        }
-
-        h1, h3 {
-            color: #333;
-        }
-
-        #filters {
-        margin-bottom: 12px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-        }
-
-        select {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-        }
-
-        /*kolomkoppen*/        
-        th {
-            text-align: left;
-            padding: 8px;
-            background: #d9eaf7; /* Lichtblauwe achtergrond voor kolomkoppen */
-            border-bottom: 1px solid #aaa;
-        }
-
-        /*tabellen cellen*/
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        /*hoveren*/
-        tr:hover {
-            background: #f5f5f5;
-        }
-
-        /*paragraaf styling*/
-        p {
-            line-height: 1.5;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
+<header>
+    <h1 data-translate="title">Last Minute Vakanties</h1>
+    <nav>
+        <a href="#" id="lang-nl">Nederlands</a>
+        <a href="#" id ="lang-en">English</a>
+        <a href="#" id ="lang-fr">Francais</a>
+    </nav>
+</header>
+
 <body>
+    <h3 data-translate="subtitle">Binnen 4 weken naar de zon!</h3>
 
-    <h1>Last Minute Vakanties</h1>
+    <p data-translate="description">Een last minute is een vakantie die binnen 4 weken voor vertrek wordt geboekt. Het grote voordeel van last minutes is dat de prijzen lager zijn dan de standaardprijs.
+        Ben je flexibel in vertrekdatum, dan kun je dus optimaal profiteren! Bij ons boek je snel en gemakkelijk jouw last minute vakantie.</p>
 
-    <h3>Binnen 4 weken naar de zon!</h3>
-
-    <p>Een last minute is een vakantie die binnen 4 weken voor vertrek wordt geboekt. Het grote voordeel van last minutes is dat de prijzen lager zijn dan de standaardprijs. Ben je flexibel in vertrekdatum, dan kun je dus optimaal profiteren! Bij ons boek je snel en gemakkelijk jouw last minute vakantie.</p>
-
-    <!-- Filters -->
+    <!-- (BB) Filters --> 
     <div id="filters">
         <div>
             <label for="bestemmingFilter">Bestemming:</label>
@@ -85,92 +37,28 @@
                 <option value="all">Alle datums</option>
             </select>
         </div>
+
+        <div>
+            <label for="personenFilter">Personen:</label>
+            <select id="personenFilter">
+                <option value="all">Aantal personen</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
     </div>
 
-    <!-- Container waar de tabel komt -->
-    <div id="tableContainer"></div>
+    <!-- (BB) Container waar de tabel komt -->
+    <div class="table-container" id="tableContainer"></div>
 
-    <script>
-        let globalData = [];
-
-        // Functie die een HTML-tabel maakt uit JSON-data
-        function renderTable(data) {
-            const tableContainer = document.getElementById("tableContainer");
-
-            if (!data || data.length === 0) {
-                tableContainer.innerHTML = '<p>Geen data gevonden.</p>';
-                return;
-            }
-
-            const columns = Object.keys(data[0]);
-            let table = "<table border='1' cellpadding='8'><tr>";
-            columns.forEach(col => {
-                table += `<th>${col}</th>`;
-            });
-            table += "</tr>";
-
-            data.forEach(row => {
-                table += "<tr>";
-                columns.forEach(col => {
-                    table += `<td>${row[col]}</td>`;
-                });
-                table += "</tr>";
-            });
-
-            table += "</table>";
-            tableContainer.innerHTML = table;
-        }
-
-        function applyFilter(){
-            const bestemmingSelect = document.getElementById('bestemmingFilter');
-            const vertrekdatumSelect = document.getElementById('vertrekdatumFilter');
-
-            const selectedBestemming = bestemmingSelect.value; 
-            const selectedVertrekdatum = vertrekdatumSelect.value;
-            
-            let filtered = globalData;
-
-            if (selectedBestemming !== 'all') {
-            filtered = filtered.filter(item => item.bestemmingsland === selectedBestemming);
-            }
-
-            if (selectedVertrekdatum !== 'all') {
-                filtered = filtered.filter(item => item.vertrekdatum === selectedVertrekdatum);
-            }
-
-            renderTable(filtered);
-        }
-
-
-        // Data ophalen
-        fetch('http://127.0.0.1:5000/bente')
-            .then(response => response.json())
-            .then(data => {
-                globalData = data;
-
-                // dropdown bestemming invullen
-                const bestemmingselect = document.getElementById('bestemmingFilter');
-
-                const names = Array.from(new Set(data.map(item => item.bestemmingsland))).filter(n => n != null);
-                names.sort((a,b) => a.localeCompare(b, 'nl', {sensitivity: 'base'}));
-                
-                names.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    bestemmingselect.appendChild(option);
-                });
-
-                renderTable(globalData);
-
-                bestemmingselect.addEventListener('change', applyFilter);
-            })
-
-            .catch(err => {
-                console.error(err);
-                document.getElementById('tableContainer').innerHTML = '<p>Fout bij ophalen data. Controleer console voor details.</p>';
-            })
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
