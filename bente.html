@@ -4,28 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Last Minute Vakanties</title>
-    <link rel="stylesheet" href="style_bente.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-
-<header>
-    <h1 data-translate="title">Last Minute Vakanties</h1>
-    <nav>
-        <a href="#" id="lang-nl">Nederlands</a>
-        <a href="#" id ="lang-en">English</a>
-        <a href="#" id ="lang-fr">Francais</a>
-    </nav>
-</header>
 
 <body>
     <!-- (BB) navigatiebalk toevoegen-->
-    <div id="nav-placeholder"></div>
+    <div id="navbar"></div>
 
     <script>
         fetch("nav.html")
             .then(response => response.text())
             .then(data => {
-                document.getElementById("nav-placeholder").innerHTML = data;
-            });
+                document.getElementById("navbar").innerHTML = data;
+            }); 
     </script>
 
     <h3 data-translate="subtitle">Binnen 4 weken naar de zon!</h3>
@@ -70,6 +61,6 @@
     <!-- (BB) Container waar de tabel komt -->
     <div class="table-container" id="tableContainer"></div>
 
-    <script src="script_bente.js"></script>
+    <script src="nav_script.js"></script>
 </body>
 </html>
