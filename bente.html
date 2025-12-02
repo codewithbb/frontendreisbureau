@@ -7,16 +7,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<header>
-    <h1 data-translate="title">Last Minute Vakanties</h1>
-    <nav>
-        <a href="#" id="lang-nl">Nederlands</a>
-        <a href="#" id ="lang-en">English</a>
-        <a href="#" id ="lang-fr">Francais</a>
-    </nav>
-</header>
-
 <body>
+    <!-- (BB) navigatiebalk toevoegen-->
+    <div id="navbar"></div>
+
+    <script>
+        fetch("nav.html")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("navbar").innerHTML = data;
+            }); 
+    </script>
+
     <h3 data-translate="subtitle">Binnen 4 weken naar de zon!</h3>
 
     <p data-translate="description">Een last minute is een vakantie die binnen 4 weken voor vertrek wordt geboekt. Het grote voordeel van last minutes is dat de prijzen lager zijn dan de standaardprijs.
@@ -59,6 +61,6 @@
     <!-- (BB) Container waar de tabel komt -->
     <div class="table-container" id="tableContainer"></div>
 
-    <script src="script.js"></script>
+    <script src="nav_script.js"></script>
 </body>
 </html>
