@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>ACK Flights</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Leaflet CSS: nodig voor de kaart styling -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+  /* =======================
+     1. Pagina en kaart styling
+     ======================= */
+  html, body { height: 100%; margin: 0; padding: 0; }
+  #map { height: 100%; width: 100%; }
+  
+  /* Styling van permanente tekstwolk */
+  .my-tooltip {
+    text-align: center;
+    font-weight: bold;
+    background-color: white;
+    border: 1px solid #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- =======================
+     2. Dropdown voor vertrek
+     ======================= -->
+<label for="select-departure">Vertrekluchthaven:</label>
+<select id="select-departure">
+  <option value="">-- Kies een luchthaven --</option>
+</select>
+
+<!-- =======================
+     2b. Dropdown voor aankomst
+     ======================= -->
+<label for="select-arrival">Aankomstluchthaven:</label>
+<select id="select-arrival">
+  <option value="">-- Kies een luchthaven --</option>
+</select>
+
+<!-- =======================
+     3. Div voor Leaflet-kaart
+     ======================= -->
+<div id="map"></div>
+
+<!-- =======================
+     4. Leaflet JS, en boog in lijn
+     ======================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+
+// 1. Leaflet map initialiseren
+const map = L.map('map').setView([52.37, 4.90], 6);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(map);
+
+// 2. Variabelen om de staat te bewaren
+let airports = [];
+let departureMarker = null;     // Marker voor vertrek
+let tooltipArrival = null;      // Permanente tekstwolk aankomst
+let departureCoords = null;     // [lat, lon]
+let arrivalCoords = null;       // [lat, lon]
+let routeLine = null;           // De polyline tussen beide punten
+let destinationMarkers = [];    // Markers voor alle mogelijke aankomstluchthavens
+
+function clearDestinationMarkers() {
+    // Alle huidige bestemmingsmarkers van de kaart halen
+    destinationMarkers.forEach(m => {
+        map.removeLayer(m);
+    });
+    // En de array leegmaken
+    destinationMarkers = [];
+}
+
+// 3. Luchthavens ophalen van backend
+fetch("http://127.0.0.1:5001/donny")
+  .then(r => r.json())
+  .then(data => {
+      airports = data;
+
+      const selectDeparture = document.getElementById("select-departure");
+      const selectArrival   = document.getElementById("select-arrival");
+
+      // Dropdown voor vertrek vullen met ALLE luchthavens
+      airports.forEach(a => {
+          const opt = document.createElement("option");
+          opt.value = a.iata_code;
+          opt.text  = `(${a.iata_code}) ${a.name}`;
+          selectDeparture.appendChild(opt);
+      });
+
+      // Arrival-dropdown voorlopig alleen met de placeholder
+      selectArrival.innerHTML = '<option value="">-- Kies een luchthaven --</option>';
+
+
+      // 4. Event: vertrek gekozen
+      selectDeparture.addEventListener("change", function () {
+    const selectedIata = this.value;
+
+    // ==> NIEUW: arrival resetten omdat oude aankomst niet meer geldig is
+    if (tooltipArrival) {
+        map.removeLayer(tooltipArrival);
+        tooltipArrival = null;
+    }
+    arrivalCoords = null;
+    selectArrival.value = "";  // selectie in dropdown wissen
+
+    // Reset als niets geselecteerd
+    if (!selectedIata) {
+        if (departureMarker) {
+            map.removeLayer(departureMarker);
+            departureMarker = null;
+        }
+        departureCoords = null;
+        drawRouteIfPossible();
+        return;
+    }
+
+
+          // Zoek de geselecteerde luchthaven
+          const ap = airports.find(a => a.iata_code === selectedIata);
+          if (!ap) return;
+
+          // Coördinaten als numbers opslaan
+          departureCoords = [Number(ap.latitude), Number(ap.longitude)];
+
+          // Oude marker verwijderen
+          if (departureMarker) {
+              map.removeLayer(departureMarker);
+          }
+
+          // Nieuwe marker (zonder popup)
+          departureMarker = L.marker(departureCoords).addTo(map);
+
+          // Kaart centreren
+          map.setView(departureCoords, 6);
+
+          // Route updaten (als arrival al gekozen is)
+          drawRouteIfPossible();
+
+          // Mogelijke bestemmingen ophalen voor deze departure
+          fetch("http://127.0.0.1:5001/donny/destinations", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ iata_code: selectedIata })
+          })
+          .then(r => r.json())
+          .then(destinations => {
+              // Arrival-dropdown opnieuw vullen, nu alleen met geldige bestemmingen
+              selectArrival.innerHTML = '<option value="">-- Kies een luchthaven --</option>';
+
+              destinations.forEach(dest => {
+                  const opt = document.createElement("option");
+                  opt.value = dest.iata_code;
+                  opt.text = `(${dest.iata_code}) ${dest.name} – vanaf €${Math.round(dest.min_price)}`;
+                  selectArrival.appendChild(opt);
+              });
+          })
+          .catch(err => console.error("Fout bij ophalen bestemmingen:", err));
+      });
+
+      // 5. Event: aankomst gekozen
+      selectArrival.addEventListener("change", function () {
+          const selectedIata = this.value;
+
+          if (!selectedIata) {
+              if (tooltipArrival) map.removeLayer(tooltipArrival);
+              tooltipArrival = null;
+              arrivalCoords = null;
+              drawRouteIfPossible();
+              return;
+          }
+
+          const ap = airports.find(a => a.iata_code === selectedIata);
+          if (!ap) return;
+
+          if (tooltipArrival) map.removeLayer(tooltipArrival);
+
+          tooltipArrival = L.tooltip({
+              permanent: true,
+              direction: 'top',
+              className: 'my-tooltip',
+              offset: [0, 0]
+          })
+          .setLatLng([ap.latitude, ap.longitude])
+          .setContent(`Aankomst: (${ap.iata_code}) ${ap.name}`)
+          .addTo(map);
+
+          arrivalCoords = [Number(ap.latitude), Number(ap.longitude)];
+
+          map.setView(arrivalCoords, 6);
+
+          drawRouteIfPossible();
+      });
+
+  })
+  .catch(err => console.error("Error fetching airports:", err));
+
+// 6. Route tekenen (rechte lijn tussen 2 punten)
+function drawRouteIfPossible() {
+
+    // Oude lijn verwijderen
+    if (routeLine) {
+        map.removeLayer(routeLine);
+        routeLine = null;
+    }
+
+    // Alleen tekenen als beide punten zijn gekozen
+    if (!departureCoords || !arrivalCoords) {
+        return;
+    }
+
+    // Rechte lijn tekenen
+    routeLine = L.polyline(
+        [departureCoords, arrivalCoords],
+        {
+            color: 'grey',
+            weight: 2,
+            dashArray: '6, 8'
+        }
+    ).addTo(map);
+
+    // Lijn zichtbaarheid, max zoom
+    map.fitBounds(routeLine.getBounds(), { padding: [40, 40], maxZoom: 6 });
+
+}
+
+
+</script>
+
+</body>
+</html>
