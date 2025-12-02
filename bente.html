@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Last Minute Vakanties</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_bente.css">
 </head>
 
 <header>
@@ -17,6 +17,17 @@
 </header>
 
 <body>
+    <!-- (BB) navigatiebalk toevoegen-->
+    <div id="nav-placeholder"></div>
+
+    <script>
+        fetch("nav.html")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("nav-placeholder").innerHTML = data;
+            });
+    </script>
+
     <h3 data-translate="subtitle">Binnen 4 weken naar de zon!</h3>
 
     <p data-translate="description">Een last minute is een vakantie die binnen 4 weken voor vertrek wordt geboekt. Het grote voordeel van last minutes is dat de prijzen lager zijn dan de standaardprijs.
@@ -59,6 +70,6 @@
     <!-- (BB) Container waar de tabel komt -->
     <div class="table-container" id="tableContainer"></div>
 
-    <script src="script.js"></script>
+    <script src="script_bente.js"></script>
 </body>
 </html>
