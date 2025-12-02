@@ -5,177 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bereken Vluchtuitstoot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f9;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-        select, input[type="date"], input[type="time"], input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            background-color: #fff;
-            box-sizing: border-box;
-        }
-
-        .date-time-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .date-time-row .field {
-            flex: 1;
-        }
-
-        .button-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            background: #3498db;
-            color: #fff;
-            font-size: 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        .info-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .info-icon {
-            width: 24px;
-            height: 24px;
-            background: #3498db;
-            color: #fff;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .tooltip {
-            visibility: hidden;
-            opacity: 0;
-            width: 300px;
-            background-color: #333;
-            color: #fff;
-            text-align: left;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.3s;
-            font-size: 14px;
-            pointer-events: auto;
-        }
-
-        .tooltip a {
-            color: #1abc9c;
-            text-decoration: underline;
-        }
-
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #ecf0f1;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        /* Suggestiebox styling */
-        #airline_suggestions {
-            border: 1px solid #ccc;
-            max-height: 150px;
-            overflow-y: auto;
-            display: none;
-            position: absolute;
-            background: #fff;
-            width: calc(100% - 20px);
-            z-index: 1000;
-            margin-top: 2px;
-            border-radius: 5px;
-        }
-
-        #airline_suggestions div {
-            padding: 8px;
-            cursor: pointer;
-        }
-
-        #airline_suggestions div:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Bereken de uitstoot van uw vlucht</h1>
     <div class="container">
-        <p>Vul de volgende gegevens in, hoe meer velden u invult hoe accurater de berekening. 
+        <p>
+            Vul de volgende gegevens in, hoe meer velden u invult hoe accurater de berekening. 
             Selecteer minimaal een vertrek- en aankomstluchthaven.
         </p>
 
+        <!-- Dropdown voor vertrek -->
         <label for="fly_from">Vertrek van:</label>
         <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
             <option value="" disabled selected>Selecteer luchthaven</option>
         </select>
 
+        <!-- Dropdown voor aankomst -->
         <label for="fly_to">Aankomst op:</label>
         <select name="fly_to" id="fly_to">
             <option value="" disabled selected>Selecteer luchthaven</option>
         </select>
 
-        <!-- Luchtvaartmaatschappij -->
+        <!-- Input voor luchtvaartmaatschappij -->
         <label for="airline_name">Luchtvaartmaatschappij:</label>
         <input type="text" id="airline_name" name="airline_name" placeholder="Typ luchtvaartmaatschappij">
         <div id="airline_suggestions"></div>
 
-        <!-- vertrekdatum en vertrektijdstip op één regel -->
-        <div class="date-time-row">
+        <!-- Datum en tijd naast elkaar -->
+        <div class="flex-row">
             <div class="field">
                 <label for="departure_date">Vertrekdatum:</label>
                 <input type="date" id="departure_date" name="departure_date">
@@ -190,42 +48,51 @@
         <label for="flight_number">Vluchtnummer:</label>
         <input type="text" id="flight_number" name="flight_number" placeholder="Bijv. KL1234">
 
+        <!-- Knop en info-icoon -->
         <div class="button-container">
             <button onclick="berekenUitstoot()">Bereken uitstoot</button>
             <div class="info-container">
                 <div class="info-icon">i</div>
                 <div class="tooltip">
-                    In deze berekening gebruiken we de volgende waarden: <br>
-                    - <a href="https://co2emissiefactoren.nl/factoren/2024/29/65/brandstoffen-voertuigen-fossiele-brandstoffen-kerosine-jet-a1/" target="_blank">3.203 kg CO₂ per liter kerosine</a><br>
-                    - <a href="https://www.upinthesky.nl/2019/06/06/lufthansa-passagier-verbruikt-365-liter-kerosine-per-100-kilometer/" target="_blank">0.0365 liter kerosine per passagier per km</a>
+                    In deze berekening gebruiken we de volgende formule: <br>
+                    Uitsoot per passagier = afstand * passagier factor * (1 / capaciteit) * emissie factor <br>
+                    Waarbij:<br>
+                    - passagier factor: <a href="https://co2emissiefactoren.nl/factoren/2024/29/65/brandstoffen-voertuigen-fossiele-brandstoffen-kerosine-jet-a1/" target="_blank">3.203 kg CO₂ per liter kerosine</a><br>
+                    - emissie factor : <a href="https://www.upinthesky.nl/2019/06/06/lufthansa-passagier-verbruikt-365-liter-kerosine-per-100-kilometer/" target="_blank">0.0365 liter kerosine per passagier per km</a>
                 </div>
             </div>
         </div>
 
-        <div id="result"></div>
+        <!-- Resultaat -->
+        <div id="result"  class="result-box"></div>
     </div>
 
     <script>
+        // Basis URL voor API
         const API_BASE_URL = "http://127.0.0.1:5001";
 
-        function berekenUitstoot() {
-            const fly_from = document.getElementById("fly_from").value;
-            const fly_to = document.getElementById("fly_to").value;
-            const departure_date = document.getElementById("departure_date").value;
-            const departure_time = document.getElementById("departure_time").value;
-            const airline_name = document.getElementById("airline_name").value;
-            const flight_number = document.getElementById("flight_number").value;
+        // Functie om uitstoot te berekenen
+    async function berekenUitstoot() {
+        // Haal waarden uit invoervelden
+        const fly_from = document.getElementById("fly_from").value;
+        const fly_to = document.getElementById("fly_to").value;
+        const departure_date = document.getElementById("departure_date").value;
+        const departure_time = document.getElementById("departure_time").value;
+        const airline_name = document.getElementById("airline_name").value;
+        const flight_number = document.getElementById("flight_number").value;
 
-            if (!fly_from || !fly_to) {
-                document.getElementById("result").innerHTML = `
-                    <span style="color:red; font-weight:bold;">
-                        Fout: Selecteer  een vertrek- en aankomstluchthaven
-                    </span>
-                `;
-                return;
-            }
+        // Controleer verplichte velden
+        if (!fly_from || !fly_to) {
+            document.getElementById("result").innerHTML = `
+                <span style="color:red; font-weight:bold;">
+                    Fout: Selecteer een vertrek- en aankomstluchthaven
+                </span>
+            `;
+            return;
+        }
 
-            fetch(`${API_BASE_URL}/abel/computeEmissions`, {
+        try {
+            const res = await fetch(`${API_BASE_URL}/abel/computeEmissions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -236,19 +103,36 @@
                     airline_name: airline_name || null,
                     flight_number: flight_number || null
                 })
-            })
-            .then(response => response.json())
-            .then(output => {
-                document.getElementById("result").innerHTML = `
-                    <strong>Emissie:</strong> ${output.emissions} kg CO₂.<br>
-                    <em>Let op:</em> Deze waarde is exclusief extra klimaatimpact zoals Relative Forcing Index (RFI).<br><br>
-                    ${output.perspective}
-                `;
-            })
-            .catch(error => console.error("Error:", error));
+            });
+
+            // // ✅ Als API JSON terugstuurt:
+            // const output = await res.json();
+            // document.getElementById("result").innerHTML = `
+            //     <strong>Emissie:</strong> ${output.emissions} kg CO₂.<br>
+            //     <em>Let op:</em> Deze waarde is exclusief extra klimaatimpact zoals Relative Forcing Index (RFI).<br><br>
+            //     ${output.filled_perspective} Capaciteit: ${output.percentage_filled}%<br><br>
+            //     ${output.perspective}
+            // `;
+            
+            
+            // Als API streamt
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            const responseDiv = document.getElementById("result");
+            responseDiv.textContent = ""; // leegmaken
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                responseDiv.innerHTML += chunk; // append streamed text
+            }
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
 
-        // Vul vertrek dropdown
+        // Vul vertrek dropdown met data van API
         fetch(`${API_BASE_URL}/abel/departureFrom`)
         .then(response => response.json())
         .then(airports => {
@@ -261,6 +145,7 @@
             });
         });
 
+        // Maak aankomst dropdown dynamisch op basis van vertrek
         function createDropdownFlyTo() {
             const selectedValue = document.getElementById("fly_from").value;
             const dropdown = document.getElementById("fly_to");
@@ -294,6 +179,7 @@
                 return;
             }
 
+            // Haal alle airlines op en filter op invoer
             fetch(`${API_BASE_URL}/abel/airlines`)
                 .then(response => response.json())
                 .then(allAirlines => {
@@ -307,6 +193,7 @@
                         return;
                     }
 
+                    // Voeg suggesties toe
                     filtered.forEach(airline => {
                         const div = document.createElement("div");
                         div.textContent = airline.airlineName;
@@ -322,6 +209,7 @@
                 .catch(error => console.error("Error fetching airlines:", error));
         });
 
+        // Sluit suggestiebox bij klik buiten
         document.addEventListener("click", (e) => {
             if (!suggestionBox.contains(e.target) && e.target !== airlineInput) {
                 suggestionBox.style.display = "none";
@@ -360,3 +248,4 @@
         });
     </script>
 </body>
+</html>
