@@ -4,16 +4,117 @@
   <meta charset="UTF-8">
   <title>Mysterytrip Test</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    form { display: grid; gap: 1rem; max-width: 500px; }
-    input, select, textarea { padding: .5rem; font-size: 1rem; }
-    button { padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
-    .result { margin-top: 2rem; white-space: pre-wrap; }
-    .card { border: 1px solid #ccc; padding: 1rem; border-radius: .5rem; }
+    /* Hele pagina centreren */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* verticaal centreren */
+      align-items: center;     /* horizontaal centreren */
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f4f8, #d9e4f5);
+    }
+
+    /* Titel */
+    h1 {
+      margin-bottom: 1rem;
+      color: #2c3e50;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    /* Formulier */
+    form {
+      display: grid;
+      gap: 1rem;
+      max-width: 400px;
+      width: 100%;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Inputs en select */
+    input, select, textarea {
+      padding: .8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    /* Knop */
+    button {
+      padding: .8rem;
+      font-size: 1rem;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+      transform: scale(1.02);
+    }
+
+    /* Spinner */
+    #spinner {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Resultaat */
+    .result {
+      margin-top: 1.5rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    /*paklijst in kader*/  
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
   </style>
 </head>
 <body>
-  <h1>Mysterytrip Test</h1>
+  <h1>Mysterytrip</h1>
   <form id="tripForm">
     <input name="naam" placeholder="Je naam" required />
     <select name="soort_reis" required>
@@ -41,12 +142,19 @@
     <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
     <button type="submit">Advies genereren</button>
   </form>
+  
+  <!-- Spinner -->
+  <div id="spinner">
+    <div class="loader"></div>
+  </div>
 
   <div id="result" class="result"></div>
 
   <script>
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
+    const spinner = document.getElementById('spinner');
+    
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -57,6 +165,8 @@
       payload.aantal_dagen = Number(payload.aantal_dagen);
 
       resultDiv.textContent = "Bezig met het genereren van jouw mystery trip...";
+      spinner.style.display = 'block'; // toon spinner
+
 
       try {
         const res = await fetch("http://127.0.0.1:5001/esmee", {
@@ -70,11 +180,10 @@
 
         resultDiv.innerHTML = `
           <div class="card">
-            <h2>Teaser</h2>
             <p><strong>Hey ${data.klantnaam}, Jouw ideale ${data.type_reis} is bepaald!</strong></p>
             <p>De bestemming is nog een verassing...</p>
             <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
-            <h3>Paklijst</h3>
+            <h2>Paklijst</h2>
             <pre>${data.paklijst}</pre>
 
             <!-- Motivatie knop -->
@@ -98,7 +207,10 @@
 
       } catch (err) {
         resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${err.message}</div>`;
+      } finally {
+        spinner.style.display = 'none'; // verberg spinner ALTIJD
       }
+
     });
   </script>
 </body>
