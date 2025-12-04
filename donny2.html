@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+        <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Mijn vlucht</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #000000;
+    padding: 0px;
+  }
+
+  .container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    margin-top: 0;
+  }
+
+  .result {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: none;
+    white-space: pre-line;
+    line-height: 1.5;
+  }
+
+  .error {
+    color: red;
+    margin-top: 10px;
+  }
+
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+ 
+<script src="nav_script.js"></script>
+<div class="container">
+  <h2>Bekijk je vlucht</h2>
+
+  <form id="checkin-form">
+      <label>Upload je vliegticket (PNG/JPG):</label><br><br>
+      <input type="file" id="ticket-file" accept="image/*" required>
+      <br><br>
+      <button type="submit">Upload & Bekijk Vlucht</button>
+  </form>
+
+  <div id="error" class="error"></div>
+
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+  const form = document.getElementById("checkin-form");
+  const fileInput = document.getElementById("ticket-file");
+  const errorEl = document.getElementById("error");
+  const resultEl = document.getElementById("result");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.textContent = "";
+    resultEl.style.display = "none";
+    resultEl.textContent = "";
+
+    const file = fileInput.files[0];
+    if (!file) {
+      errorEl.textContent = "Selecteer eerst een ticketafbeelding.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:5001/donny/checkin", {
+        method: "POST",
+        body: formData
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        errorEl.textContent = json.error || "Er ging iets mis.";
+        return;
+      }
+
+      const t = json.data || {};
+
+      // Simpele gestructureerde output
+      const text = 
+        `Hallo ${t.PassengerName || ""}\n` +
+        `Vertrek: ${t.DepartureCity || ""} (${t.DepartureIATA || ""})\n` +
+        `Aankomst: ${t.ArrivalCity || ""} (${t.ArrivalIATA || ""})\n` +
+        `Datum: ${t.DateOfFlight || ""}\n` +
+        `Gate: ${t.Gate || ""}\n\n` +
+        `Boardingtijd: ${t.BoardingTime || ""}\n` +
+        `Stoel: ${t.Seat || ""}\n` +
+        `Bagage: ${t.Luggage || ""}\n` +
+        `Klasse: ${t.Class || ""}\n` +
+        `Ticketnummer: ${t.TicketNr || ""}`;
+
+      resultEl.textContent = text;
+      resultEl.style.display = "block";
+
+    } catch (err) {
+      console.error(err);
+      errorEl.textContent = "Onverwachte fout bij het versturen van je ticket.";
+    }
+  });
+</script>
+
+</body>
+</html>
