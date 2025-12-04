@@ -220,3 +220,36 @@ nav ul li a:hover {
     transform: translateY(-2px);
     border-radius: 6px;
 }
+
+/* (BB) Professioneel vormgegeven tabel */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* (BB) Tabelkoppen */
+th {
+    background: #3fa9f5;
+    color: #ffffff;
+    text-align: left;
+    padding: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+/* (BB) Tabelcellen */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+/* (BB) Hover-effect voor rijen (verbeterde leesbaarheid) */
+tr:hover td {
+    background: #c1e3fb;
+}
