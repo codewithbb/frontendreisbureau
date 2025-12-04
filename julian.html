@@ -336,6 +336,38 @@
 
         let speechRecognizer = null;  // keep a reference to stop/cancel if needed
 
+        async function checkSessionAndInit() {
+            try {
+                const resp = await fetch("http://127.0.0.1:5001/julian/session", {
+                    method: "GET",
+                    credentials: "include",   // <-- IMPORTANT so the cookie is sent
+                });
+
+                if (!resp.ok) {
+                    console.error("Session check non-OK:", resp.status, await resp.text());
+                    // Fall back to logged-out state
+                    showLogin();
+                    return;
+                }
+
+                const data = await resp.json();
+                console.log("Session status:", data);
+
+                if (data.logged_in && data.user) {
+                    // We have a valid logged-in user on this session
+                    currentUser = data.user;
+                    showApp();          // show the app section
+                    await loadJulianData();  // or the relevant data loader for that page
+                } else {
+                    // Not logged in
+                    showLogin();
+                }
+            } catch (err) {
+                console.error("Session check error:", err);
+                showLogin();
+            }
+        }
+
         function showLogin() {
             loginSection.classList.remove("hidden");
             appSection.classList.add("hidden");
@@ -735,7 +767,9 @@
         aiSpeechBtn.addEventListener("click", startSpeechToText);
 
         // Start in logged-out state
-        showLogin();
+        document.addEventListener("DOMContentLoaded", () => {
+            checkSessionAndInit();
+        });
     </script>
 </body>
 </html>
