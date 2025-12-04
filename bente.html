@@ -9,15 +9,9 @@
 
 <body>
     <!-- (BB) navigatiebalk toevoegen-->
-    <div id="navbar"></div>
+    <div id="nav-placeholder"></div>
 
-    <script>
-        fetch("nav.html")
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("navbar").innerHTML = data;
-            }); 
-    </script>
+    <script src="nav_script.js"></script>
 
     <h3 data-translate="subtitle">Binnen 4 weken naar de zon!</h3>
 

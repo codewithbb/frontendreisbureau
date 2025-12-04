@@ -156,6 +156,8 @@
             margin-top: 0.25rem;
         }
     </style>
+
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
 </head>
 <body>
 
@@ -248,6 +250,20 @@
                         placeholder="E.g. I hate very hot weather, I like hiking and city trips, I have 1 week of vacation..."></textarea>
                 </label>
 
+                <label>
+                    Speech-to-text language
+                    <select id="ai-stt-language">
+                        <option value="en-US">English (US)</option>
+                        <option value="nl-NL">Dutch (NL)</option>
+                    </select>
+                </label>
+
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <button type="button" id="ai-speech-btn" class="secondary">🎤 Speak</button>
+                    <span id="ai-speech-status" class="meta"></span>
+                </div>
+
+
                 <div id="ai-error" class="error"></div>
 
                 <div style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem;">
@@ -299,6 +315,12 @@
         const aiCancel        = document.getElementById("ai-cancel");
         const aiResult        = document.getElementById("ai-result-container");
         const aiMeta          = document.getElementById("ai-meta");
+
+        const aiSpeechBtn     = document.getElementById("ai-speech-btn");
+        const aiSpeechStatus  = document.getElementById("ai-speech-status");
+
+        let speechRecognizer = null;  // keep a reference to stop/cancel if needed
+
 
         // ==== Login / App logic ====
         function showLogin() {
@@ -624,6 +646,92 @@
             }
         }
 
+        function getSelectedSpeechLanguage() {
+            const dropdown = document.getElementById("ai-stt-language");
+            return dropdown.value || "en-US";
+        }
+
+        async function startSpeechToText() {
+            aiSpeechStatus.textContent = "";
+            aiSpeechBtn.disabled = true;
+
+            try {
+                // 1) Get token + region from backend
+                const tokenResp = await fetch("http://127.0.0.1:5001/julian/speech-token", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (!tokenResp.ok) {
+                    const text = await tokenResp.text();
+                    console.error("Speech token error:", tokenResp.status, text);
+                    aiSpeechStatus.textContent = "Failed to start speech recognition.";
+                    return;
+                }
+
+                const { token, region } = await tokenResp.json();
+                if (!token || !region) {
+                    aiSpeechStatus.textContent = "Invalid speech token response.";
+                    return;
+                }
+
+                // 2) Prepare Speech SDK objects
+                const SpeechSDK = window.SpeechSDK;
+                if (!SpeechSDK) {
+                    aiSpeechStatus.textContent = "Speech SDK not loaded.";
+                    return;
+                }
+
+                const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+                speechConfig.speechRecognitionLanguage = getSelectedSpeechLanguage();
+
+                const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+                speechRecognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+                aiSpeechStatus.textContent = "Listening... (please speak)";
+
+                // 3) Single-shot recognition
+                speechRecognizer.recognizeOnceAsync(
+                    (result) => {
+                        if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+                            const text = result.text || "";
+                            if (text) {
+                                // Append to the textarea (with a space if needed)
+                                if (aiNotes.value && !aiNotes.value.endsWith(" ")) {
+                                    aiNotes.value += " ";
+                                }
+                                aiNotes.value += text;
+                            }
+                            aiSpeechStatus.textContent = "Recognised: " + text;
+                        } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
+                            aiSpeechStatus.textContent = "No speech recognised.";
+                        } else {
+                            aiSpeechStatus.textContent = "Speech recognition ended.";
+                        }
+
+                        speechRecognizer.close();
+                        speechRecognizer = null;
+                        aiSpeechBtn.disabled = false;
+                    },
+                    (err) => {
+                        console.error("Speech recognition error:", err);
+                        aiSpeechStatus.textContent = "Error during speech recognition.";
+                        if (speechRecognizer) {
+                            speechRecognizer.close();
+                            speechRecognizer = null;
+                        }
+                        aiSpeechBtn.disabled = false;
+                    }
+                );
+
+            } catch (err) {
+                console.error("Speech setup error:", err);
+                aiSpeechStatus.textContent = "Could not start speech recognition.";
+                aiSpeechBtn.disabled = false;
+            }
+        }
+
+
         // Event listeners
         loginForm.addEventListener("submit", handleLogin);
         refreshButton.addEventListener("click", loadJulianData);
@@ -632,6 +740,9 @@
         aiButton.addEventListener("click", openAiOverlay);
         aiCancel.addEventListener("click", closeAiOverlay);
         aiForm.addEventListener("submit", handleAiSubmit);
+
+        aiSpeechBtn.addEventListener("click", startSpeechToText);
+
 
         // Start in logged-out state
         showLogin();
