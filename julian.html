@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Julian Travel Dashboard</title>
+    <title>Mijn Reizen</title>
 
     <!-- Shared styling for the whole site -->
     <link rel="stylesheet" href="style.css">
@@ -165,18 +165,18 @@
     <div id="nav-placeholder"></div>
 
     <div class="container page-inner">
-        <h1>Julian's Travel Overview</h1>
+        <h1>Mijn Reizen</h1>
 
         <!-- LOGIN SECTION (shown when NOT logged in) -->
         <div id="login-section" class="card">
             <h2>Log in</h2>
             <form id="login-form">
                 <label>
-                    Username
+                    Gebruikersnaam
                     <input type="text" id="username" name="username" required />
                 </label>
                 <label>
-                    Password
+                    Wachtwoord
                     <input type="password" id="password" name="password" required />
                 </label>
                 <div class="button-container">
@@ -192,29 +192,29 @@
             <div class="card" id="user-info-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap: 0.75rem;">
                     <div>
-                        <h2>Your Trips &amp; Reviews</h2>
+                        <h2>Mijn Reizen &amp; Reviews</h2>
                         <div id="user-info" class="meta"></div>
                     </div>
                     <div style="display:flex; gap: 0.5rem;">
                         <!-- AI Recommendation button -->
-                        <button id="ai-button">AI Recommendation</button>
-                        <button id="refresh-button" class="secondary">Refresh</button>
-                        <button id="logout-button" class="secondary">Log out</button>
+                        <button id="ai-button">AI Aanbeveling</button>
+                        <button id="refresh-button" class="secondary">Herlaad</button>
+                        <button id="logout-button" class="secondary">Log uit</button>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Trips</h2>
+                <h2>Reizen</h2>
                 <div id="trips-container">
-                    <p class="meta">No trips loaded yet.</p>
+                    <p class="meta">Geen reizen geladen.</p>
                 </div>
             </div>
 
             <div class="card">
                 <h2>Reviews</h2>
                 <div id="reviews-container">
-                    <p class="meta">No reviews loaded yet.</p>
+                    <p class="meta">Geen reviews geladen.</p>
                 </div>
             </div>
         </div>
@@ -223,11 +223,11 @@
     <!-- ==== AI Recommendation overlay ==== -->
     <div id="ai-overlay" class="hidden">
         <div id="ai-dialog" class="card">
-            <h2>AI Travel Recommendation</h2>
+            <h2>AI Aanbeveling</h2>
             <p id="ai-warning">
-                The information you select below (trips, reviews and optional notes) will be sent
-                to the ChatGPT API to generate a personalised travel suggestion. By clicking
-                “Generate recommendation”, you consent to this data being shared with ChatGPT.
+                De informatie die je hieronder selecteert (reizen, reviews en optionele notities) zal
+                worden verzonden naar de ChatGPT API om een gepersonaliseerde reisaanbeveling te genereren.
+                Door te klikken op "Genereer aanbeveling", geef je toestemming dat deze gegevens worden gedeeld met ChatGPT.
             </p>
 
             <!-- Two-column layout -->
@@ -237,36 +237,36 @@
                     <form id="ai-form">
                         <label>
                             <input type="checkbox" id="ai-include-trips" checked />
-                            Include my past trips
+                            Geef mijn reizen mee
                         </label>
 
                         <label>
                             <input type="checkbox" id="ai-include-reviews" checked />
-                            Include my reviews
+                            Geef mijn reviews mee
                         </label>
 
                         <label>
-                            Recommendation preference
+                            Type reis die ik wil:
                             <select id="ai-strategy">
-                                <option value="surprise" selected>Surprise me</option>
-                                <option value="far">Go somewhere far away</option>
-                                <option value="new">Go somewhere new</option>
-                                <option value="repeat">Go somewhere I've been before</option>
+                                <option value="surprise" selected>Verras me! (Geen mening)</option>
+                                <option value="far">Naar een verre bestemming</option>
+                                <option value="new">Naar een plaats waar ik nog niet ben geweest</option>
+                                <option value="repeat">Naar een plaats waar ik wel al ben geweest</option>
                             </select>
                         </label>
 
                         <label>
-                            Extra info for the AI (optional)
+                            Extra informatie voor de AI (optioneel)
                             <textarea id="ai-notes"
-                                placeholder="E.g. I hate very hot weather, I like hiking and city trips, I have 1 week of vacation..."></textarea>
+                                placeholder="Bvb. Ik haat hoge temperaturen, ik wil kunnen hiken, ik heb maar 1 dag..."></textarea>
                         </label>
 
                         <label>
-                            Speech-to-text language
+                            Spreek hier uw tekst mee in:
                             <div class="stt-row">
                                 <select id="ai-stt-language">
-                                    <option value="en-US">English (US)</option>
                                     <option value="nl-NL">Dutch (NL)</option>
+                                    <option value="en-US">English (US)</option>                                    
                                 </select>
                                 <!-- small mic icon button to the right -->
                                 <button type="button"
@@ -282,18 +282,18 @@
                         <div id="ai-error" class="error"></div>
 
                         <div style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem;">
-                            <button type="button" id="ai-cancel" class="secondary">Cancel</button>
-                            <button type="submit" id="ai-submit">Generate recommendation</button>
+                            <button type="button" id="ai-cancel" class="secondary">Annuleer</button>
+                            <button type="submit" id="ai-submit">Genereer aanbeveling</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- RIGHT COLUMN: AI result -->
                 <div class="ai-column">
-                    <h3>AI Recommendation</h3>
+                    <h3>Uw persoonlijke aanbeveling</h3>
                     <div id="ai-meta" class="meta"></div>
                     <div id="ai-result-container">
-                        <p class="meta">Your personalised recommendation will appear here.</p>
+                        <p class="meta">Uw aanbeveling zal hier verschijnen.</p>
                     </div>
                 </div>
             </div>
