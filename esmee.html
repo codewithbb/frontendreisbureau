@@ -3,127 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <title>Mysterytrip Test</title>
-  <style>
-    /* Hele pagina centreren */
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* verticaal centreren */
-      align-items: center;     /* horizontaal centreren */
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f0f4f8, #d9e4f5);
-    }
+  <!-- Algemene stylesheet -->
+  <link rel="stylesheet" href="style.css">
 
-    /* Titel */
-    h1 {
-      margin-bottom: 1rem;
-      color: #2c3e50;
-      font-size: 2rem;
-      text-align: center;
-    }
-
-    /* Formulier */
-    form {
-      display: grid;
-      gap: 1rem;
-      max-width: 400px;
-      width: 100%;
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    }
-
-    /* Inputs en select */
-    input, select, textarea {
-      padding: .8rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      width: 100%;
-      transition: border-color 0.3s ease;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-
-    /* Knop */
-    button {
-      padding: .8rem;
-      font-size: 1rem;
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-      transform: scale(1.02);
-    }
-
-    /* Spinner */
-    #spinner {
-      display: none;
-      text-align: center;
-      margin-top: 1rem;
-    }
-
-    .loader {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #3498db;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Resultaat */
-    .result {
-      margin-top: 1.5rem;
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .card {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-
-    /*paklijst in kader*/  
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-  </style>
+  <!-- Script to load the shared navigation bar -->
+  <script src="nav_script.js" defer></script>
 </head>
 <body>
+
+  <div id="nav-placeholder"></div>
+
   <h1>Mysterytrip</h1>
   <form id="tripForm">
-    <input name="naam" placeholder="Je naam" required />
+    <input type="text" name="naam" placeholder="Je naam" required />
     <select name="soort_reis" required>
       <option value="">Soort reis</option>
       <option>zonvakantie</option>
       <option>citytrip</option>
       <option>rondreis</option>
     </select>
-    <input type="date" name="wanneer" required min="2026-01-01" max="2030-12-31" required>
+    <input type="date" name="wanneer" required min="2026-01-01" max="2030-12-31">
     <input name="aantal_personen" type="number" min="1" placeholder="Aantal personen" required />
     <select name="vervoer" required>
       <option value="">Vervoer</option>
@@ -135,17 +34,25 @@
       <option>binnen europa</option>
       <option>buiten europa</option>
     </select>
-    <input name="uitgesloten_landen" placeholder="Welke landen niet?" />
+    <input name="uitgesloten_landen" type="text" placeholder="Welke landen niet?" />
     <input name="budget_pp_eur" type="number" min="0" placeholder="Budget per persoon (€)" required />
     <input name="aantal_dagen" type="number" min="1" placeholder="Aantal dagen" required />
-    <input name="voorkeuren" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
+    <input name="voorkeuren" type="text" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
     <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
     <button type="submit">Advies genereren</button>
   </form>
-  
+
   <!-- Spinner -->
-  <div id="spinner">
-    <div class="loader"></div>
+  <div id="spinner" style="display:none; text-align:center; margin-top:1rem;">
+    <div class="loader" style="
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: auto;">
+    </div>
   </div>
 
   <div id="result" class="result"></div>
@@ -154,7 +61,6 @@
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
     const spinner = document.getElementById('spinner');
-    
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -165,8 +71,7 @@
       payload.aantal_dagen = Number(payload.aantal_dagen);
 
       resultDiv.textContent = "Bezig met het genereren van jouw mystery trip...";
-      spinner.style.display = 'block'; // toon spinner
-
+      spinner.style.display = 'block';
 
       try {
         const res = await fetch("http://127.0.0.1:5001/esmee", {
@@ -181,36 +86,29 @@
         resultDiv.innerHTML = `
           <div class="card">
             <p><strong>Hey ${data.klantnaam}, Jouw ideale ${data.type_reis} is bepaald!</strong></p>
-            <p>De bestemming is nog een verassing...</p>
+            <p>De bestemming is nog een verrassing...</p>
             <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
             <h2>Paklijst</h2>
             <pre>${data.paklijst}</pre>
 
-            <!-- Motivatie knop -->
             <button id="showMotivatieBtn" style="margin-top:10px;">Lees waarom deze trip perfect bij jou past!</button>
             <p id="motivatieText" style="display:none; margin-top:10px; font-style:italic;">
               ${data.motivatie}
             </p>
           </div>
         `;
-            
-      const btn = document.getElementById("showMotivatieBtn");
-            const motivatieText = document.getElementById("motivatieText");
 
-            btn.addEventListener("click", () => {
-              if (motivatieText.style.display === "none" || motivatieText.style.display === "") {
-                motivatieText.style.display = "block";
-              } else {
-                motivatieText.style.display = "none";
-              }
-            });
+        const btn = document.getElementById("showMotivatieBtn");
+        const motivatieText = document.getElementById("motivatieText");
+        btn.addEventListener("click", () => {
+          motivatieText.style.display = motivatieText.style.display === "none" ? "block" : "none";
+        });
 
       } catch (err) {
         resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${err.message}</div>`;
       } finally {
-        spinner.style.display = 'none'; // verberg spinner ALTIJD
+        spinner.style.display = 'none';
       }
-
     });
   </script>
 </body>
