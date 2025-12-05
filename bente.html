@@ -19,8 +19,20 @@
         Ben je flexibel in vertrekdatum, dan kun je dus optimaal profiteren! Bij ons boek je snel en gemakkelijk jouw last minute vakantie.</p>
 
     <p>Je vertrekt vanuit Schiphol naar je droomvakantie!</p>
+
+    <!-- (BB) afbeelding laten zien-->
+    <div class = "controls">
+        <input id="prompt" type="text" placeholder="Wat voor afbeelding wil je genereren?" size="50" />
+        <button id="btnGen">Genereer afbeelding</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
     
-    
+    <!-- Hier komt de afbeelding -->
+    <img id="genImg" alt="Gegenereerde afbeelding" style="max-width: 100%; margin-top: 20px;" />
+
+
     <!-- (BB) Filters --> 
     <div id="filters">
         <div>
@@ -57,6 +69,7 @@
 
     <!-- (BB) Container waar de tabel komt -->
     <div class="table-container" id="tableContainer"></div>
+
 
     <script src="script_bente.js"></script>
 </body>
