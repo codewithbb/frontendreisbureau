@@ -143,13 +143,27 @@ fetch("http://127.0.0.1:5001/donny")
           // Coördinaten als numbers opslaan
           departureCoords = [Number(ap.latitude), Number(ap.longitude)];
 
-          // Oude marker verwijderen
-          if (departureMarker) {
-              map.removeLayer(departureMarker);
-          }
+        // Oude marker verwijderen
+        if (departureMarker) {
+            map.removeLayer(departureMarker);
+        }
 
-          // Nieuwe marker (zonder popup)
-          departureMarker = L.marker(departureCoords).addTo(map);
+        // Japanse luchthavens
+        const japanIata = ["HND", "NRT", "KIX", "ITM", "CTS", "FUK", "OKA", "NGO"];
+
+        // Nieuwe marker
+        departureMarker = L.marker(departureCoords).addTo(map);
+
+        // Als Japan → direct door naar PowerBI
+        if (japanIata.includes(ap.iata_code)) {
+            const powerBiUrl = "https://app.powerbi.com/view?r=eyJrIjoiMWU3MzVkNTgtMDk3Ny00NTY1LWFkNzYtMGFiZGQ3YWVhNTY4IiwidCI6IjgxZGJmMzFjLWQ5MTgtNDQ3Yi05YTM1LTBlZTNjN2I1Yjg4ZCIsImMiOjl9";
+
+            departureMarker.on("click", () => {
+                window.open(powerBiUrl, "_blank");
+            });
+        }
+
+
 
           // Kaart centreren
           map.setView(departureCoords, 6);
