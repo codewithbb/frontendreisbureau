@@ -8,9 +8,7 @@
 
 <style>
   body {
-    font-family: Arial, sans-serif;
     background: #000000;
-    padding: 0px;
   }
 
   .container {
@@ -42,13 +40,29 @@
     margin-top: 10px;
   }
 
+  .loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3fa9f5;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+
 </style>
 </head>
 <body>
 <div id="nav-placeholder"></div>
  
 <script src="nav_script.js"></script>
-<div class="container">
+<div class="container" style="margin-top: 30px">
   <h2>Bekijk je vlucht</h2>
 
   <form id="checkin-form">
@@ -61,15 +75,23 @@
   <div id="error" class="error"></div>
 
   <div id="result" class="result"></div>
+  <!-- SPINNER -->
+  <div id="spinner" style="display:none; text-align:center; margin-top:20px;">
+    <div class="loader"></div>
 </div>
 
 <script>
+  function cleanIata(str) {
+    if (!str) return "";
+    return str.replace(/\s+/g, "").toUpperCase();
+  }
   const form = document.getElementById("checkin-form");
   const fileInput = document.getElementById("ticket-file");
   const errorEl = document.getElementById("error");
   const resultEl = document.getElementById("result");
 
   form.addEventListener("submit", async (e) => {
+    document.getElementById("spinner").style.display = "block";
     e.preventDefault();
     errorEl.textContent = "";
     resultEl.style.display = "none";
@@ -101,17 +123,17 @@
 
       // Simpele gestructureerde output
       const text = 
-        `Hallo ${t.PassengerName || ""}\n` +
-        `Vertrek: ${t.DepartureCity || ""} (${t.DepartureIATA || ""})\n` +
-        `Aankomst: ${t.ArrivalCity || ""} (${t.ArrivalIATA || ""})\n` +
-        `Datum: ${t.DateOfFlight || ""}\n` +
-        `Gate: ${t.Gate || ""}\n\n` +
-        `Boardingtijd: ${t.BoardingTime || ""}\n` +
-        `Stoel: ${t.Seat || ""}\n` +
+        `Hallo ${t.PassengerName || ""}\n\n` +
+        `Vertrek: ${t.DepartureCity || ""} (${cleanIata(t.DepartureIATA)})\n` +
+        `Aankomst: ${t.ArrivalCity || ""} (${cleanIata(t.ArrivalIATA)})\n\n` +
+        `Vluchtdatum: ${t.DateOfFlight || ""}\n` +
+        `Gate: ${t.Gate || ""}\n` +
+        `Boardingtijd: ${t.BoardingTime || ""}\n\n` +
+        `Stoelnummer: ${t.Seat || ""}\n` +
         `Bagage: ${t.Luggage || ""}\n` +
-        `Klasse: ${t.Class || ""}\n` +
+        `Reisklasse: ${t.Class || ""}\n\n` +
         `Ticketnummer: ${t.TicketNr || ""}`;
-
+      document.getElementById("spinner").style.display = "none";  // SPINNER UIT
       resultEl.textContent = text;
       resultEl.style.display = "block";
 

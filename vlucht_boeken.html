@@ -3,56 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VluchtBoeken</title>
+    <title>Vlucht Boeken</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <!-- Navigation -->
+    <script src="nav_script.js" defer></script>
+
+    <!-- Session helper -->
+    <script src="session.js" defer></script>
+
+    <style>
+        /* Extra styling to match page */
+        #booking-section.hidden,
+        #must-login.hidden {
+            display: none;
+        }
+
+        #result-message {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
+
     <div id="nav-placeholder"></div>
-    <script src="nav_script.js"></script>
 
     <h1>Boek hier je vlucht!</h1>
 
-        <!-- Dropdown voor vertrek -->
-    <label for="fly_from">Vertrek van:</label>
-    <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
-        <option value="" disabled selected>Selecteer luchthaven</option>
-    </select>
+    <!-- MESSAGE WHEN NOT LOGGED IN -->
+    <div id="must-login" class="container hidden">
+        <p>Je moet ingelogd zijn om een vlucht te boeken.</p>
+        <p>Ga naar de <a href="julian.html">loginpagina</a> om verder te gaan.</p>
+    </div>
 
-    <!-- Dropdown voor aankomst -->
-    <label for="fly_to">Aankomst op:</label>
-    <select name="fly_to" id="fly_to" onchange="createDropDownDepartureDate()">
-        <option value="" disabled selected>Selecteer luchthaven</option>
-    </select>
+    <!-- MAIN BOOKING SECTION -->
+    <div id="booking-section" class="container hidden">
 
-    <!-- Dropdown voor vertrekdatum -->
-    <label for="departure_date">Vertrekdatum:</label>
-    <select name="departure_date" id="departure_date">
-        <option value="" disabled selected>Selecteer vertrekdatum</option>
-    </select>
+        <label for="fly_from">Vertrek van:</label>
+        <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
 
-</body>
+        <label for="fly_to">Aankomst op:</label>
+        <select name="fly_to" id="fly_to" onchange="createDropDownDepartureDate()">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
+
+        <label for="departure_date">Vertrekdatum:</label>
+        <select name="departure_date" id="departure_date">
+            <option value="" disabled selected>Selecteer vertrekdatum</option>
+        </select>
+
+        <label for="extra_info">(Optioneel): Wat ga je doen op vakantie?</label>
+        <input type="text" id="extra_info" name="extra_info" placeholder="Typ hier wat je gaat doen...">
+
+        <button id="boek-btn" style="margin-top:20px;">Boek Vlucht</button>
+
+        <div id="result-message" class="hidden"></div>
+    </div>
+
 
 <script>
     const API_BASE_URL = "http://127.0.0.1:5001";
 
-    // (AS) Vul vertrek dropdown met data van API
-    fetch(`${API_BASE_URL}/vlucht_boeken/departureFrom`)
-    .then(response => response.json())
-    .then(airports => {
-        const dropdown = document.getElementById("fly_from");
-        airports.forEach(airport => {
-            const option = document.createElement("option");
-            option.value = airport.airportID;
-            option.textContent = airport.airportName;
-            dropdown.appendChild(option);
-        });
+    let currentUser = null;
+
+    // --- 1. Run login check ON PAGE LOAD ---
+    document.addEventListener("DOMContentLoaded", async () => {
+        const {loggedIn, user} = await getCurrentSession();
+
+        if (loggedIn) {
+            currentUser = user;
+            showBookingPage();
+            loadDepartureAirports();
+        } else {
+            showMustLogin();
+        }
     });
 
-    // (AS) Vul "aankomst op" vliegvelden dropdown obv ingevulde "vertrek van" vliegveld.
+    function showBookingPage() {
+        document.getElementById("booking-section").classList.remove("hidden");
+        document.getElementById("must-login").classList.add("hidden");
+    }
+
+    function showMustLogin() {
+        document.getElementById("booking-section").classList.add("hidden");
+        document.getElementById("must-login").classList.remove("hidden");
+    }
+
+    // --- 2. Load airports ---
+
+    function loadDepartureAirports() {
+        fetch(`${API_BASE_URL}/vlucht_boeken/departureFrom`)
+        .then(response => response.json())
+        .then(airports => {
+            const dropdown = document.getElementById("fly_from");
+            airports.forEach(airport => {
+                const option = document.createElement("option");
+                option.value = airport.airportID;
+                option.textContent = airport.airportName;
+                dropdown.appendChild(option);
+            });
+        });
+    }
+
     function createDropdownFlyTo() {
         const selectedValue = document.getElementById("fly_from").value;
         const dropdown = document.getElementById("fly_to");
-        dropdown.innerHTML = '<option value="" disabled selected>Selecteer luchthaven</option>'; // reset
+
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer luchthaven</option>';
 
         fetch(`${API_BASE_URL}/vlucht_boeken/arrivalAt`, {
             method: "POST",
@@ -67,22 +130,20 @@
                 option.textContent = airport.airportName;
                 dropdown.appendChild(option);
             });
-        })
-        .catch(error => console.error("Error fetching airports:", error));
+        });
     }
 
-    // (AS) Vul "vertrekdatum" dropdown obv ingevulde vliegvelden 
     function createDropDownDepartureDate() {
         const fly_from = document.getElementById("fly_from").value;
-        const fly_to = document.getElementById("fly_to").value;
+        const fly_to   = document.getElementById("fly_to").value;
 
         const dropdown = document.getElementById("departure_date");
-        dropdown.innerHTML = '<option value="" disabled selected>Selecteer datum</option>'; // reset
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer datum</option>';
 
         fetch(`${API_BASE_URL}/vlucht_boeken/departureDate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fly_from: fly_from, fly_to:  fly_to})
+            body: JSON.stringify({ fly_from, fly_to })
         })
         .then(response => response.json())
         .then(dates => {
@@ -92,10 +153,38 @@
                 option.textContent = date.departure_date;
                 dropdown.appendChild(option);
             });
-        })
-        .catch(error => console.error("Error fetching airports:", error));
+        });
     }
+
+    // --- 3. BOOKING BUTTON ---
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("boek-btn").addEventListener("click", () => {
+            const from = document.getElementById("fly_from").value;
+            const fromName = document.getElementById("fly_from").options[document.getElementById("fly_from").selectedIndex].text;
+            const to   = document.getElementById("fly_to").value;
+            const toName = document.getElementById("fly_to").options[document.getElementById("fly_to").selectedIndex].text;
+            const date = document.getElementById("departure_date").value;
+            const extraInfo = document.getElementById("extra_info").value;
+
+            const result = document.getElementById("result-message");
+
+            if (!from || !to || !date) {
+                result.innerHTML = "Vul alle velden in voordat je boekt!";
+                result.classList.remove("hidden");
+                return;
+            }
+
+            result.innerHTML = `
+                <strong>Vlucht geboekt!</strong><br>
+                Door: ${currentUser.full_name} (${currentUser.username})<br>
+                Van ${fromName} naar ${toName}<br>
+                Op: ${date}
+                ${extraInfo ? `<br>Extra info: ${extraInfo}` : ''}
+            `;
+            result.classList.remove("hidden");
+        });
+    });
+
 </script>
-
-
+</body>
 </html>
