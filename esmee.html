@@ -5,11 +5,17 @@
   <title>Mysterytrip Test</title>
   <!-- Algemene stylesheet -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Script to load the shared navigation bar -->
+  <script src="nav_script.js" defer></script>
 </head>
 <body>
+
+  <div id="nav-placeholder"></div>
+
   <h1>Mysterytrip</h1>
   <form id="tripForm">
-    <input name="naam" placeholder="Je naam" required />
+    <input type="text" name="naam" placeholder="Je naam" required />
     <select name="soort_reis" required>
       <option value="">Soort reis</option>
       <option>zonvakantie</option>
@@ -28,10 +34,10 @@
       <option>binnen europa</option>
       <option>buiten europa</option>
     </select>
-    <input name="uitgesloten_landen" placeholder="Welke landen niet?" />
+    <input name="uitgesloten_landen" type="text" placeholder="Welke landen niet?" />
     <input name="budget_pp_eur" type="number" min="0" placeholder="Budget per persoon (€)" required />
     <input name="aantal_dagen" type="number" min="1" placeholder="Aantal dagen" required />
-    <input name="voorkeuren" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
+    <input name="voorkeuren" type="text" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
     <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
     <button type="submit">Advies genereren</button>
   </form>
