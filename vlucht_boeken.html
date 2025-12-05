@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VluchtBoeken</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <script src="nav_script.js"></script>
+
+    <h1>Boek hier je vlucht!</h1>
+
+        <!-- Dropdown voor vertrek -->
+    <label for="fly_from">Vertrek van:</label>
+    <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
+        <option value="" disabled selected>Selecteer luchthaven</option>
+    </select>
+
+    <!-- Dropdown voor aankomst -->
+    <label for="fly_to">Aankomst op:</label>
+    <select name="fly_to" id="fly_to" onchange="createDropDownDepartureDate()">
+        <option value="" disabled selected>Selecteer luchthaven</option>
+    </select>
+
+    <!-- Dropdown voor vertrekdatum -->
+    <label for="departure_date">Vertrekdatum:</label>
+    <select name="departure_date" id="departure_date">
+        <option value="" disabled selected>Selecteer vertrekdatum</option>
+    </select>
+
+</body>
+
+<script>
+    const API_BASE_URL = "http://127.0.0.1:5001";
+
+    // (AS) Vul vertrek dropdown met data van API
+    fetch(`${API_BASE_URL}/vlucht_boeken/departureFrom`)
+    .then(response => response.json())
+    .then(airports => {
+        const dropdown = document.getElementById("fly_from");
+        airports.forEach(airport => {
+            const option = document.createElement("option");
+            option.value = airport.airportID;
+            option.textContent = airport.airportName;
+            dropdown.appendChild(option);
+        });
+    });
+
+    // (AS) Vul "aankomst op" vliegvelden dropdown obv ingevulde "vertrek van" vliegveld.
+    function createDropdownFlyTo() {
+        const selectedValue = document.getElementById("fly_from").value;
+        const dropdown = document.getElementById("fly_to");
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer luchthaven</option>'; // reset
+
+        fetch(`${API_BASE_URL}/vlucht_boeken/arrivalAt`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fly_from: selectedValue })
+        })
+        .then(response => response.json())
+        .then(airports => {
+            airports.forEach(airport => {
+                const option = document.createElement("option");
+                option.value = airport.airportID;
+                option.textContent = airport.airportName;
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching airports:", error));
+    }
+
+    // (AS) Vul "vertrekdatum" dropdown obv ingevulde vliegvelden 
+    function createDropDownDepartureDate() {
+        const fly_from = document.getElementById("fly_from").value;
+        const fly_to = document.getElementById("fly_to").value;
+
+        const dropdown = document.getElementById("departure_date");
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer datum</option>'; // reset
+
+        fetch(`${API_BASE_URL}/vlucht_boeken/departureDate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fly_from: fly_from, fly_to:  fly_to})
+        })
+        .then(response => response.json())
+        .then(dates => {
+            dates.forEach(date => {
+                const option = document.createElement("option");
+                option.value = date.departure_date;
+                option.textContent = date.departure_date;
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching airports:", error));
+    }
+</script>
+
+
+</html>
