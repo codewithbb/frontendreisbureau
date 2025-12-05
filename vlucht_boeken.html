@@ -58,6 +58,9 @@
             <option value="" disabled selected>Selecteer vertrekdatum</option>
         </select>
 
+        <label for="extra_info">(Optioneel): Wat ga je doen op vakantie?</label>
+        <input type="text" id="extra_info" name="extra_info" placeholder="Typ hier wat je gaat doen...">
+
         <button id="boek-btn" style="margin-top:20px;">Boek Vlucht</button>
 
         <div id="result-message" class="hidden"></div>
@@ -161,6 +164,7 @@
             const to   = document.getElementById("fly_to").value;
             const toName = document.getElementById("fly_to").options[document.getElementById("fly_to").selectedIndex].text;
             const date = document.getElementById("departure_date").value;
+            const extraInfo = document.getElementById("extra_info").value;
 
             const result = document.getElementById("result-message");
 
@@ -175,6 +179,7 @@
                 Door: ${currentUser.full_name} (${currentUser.username})<br>
                 Van ${fromName} naar ${toName}<br>
                 Op: ${date}
+                ${extraInfo ? `<br>Extra info: ${extraInfo}` : ''}
             `;
             result.classList.remove("hidden");
         });
