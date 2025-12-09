@@ -1,10 +1,10 @@
 /* Algemene body-styling */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
-    background-color: #f4f7f9;
+    background-color: #000000;
     margin: 0;
     padding: 20px;
-    color: #06141c;
+    color: #ffffff;
     line-height: 1.6;
 }
 
@@ -21,6 +21,7 @@ h1, h2, h3 {
     max-width: 600px;
     margin: auto;
     background: #fff;
+    color: #000000;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -31,7 +32,12 @@ label {
     font-weight: bold;
     display: block;
     margin-top: 15px;
-    color: #06141c;
+    color: #ffffff;
+}
+
+/* Container Labels {DL}*/
+.container label {
+    color: #000000;
 }
 
 /* Form elementen */
@@ -230,6 +236,7 @@ table {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    color:#000000
 }
 
 /* (BB) Tabelkoppen */
