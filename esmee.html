@@ -14,48 +14,50 @@
   <div id="nav-placeholder"></div>
 
   <h1>Mysterytrip</h1>
-  <form id="tripForm">
-    <input type="text" name="naam" placeholder="Je naam" required />
-    <select name="soort_reis" required>
-      <option value="">Soort reis</option>
-      <option>zonvakantie</option>
-      <option>citytrip</option>
-      <option>rondreis</option>
-    </select>
-    <input type="date" name="wanneer" required min="2026-01-01" max="2030-12-31">
-    <input name="aantal_personen" type="number" min="1" placeholder="Aantal personen" required />
-    <select name="vervoer" required>
-      <option value="">Vervoer</option>
-      <option>vliegtuig</option>
-      <option>auto</option>
-    </select>
-    <select name="regio" required>
-      <option value="">Regio</option>
-      <option>binnen europa</option>
-      <option>buiten europa</option>
-    </select>
-    <input name="uitgesloten_landen" type="text" placeholder="Welke landen niet?" />
-    <input name="budget_pp_eur" type="number" min="0" placeholder="Budget per persoon (€)" required />
-    <input name="aantal_dagen" type="number" min="1" placeholder="Aantal dagen" required />
-    <input name="voorkeuren" type="text" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
-    <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
-    <button type="submit">Advies genereren</button>
-  </form>
+  <div class="container">
+    <form id="tripForm">
+      <input type="text" name="naam" placeholder="Je naam" required />
+      <select name="soort_reis" required>
+        <option value="">Soort reis</option>
+        <option>zonvakantie</option>
+        <option>citytrip</option>
+        <option>rondreis</option>
+      </select>
+      <input type="date" name="wanneer" required min="2026-01-01" max="2030-12-31">
+      <input name="aantal_personen" type="number" min="1" placeholder="Aantal personen" required />
+      <select name="vervoer" required>
+        <option value="">Vervoer</option>
+        <option>vliegtuig</option>
+        <option>auto</option>
+      </select>
+      <select name="regio" required>
+        <option value="">Regio</option>
+        <option>binnen europa</option>
+        <option>buiten europa</option>
+      </select>
+      <input name="uitgesloten_landen" type="text" placeholder="Welke landen niet?" />
+      <input name="budget_pp_eur" type="number" min="0" placeholder="Budget per persoon (€)" required />
+      <input name="aantal_dagen" type="number" min="1" placeholder="Aantal dagen" required />
+      <input name="voorkeuren" type="text" placeholder="Voorkeuren (strand, cultuur, natuur, avontuur)" />
+      <textarea name="opmerkingen" placeholder="Vrije opmerkingen"></textarea>
+      <button type="submit">Advies genereren</button>
+    </form>
 
-  <!-- Spinner -->
-  <div id="spinner" style="display:none; text-align:center; margin-top:1rem;">
-    <div class="loader" style="
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #3498db;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: auto;">
+    <!-- Spinner -->
+    <div id="spinner" style="display:none; text-align:center; margin-top:1rem;">
+      <div class="loader" style="
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: auto;">
+      </div>
     </div>
-  </div>
 
-  <div id="result" class="result"></div>
+    <div id="result" class="result"></div>
+  </div>
 
   <script>
     const form = document.getElementById('tripForm');

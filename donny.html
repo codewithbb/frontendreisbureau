@@ -13,8 +13,8 @@
   /* =======================
      Pagina en kaart styling
      ======================= */
-  html, body { height: 100%; margin: 0; padding: 0; }
-  #map { height: 100%; width: 100%; }
+  html, body { height: 100%; margin: 0;}
+  #map { height: 100%; width: 100%;}
   
   /* Styling van permanente tekstwolk */
   .my-tooltip {
@@ -29,24 +29,31 @@
 </style>
 </head>
 <body>
+    
 <div id="nav-placeholder"></div>
  
 <script src="nav_script.js"></script>
 <!-- =======================
-     Dropdown voor vertrek
+     Dropdowns
      ======================= -->
-<label for="select-departure">Vertrekluchthaven:</label>
-<select id="select-departure">
-  <option value="">-- Kies een luchthaven --</option>
-</select>
+     
+<div style="display:flex; gap:20px; align-items:flex-start; padding:10px;">
 
-<!-- =======================
-     Dropdown voor aankomst
-     ======================= -->
-<label for="select-arrival">Aankomstluchthaven:</label>
-<select id="select-arrival">
-  <option value="">-- Kies een luchthaven --</option>
-</select>
+    <div style="flex:1;">
+        <label for="select-departure">Vertrekluchthaven:</label>
+        <select id="select-departure">
+            <option value="">-- Kies een luchthaven --</option>
+        </select>
+    </div>
+
+    <div style="flex:1;">
+        <label for="select-arrival">Aankomstluchthaven:</label>
+        <select id="select-arrival">
+            <option value="">-- Kies een luchthaven --</option>
+        </select>
+    </div>
+
+</div>
 
 <!-- =======================
      Div voor Leaflet-kaart
@@ -137,13 +144,27 @@ fetch("http://127.0.0.1:5001/donny")
           // Coördinaten als numbers opslaan
           departureCoords = [Number(ap.latitude), Number(ap.longitude)];
 
-          // Oude marker verwijderen
-          if (departureMarker) {
-              map.removeLayer(departureMarker);
-          }
+        // Oude marker verwijderen
+        if (departureMarker) {
+            map.removeLayer(departureMarker);
+        }
 
-          // Nieuwe marker (zonder popup)
-          departureMarker = L.marker(departureCoords).addTo(map);
+        // Japanse luchthavens
+        const japanIata = ["HND", "NRT", "KIX", "ITM", "CTS", "FUK", "OKA", "NGO"];
+
+        // Nieuwe marker
+        departureMarker = L.marker(departureCoords).addTo(map);
+
+        // Als Japan → direct door naar PowerBI
+        if (japanIata.includes(ap.iata_code)) {
+            const powerBiUrl = "https://app.powerbi.com/view?r=eyJrIjoiMWU3MzVkNTgtMDk3Ny00NTY1LWFkNzYtMGFiZGQ3YWVhNTY4IiwidCI6IjgxZGJmMzFjLWQ5MTgtNDQ3Yi05YTM1LTBlZTNjN2I1Yjg4ZCIsImMiOjl9";
+
+            departureMarker.on("click", () => {
+                window.open(powerBiUrl, "_blank");
+            });
+        }
+
+
 
           // Kaart centreren
           map.setView(departureCoords, 6);
@@ -234,7 +255,7 @@ function drawRouteIfPossible() {
     ).addTo(map);
 
     // Lijn zichtbaarheid, max zoom
-    map.fitBounds(routeLine.getBounds(), { padding: [40, 40], maxZoom: 6 });
+    map.fitBounds(routeLine.getBounds(), { padding: [40, 40], maxZoom: 5 });
 
 }
 
