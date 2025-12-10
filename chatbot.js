@@ -1,4 +1,4 @@
-// === chatbot.js ===
+// === chatbot.js (Streaming Version) ===
 
 const API_BASE = "http://127.0.0.1:5001";
 
@@ -36,68 +36,114 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 // ===============================
-// 2) Chat Window Helpers
+// 2) Message helpers
 // ===============================
-function appendMessage(sender, text) {
+
+// Creates a new message div but returns the element
+function createStreamingMessage(sender) {
     const div = document.createElement("div");
     div.style.marginBottom = "10px";
-
-    div.innerHTML = `
-        <strong>${sender}:</strong><br>
-        <div>${text}</div>
-    `;
-
+    div.innerHTML = `<strong>${sender}:</strong><br><div class="streaming-text"></div>`;
     chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div.querySelector(".streaming-text");
+}
+
+function appendFinalMarkdown(messageElement, fullText) {
+    // Replace the raw streaming text with parsed markdown
+    messageElement.innerHTML = marked.parse(fullText);
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 
 // ===============================
-// 3) Send message to backend
+// 3) Streaming Chat Function
 // ===============================
 async function sendMessage() {
     const message = userMsgBox.value.trim();
     if (!message) return;
 
-    appendMessage("Jij", message);
+    appendUserMessage(message);
     userMsgBox.value = "";
     statusText.textContent = "Chatbot denkt...";
 
     try {
-        const resp = await fetch(`${API_BASE}/chatbot/query`, {
+        const response = await fetch(`${API_BASE}/chatbot/query`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message })
         });
 
-        const data = await resp.json();
-        if (!resp.ok || !data.reply) {
-            appendMessage("Chatbot", "(Fout bij ophalen antwoord)");
+        if (!response.ok || !response.body) {
+            appendBotMessage("(Fout tijdens streamen)");
             statusText.textContent = "";
             return;
         }
 
-        appendMessage("Chatbot", data.reply);
+        // Create streaming message container
+        const msgElem = createStreamingMessage("Chatbot");
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+
+        let fullText = "";
+        let done, value;
+
+        // Read streaming chunks
+        while (true) {
+            ({done, value} = await reader.read());
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            fullText += chunk;
+
+            // Append chunk as plain text
+            msgElem.textContent = fullText;
+
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Once finished → markdown parse entire message
+        appendFinalMarkdown(msgElem, fullText);
         statusText.textContent = "";
 
     } catch (err) {
         console.error(err);
-        appendMessage("Chatbot", "(Netwerkfout)");
+        appendBotMessage("(Netwerkfout)");
         statusText.textContent = "";
     }
 }
 
 
 // ===============================
-// 4) Speech-to-text
+// 4) Helpers for user and bot messages
+// ===============================
+function appendUserMessage(text) {
+    const div = document.createElement("div");
+    div.style.marginBottom = "10px";
+    div.innerHTML = `<strong>Jij:</strong><br><div>${text}</div>`;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function appendBotMessage(text) {
+    const div = document.createElement("div");
+    div.style.marginBottom = "10px";
+    div.innerHTML = `<strong>Chatbot:</strong><br><div>${marked.parse(text)}</div>`;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+
+// ===============================
+// 5) Speech-to-text
 // ===============================
 async function startSpeech() {
     statusText.textContent = "";
     micBtn.disabled = true;
 
     try {
-        // Fetch Azure token + region
         const tokenResp = await fetch(`${API_BASE}/julian/speech-token`, {
             method: "GET",
             credentials: "include"
@@ -142,7 +188,7 @@ async function startSpeech() {
 
 
 // ===============================
-// 5) Event Listeners
+// 6) Event Listeners
 // ===============================
 sendBtn.addEventListener("click", sendMessage);
 
