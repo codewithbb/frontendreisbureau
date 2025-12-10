@@ -16,6 +16,8 @@
 <pre id="responseBox">Nog geen response</pre>
 
 <script>
+            // Basis URL voor API
+        const API_BASE_URL = "http://127.0.0.1:5001";
     const uploadBtn = document.getElementById("uploadBtn");
     const responseBox = document.getElementById("responseBox");
 
@@ -33,7 +35,7 @@
         responseBox.textContent = "Bezig met uploaden...";
 
         try {
-            const response = await fetch("http://localhost:5001/cv/upload", {
+            const response = await fetch(`${API_BASE_URL}/cv/upload`, {
                 method: "POST",
                 body: formData
             });

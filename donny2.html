@@ -82,6 +82,8 @@
 </div>
 
 <script>
+          // Basis URL voor API
+        const API_BASE_URL = "http://127.0.0.1:5001";
   function cleanIata(str) {
     if (!str) return "";
     return str.replace(/\s+/g, "").toUpperCase();
@@ -108,7 +110,7 @@
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:5001/donny/checkin", {
+      const response = await fetch(`${API_BASE_URL}/donny/checkin`, {
         method: "POST",
         body: formData
       });
