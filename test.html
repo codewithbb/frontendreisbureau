@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vlucht boeken</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Boek je vlucht</h1>
+
+    <form id="vluchtForm">
+        <label for="fly_from">Vertrek vanaf:</label>
+        <select id="fly_from" name="fly_from"></select><br>
+
+        <label for="fly_to">Bestemming:</label>
+        <select id="fly_to" name="fly_to"></select><br>
+
+        <label for="departure_date">Vertrekdatum:</label>
+        <select id="departure_date" name="departure_date"></select><br>
+
+        <label for="extra_info">(Optioneel): Wat ga je doen op vakantie?</label>
+        <input type="text" id="extra_info" name="extra_info" placeholder="Typ hier wat je gaat doen..."><br><br>
+
+        <button id="boek-btn" type="button">Boek Vlucht</button>
+    </form>
+
+    <br>
+
+    <div id="result-message" class="hidden"></div>
+    <p id="status"></p>
+
+    <!-- Afbeelding komt hier -->
+    <img id="genImg"
+         alt="Gegenereerde vakantie-afbeelding"
+         style="max-width: 400px; margin-top: 15px; display:none;">
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:5001";
+        let currentUser = null;
+
+        // 🔹 Prompt genereren
+        function buildImagePrompt(destinationName, extraInfo) {
+            const plaats = (destinationName || "").trim();
+            const activiteit = (extraInfo || "").trim();
+
+            if (!plaats) return null;
+
+            if (activiteit) {
+                return `Genereer een fotorealistische reisfoto van ${activiteit} in ${plaats}, ` +
+                       `in een moderne reisbrochure-stijl met levendige, uitnodigende kleuren.`;
+            }
+
+            return `Genereer een fotorealistische reisfoto van een vakantie in ${plaats}, ` +
+                   `in een moderne reisbrochure-stijl met levendige, uitnodigende kleuren.`;
+        }
+
+        // 🔹 Afbeelding genereren via backend
+        async function generateImageForBooking(destinationName, extraInfo) {
+            const prompt = buildImagePrompt(destinationName, extraInfo);
+            const statusEl = document.getElementById("status");
+            const imgEl = document.getElementById("genImg");
+
+            if (!prompt) {
+                alert("Er is geen bestemming gekozen, dus ik kan geen afbeelding maken.");
+                return;
+            }
+
+            statusEl.textContent = "Afbeelding genereren...";
+            imgEl.style.display = "none";
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/images/generate`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                if (!response.ok || data.error) throw new Error(data.error || "Onbekende fout");
+
+                imgEl.src = data.image_url;
+                imgEl.alt = `Gegenereerde afbeelding voor ${destinationName}`;
+                imgEl.style.display = "block";
+
+                statusEl.textContent = "Afbeelding klaar!";
+
+            } catch (err) {
+                console.error(err);
+                statusEl.textContent = "Fout bij genereren van afbeelding.";
+                alert(err.message);
+            }
+        }
+
+        // 🔹 User ophalen bij inladen
+        fetch(`${API_BASE_URL}/auth/whoami`)
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+                if (!data) {
+                    alert("Niet ingelogd, ga naar /julian");
+                    window.location.href = "julian.html";
+                }
+                currentUser = data;
+            });
+
+        // 🔹 Lijst met luchthavens laden
+        function loadAirports() {
+            fetch(`${API_BASE_URL}/airports`)
+                .then(res => res.json())
+                .then(data => {
+                    const from = document.getElementById("fly_from");
+                    const to = document.getElementById("fly_to");
+
+                    data.forEach(a => {
+                        const opt1 = new Option(a.name, a.code);
+                        const opt2 = new Option(a.name, a.code);
+                        from.add(opt1);
+                        to.add(opt2);
+                    });
+                });
+        }
+
+        // 🔹 Datums laden
+        function loadDates() {
+            fetch(`${API_BASE_URL}/departure-dates`)
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById("departure_date");
+                    data.forEach(date => {
+                        const option = new Option(date, date);
+                        select.add(option);
+                    });
+                });
+        }
+
+        // 🔹 Boek Vlucht kliklogica
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAirports();
+            loadDates();
+
+            document.getElementById("boek-btn").addEventListener("click", async () => {
+                const from = document.getElementById("fly_from").value;
+                const flyFromSelect = document.getElementById("fly_from");
+                const fromName = flyFromSelect.options[flyFromSelect.selectedIndex].text;
+
+                const to = document.getElementById("fly_to").value;
+                const flyToSelect = document.getElementById("fly_to");
+                const toName = flyToSelect.options[flyToSelect.selectedIndex].text;
+
+                const date = document.getElementById("departure_date").value;
+                const extraInfo = document.getElementById("extra_info").value;
+
+                const result = document.getElementById("result-message");
+
+                if (!from || !to || !date) {
+                    result.innerHTML = "Vul alle velden in voordat je boekt!";
+                    result.classList.remove("hidden");
+                    return;
+                }
+
+                result.innerHTML = `
+                    <strong>Vlucht geboekt!</strong><br>
+                    Door: ${currentUser.full_name} (${currentUser.username})<br>
+                    Van ${fromName} naar ${toName}<br>
+                    Op: ${date}
+                    ${extraInfo ? `<br>Extra info: ${extraInfo}` : ''}
+                `;
+                result.classList.remove("hidden");
+
+                // Afbeelding genereren ✨
+                await generateImageForBooking(toName, extraInfo);
+            });
+        });
+    </script>
+
+</body>
+</html>
