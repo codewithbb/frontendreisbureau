@@ -2,7 +2,7 @@
 let globalData = [];
 
 (function () {
-  const API_BASE     = "https://thankful-mushroom-0d24efa03.3.azurestaticapps.net";
+  const API_BASE     = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
   const imgEl        = document.getElementById("genImg");
   const statusEl     = document.getElementById("status");
   const btnGen       = document.getElementById("boek_btn");
@@ -220,7 +220,7 @@ function addFilterListeners(columns) {
 }
 async function init() {
   try {
-    const response = await fetch('https://thankful-mushroom-0d24efa03.3.azurestaticapps.net/bente');
+    const response = await fetch('https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/bente');
     const jsonData = await response.json();
     const columns = jsonData.columns;
     globalData = jsonData.rows;
