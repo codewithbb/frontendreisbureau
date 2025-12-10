@@ -61,9 +61,13 @@
         <label for="extra_info">(Optioneel): Wat ga je doen op vakantie?</label>
         <input type="text" id="extra_info" name="extra_info" placeholder="Typ hier wat je gaat doen...">
 
-        <button id="boek-btn" style="margin-top:20px;">Boek Vlucht</button>
+        <button id="boek-btn" type="button" style="margin-top:20px;">Boek Vlucht</button>
 
         <div id="result-message" class="hidden"></div>
+
+        <p id="status"></p>
+
+        <img id="genImg" alt="Gegenereerde vakantie-afbeelding" style="max-width: 500px; margin-top: 0px; display:none;">
     </div>
 
 
@@ -71,6 +75,59 @@
     const API_BASE_URL = "http://127.0.0.1:5001";
 
     let currentUser = null;
+
+    // === Prompt genereren ===
+    function buildImagePrompt(destinationName, extraInfo) {
+        const plaats = (destinationName || "").trim();
+        const activiteit = (extraInfo || "").trim();
+
+        if (!plaats) return null;
+
+        if (activiteit) {
+            return `Genereer een fotorealistische reisfoto van ${activiteit} in ${plaats}, ` +
+                `in een moderne brochure-stijl met levendige kleuren.`;
+        }
+
+        return `Genereer een fotorealistische reisfoto van een vakantie in ${plaats}, ` +
+            `moderne brochure-stijl, levendige kleuren.`;
+    }
+
+    // === Afbeelding genereren via backend ===
+    async function generateImageForBooking(destinationName, extraInfo) {
+        const prompt = buildImagePrompt(destinationName, extraInfo);
+        const statusEl = document.getElementById("status");
+        const imgEl = document.getElementById("genImg");
+
+        if (!prompt) return;
+
+        statusEl.textContent = "Afbeelding genereren...";
+        imgEl.style.display = "none";
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/images/generate`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || data.error) {
+                throw new Error(data.error || "Fout bij genereren van afbeelding");
+            }
+
+            imgEl.src = data.image_url;
+            imgEl.style.display = "block";
+            statusEl.textContent = `Afbeelding klaar! Caption: ${data.caption}`
+        
+
+        } catch (err) {
+            console.error(err);
+            statusEl.textContent = "Er ging iets mis bij het genereren.";
+            alert(err.message);
+        }
+    }
+
 
     // --- 1. Run login check ON PAGE LOAD ---
     document.addEventListener("DOMContentLoaded", async () => {
@@ -158,7 +215,9 @@
 
     // --- 3. BOOKING BUTTON ---
     document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("boek-btn").addEventListener("click", () => {
+        document.getElementById("boek-btn").addEventListener("click", async (event) => {
+            event.preventDefault();
+
             const from = document.getElementById("fly_from").value;
             const fromName = document.getElementById("fly_from").options[document.getElementById("fly_from").selectedIndex].text;
             const to   = document.getElementById("fly_to").value;
@@ -182,6 +241,9 @@
                 ${extraInfo ? `<br>Extra info: ${extraInfo}` : ''}
             `;
             result.classList.remove("hidden");
+
+            //  Afbeelding genereren
+            await generateImageForBooking(toName, extraInfo);
         });
     });
 
