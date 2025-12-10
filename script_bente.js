@@ -2,7 +2,7 @@
 let globalData = [];
 
 (function () {
-  const API_BASE     = "http://127.0.0.1:5001";
+  const API_BASE     = "https://thankful-mushroom-0d24efa03.3.azurestaticapps.net";
   const imgEl        = document.getElementById("genImg");
   const statusEl     = document.getElementById("status");
   const btnGen       = document.getElementById("boek_btn");
@@ -220,7 +220,7 @@ function addFilterListeners(columns) {
 }
 async function init() {
   try {
-    const response = await fetch('http://127.0.0.1:5001/bente');
+    const response = await fetch('https://thankful-mushroom-0d24efa03.3.azurestaticapps.net/bente');
     const jsonData = await response.json();
     const columns = jsonData.columns;
     globalData = jsonData.rows;
