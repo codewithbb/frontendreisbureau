@@ -340,9 +340,12 @@
 
         let speechRecognizer = null;  // keep a reference to stop/cancel if needed
 
+        //const API_BASE = "http://127.0.0.1:5001";
+        const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+
         async function checkSessionAndInit() {
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian/session", {
+                const resp = await fetch(`${API_BASE}/julian/session`, {
                     method: "GET",
                     credentials: "include",   // <-- IMPORTANT so the cookie is sent
                 });
@@ -410,7 +413,7 @@
             loginButton.disabled = true;
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian/login", {
+                const resp = await fetch(`${API_BASE}/julian/login`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -465,7 +468,7 @@
             reviewsContainer.innerHTML = "<p class='meta'>Loading reviews...</p>";
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian", {
+                const resp = await fetch(`${API_BASE}/julian`, {
                     method: "GET",
                     credentials: "include"
                 });
@@ -565,7 +568,7 @@
 
         async function handleLogout() {
             try {
-                await fetch("http://127.0.0.1:5001/julian/logout", {
+                await fetch(`${API_BASE}/julian/logout`, {
                     method: "POST",
                     credentials: "include"
                 });
@@ -619,7 +622,7 @@
             };
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian/ai_recommendation", {
+                const resp = await fetch(`${API_BASE}/julian/ai_recommendation`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -688,7 +691,7 @@
             aiSpeechBtn.disabled = true;
 
             try {
-                const tokenResp = await fetch("http://127.0.0.1:5001/julian/speech-token", {
+                const tokenResp = await fetch(`${API_BASE}/julian/speech-token`, {
                     method: "GET",
                     credentials: "include"
                 });
