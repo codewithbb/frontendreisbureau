@@ -260,3 +260,31 @@ td {
 tr:hover td {
     background: #c1e3fb;
 }
+
+
+/* Container spacing */
+.checklist {
+    display: grid;
+    gap: 8px;       /* ruimte tussen regels */
+}
+
+/* Elke regel: checkbox + tekst op één lijn */
+.checklist-item {
+    display: inline-flex;          /* inline zodat het zich als tekst gedraagt */
+    align-items: center;           /* verticale uitlijning */
+    gap: 8px;                      /* ruimte tussen checkbox en label */
+}
+
+.checklist-item input[type="checkbox"] {
+    margin: 0;
+    vertical-align: initial; /* remove baseline alignment */
+}
+
+
+/* Label niet vet (je screenshot toont bold labels) */
+.checklist-label {
+    font-weight: 400;
+    display: inline-block;
+}
+
+
