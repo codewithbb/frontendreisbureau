@@ -1,7 +1,7 @@
 // === chatbot.js (Streaming Version) ===
 
-//const API_BASE = "http://127.0.0.1:5001";
-const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+//const API_BASE_CB = "http://127.0.0.1:5001";
+const API_BASE_CB = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
 
 let speechRecognizer = null;
 
@@ -69,7 +69,7 @@ async function sendMessage() {
     statusText.textContent = "Chatbot denkt...";
 
     try {
-        const response = await fetch(`${API_BASE}/chatbot/query`, {
+        const response = await fetch(`${API_BASE_CB}/chatbot/query`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -145,7 +145,7 @@ async function startSpeech() {
     micBtn.disabled = true;
 
     try {
-        const tokenResp = await fetch(`${API_BASE}/julian/speech-token`, {
+        const tokenResp = await fetch(`${API_BASE_CB}/julian/speech-token`, {
             method: "GET",
             credentials: "include"
         });
