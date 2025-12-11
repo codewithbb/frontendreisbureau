@@ -62,11 +62,12 @@
 <div id="nav-placeholder"></div>
  
 <script src="nav_script.js"></script>
+<h1>Bekijk je vlucht</h1>
 <div class="container" style="margin-top: 30px">
-  <h2>Bekijk je vlucht</h2>
+
 
   <form id="checkin-form">
-      <label>Upload je vliegticket (PNG/JPG):</label><br><br>
+      <label>Upload je vliegticket (PNG):</label><br><br>
       <input type="file" id="ticket-file" accept="image/*" required>
       <br><br>
       <button type="submit">Upload & Bekijk Vlucht</button>
@@ -81,6 +82,8 @@
 </div>
 
 <script>
+          // Basis URL voor API
+        const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
   function cleanIata(str) {
     if (!str) return "";
     return str.replace(/\s+/g, "").toUpperCase();
@@ -107,7 +110,7 @@
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:5001/donny/checkin", {
+      const response = await fetch(`${API_BASE_URL}/donny/checkin`, {
         method: "POST",
         body: formData
       });

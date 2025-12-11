@@ -36,6 +36,7 @@
 <!-- =======================
      Dropdowns
      ======================= -->
+     
 <div style="display:flex; gap:20px; align-items:flex-start; padding:10px;">
 
     <div style="flex:1;">
@@ -64,7 +65,9 @@
      ======================= -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-
+        // Basis URL voor API
+        const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+        
 // Leaflet map initialiseren
 const map = L.map('map').setView([52.37, 4.90], 6);
 
@@ -92,7 +95,7 @@ function clearDestinationMarkers() {
 }
 
 // Luchthavens ophalen van backend
-fetch("http://127.0.0.1:5001/donny")
+fetch(`${API_BASE_URL}/donny`)
   .then(r => r.json())
   .then(data => {
       airports = data;
@@ -172,7 +175,7 @@ fetch("http://127.0.0.1:5001/donny")
           drawRouteIfPossible();
 
           // Mogelijke bestemmingen ophalen voor deze departure
-          fetch("http://127.0.0.1:5001/donny/destinations", {
+          fetch(`${API_BASE_URL}/donny/destinations`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ iata_code: selectedIata })

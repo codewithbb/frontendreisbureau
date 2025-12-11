@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Chatbot</title>
+
+    <!-- Shared site styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Speech SDK for microphone -->
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+    <!-- Marked.js for Markdown parsing (bold/italic from ChatGPT output) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <!-- Navigation bar -->
+    <div id="nav-placeholder"></div>
+    <script src="nav_script.js" defer></script>
+
+    <!-- Load session management -->
+    <script src="session.js" defer></script>
+
+    <!-- Load chatbot logic -->
+    <script src="chatbot.js" defer></script>
+
+    <h1>Reis Chatbot</h1>
+
+    <div id="chatbot-container" class="container" style="max-width:800px;">
+
+        <!-- If user NOT logged in -->
+        <div id="chatbot-logged-out" style="display:none;">
+            <p>Je moet ingelogd zijn om de chatbot te gebruiken.</p>
+            <p><a href="julian.html">Klik hier om in te loggen.</a></p>
+        </div>
+
+        <!-- Chat UI -->
+        <div id="chatbot-ui" style="display:none;">
+            <div id="chat-window" 
+                 style="height:380px; overflow-y:auto; background:#fff; border:1px solid #ccc; padding:15px; border-radius:8px;">
+                <p class="meta">Chatbot klaar! Stel een vraag over reizen, vluchten of deze website.</p>
+            </div>
+
+            <label for="user-message">Je bericht:</label>
+            <textarea id="user-message" placeholder="Typ hier je vraag..." style="height:80px;"></textarea>
+
+            <div class="flex-row" style="align-items:center;">
+                <div class="field">
+                    <label>Taal voor spraakherkenning:</label>
+                    <select id="chatbot-lang">
+                        <option value="en-US">Engels (US)</option>
+                        <option value="nl-NL">Nederlands (NL)</option>
+                    </select>
+                </div>
+
+                <button id="chatbot-mic" style="flex:0; width:50px; padding:10px;">🎤</button>
+            </div>
+
+            <div class="button-container">
+                <button id="chatbot-send">Verstuur</button>
+                <button id="chatbot-clear" class="secondary">Chat wissen</button>
+            </div>
+
+            <p id="chatbot-status" class="meta"></p>
+        </div>
+
+    </div>
+
+</body>
+</html>

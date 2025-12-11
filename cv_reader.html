@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>CV Upload Test</title>
+</head>
+<body>
+
+<h2>Test CV upload</h2>
+
+<input type="file" id="cvFile" accept="application/pdf" />
+<br><br>
+<button id="uploadBtn">Upload CV</button>
+
+<h3>Response</h3>
+<pre id="responseBox">Nog geen response</pre>
+
+<script>
+            // Basis URL voor API
+        const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+    const uploadBtn = document.getElementById("uploadBtn");
+    const responseBox = document.getElementById("responseBox");
+
+    uploadBtn.addEventListener("click", async () => {
+        const fileInput = document.getElementById("cvFile");
+
+        if (!fileInput.files.length) {
+            alert("Selecteer eerst een PDF");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        responseBox.textContent = "Bezig met uploaden...";
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/cv/upload`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            responseBox.textContent = JSON.stringify(data, null, 2);
+
+        } catch (err) {
+            responseBox.textContent = "Fout: " + err;
+        }
+    });
+</script>
+
+</body>
+</html>
