@@ -2,7 +2,8 @@
 // Small helper for checking the current login session from any page.
 
 // Change this if the backend runs on a different host/port.
-const JULIAN_API_BASE = "http://127.0.0.1:5001";
+//const API_BASE = "http://127.0.0.1:5001";
+const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
 
 async function getCurrentSession() {
     /**
@@ -13,7 +14,7 @@ async function getCurrentSession() {
      *   { loggedIn: false, user: null }
      */
     try {
-        const resp = await fetch(`${JULIAN_API_BASE}/julian/session`, {
+        const resp = await fetch(`${API_BASE}/julian/session`, {
             method: "GET",
             credentials: "include",   // <- send the Flask session cookie
         });
