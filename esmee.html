@@ -1,13 +1,29 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
   <title>Mysterytrip Test</title>
-  <!-- Algemene stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
 
-  <!-- Script to load the shared navigation bar -->
-  <script src="nav_script.js" defer></script>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <!-- Algemene stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Script to load the shared navigation bar -->
+    <script src="nav_script.js" defer></script>
 </head>
 <body>
 
@@ -60,6 +76,9 @@
   </div>
 
   <script>
+
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+  //const API_BASE_URL = "http://127.0.0.1:5001";
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
     const spinner = document.getElementById('spinner');
@@ -76,7 +95,7 @@
       spinner.style.display = 'block';
 
       try {
-        const res = await fetch("http://127.0.0.1:5001/esmee", {
+        const res = await fetch(`${API_BASE_URL}/esmee`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -114,3 +133,4 @@
     });
   </script>
 </body>
+</html>
