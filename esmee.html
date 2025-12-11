@@ -24,6 +24,10 @@
 
     <!-- Script to load the shared navigation bar -->
     <script src="nav_script.js" defer></script>
+
+       <!-- Azure Speech SDK -->
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
 </head>
 <body>
 
@@ -77,8 +81,8 @@
 
   <script>
 
-    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
-  //const API_BASE_URL = "http://127.0.0.1:5001";
+    //const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+    const API_BASE_URL = "http://127.0.0.1:5001";
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
     const spinner = document.getElementById('spinner');
@@ -110,12 +114,14 @@
             <p>De bestemming is nog een verrassing...</p>
             <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
             <h2>Paklijst</h2>
-            <pre>${data.paklijst}</pre>
+            <pre id="paklijstText">${data.paklijst}</pre>S
 
             <button id="showMotivatieBtn" style="margin-top:10px;">Lees waarom deze trip perfect bij jou past!</button>
             <p id="motivatieText" style="display:none; margin-top:10px; font-style:italic;">
               ${data.motivatie}
             </p>
+            
+            <button id="leesVoorBtn" style="margin-top:10px;">Lees alles voor</button>
           </div>
         `;
 
@@ -129,6 +135,65 @@
         resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${err.message}</div>`;
       } finally {
         spinner.style.display = 'none';
+      }
+    });
+  </script>
+
+  <script>
+    async function getSpeechToken() {
+      const res = await fetch(`${API_BASE_URL}/esmee/speech-token2`);
+      if (!res.ok) throw new Error("Kan speech token niet ophalen");
+      return res.json(); // { token, region }
+    }
+
+    function buildSpeechText() {
+      const motivatie = document.getElementById("motivatieText")?.innerText || "";
+      const paklijst = document.getElementById("paklijstText")?.innerText || "";
+      return `Hier is jouw reisadvies: ${motivatie}. En dit is jouw paklijst: ${paklijst}.`;
+    }
+
+    async function leesVoorAzure() {
+      if (!window.SpeechSDK) {
+        alert("SpeechSDK niet geladen!");
+        return;
+      }
+
+      const tekst = buildSpeechText();
+      if (!tekst.trim()) {
+        alert("Geen tekst om voor te lezen.");
+        return;
+      }
+
+      try {
+        const { token, region } = await getSpeechToken();
+        const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+        speechConfig.speechSynthesisLanguage = "nl-NL";
+        speechConfig.speechSynthesisVoiceName = "nl-NL-ColetteNeural"; // Mooie NL-stem
+
+        const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+        synthesizer.speakTextAsync(
+          tekst,
+          result => {
+            console.log("Voorlezen voltooid:", result);
+            synthesizer.close();
+          },
+          err => {
+            console.error("Fout bij voorlezen:", err);
+            synthesizer.close();
+          }
+        );
+      } catch (err) {
+        console.error("Fout:", err);
+        alert("Er ging iets mis bij het ophalen van token of spraak.");
+      }
+    }
+
+    // Event listener voor de knop
+    document.addEventListener("click", e => {
+      if (e.target && e.target.id === "leesVoorBtn") {
+        leesVoorAzure();
       }
     });
   </script>
