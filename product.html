@@ -54,10 +54,10 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
     <p>Typ je kritiek op de gegenereerde omschrijving:</p>
     <textarea id="critique" rows="5" style="width:100%" placeholder="Bijv.: Intro mag concreter, voeg bullets toe..."></textarea>
     <div style="margin-top:8px;">
-        <button id="reviseBtn">Herschrijf met AI</button>
+        <button id="reviseBtn">Herschrijf Productomschrijving</button>
     </div>
-    <h3 style="margin-top:16px;">Revisie-resultaat</h3>
-    <pre id="revisedJson" style="background:#f6f8fa;padding:10px;border:1px solid #ddd;"></pre>
+    <!-- <h3 style="margin-top:16px;">Revisie-resultaat</h3>
+    // <pre id="revisedJson" style="background:#f6f8fa;padding:10px;border:1px solid #ddd;"></pre> --> 
     </section>
   </div>
 
@@ -248,21 +248,26 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
         if (!resp.ok) throw new Error(data.error || 'Onbekende fout');
         return data;
     }
-
+    
     document.getElementById('reviseBtn').addEventListener('click', async () => {
-        const critique = document.getElementById('critique').value.trim();
-        if (!critique) return alert('Vul eerst je kritiek in.');
-        if (!productJson) return alert('Genereer eerst een productomschrijving.');
+    const critique = document.getElementById('critique').value.trim();
+    if (!critique) return alert('Vul eerst je kritiek in.');
+    if (!productJson) return alert('Genereer eerst een productomschrijving.');
 
-        try {
+    try {
         const revised = await postRevise(productJson, critique);
-        document.getElementById('revisedJson').textContent = JSON.stringify(revised, null, 2);
-        } catch (err) {
+        productJson = revised; // voor volgende revisie
+
+        // Vervang de hoofdweergave door de gereviseerde omschrijving
+        resultDiv.innerHTML = renderStructured(revised);
+
+        // Optioneel: ruwe JSON debug
+        //document.getElementById('revisedJson').textContent = JSON.stringify(revised, null, 2);
+
+    } catch (err) {
         alert(err.message);
-        }
+    }
     });
-
-
     </script>
 </body>
 </html>
