@@ -1,6 +1,7 @@
 // === chatbot.js (Streaming Version) ===
 
-const API_BASE = "http://127.0.0.1:5001";
+//const API_BASE = "http://127.0.0.1:5001";
+const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
 
 let speechRecognizer = null;
 
