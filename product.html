@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Productomschrijving Generator</title>
+  <style>
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <!-- Algemene stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Script to load the shared navigation bar -->
+  <script src="nav_script.js" defer></script>
+</head>
+<body>
+
+  <div id="nav-placeholder"></div>
+
+  <h1>Productomschrijving Generator</h1>
+
+  <div class="container">
+    <form id="csvForm" class="row">
+      <label for="csvText"><strong>Plak hier 2 regels CSV</strong>
+        <span class="muted">(1e regel headers, 2e regel data)</span>
+      </label>
+      <textarea id="csvText" class="csv" name="csv_text" placeholder="voorbeeld:
+product_id, fabrikant_sku,	eigen_sku,  ean , merk
+
+1, FAB-10000, SKU-20000, 87100000000, Bosch" required></textarea>
+
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <button type="submit">Omschrijving genereren</button>
+        <div id="spinner" style="display:none;"><div class="loader"></div></div>
+      </div>
+    </form>
+
+    <div id="result" style="margin-top:1rem;"></div>
+
+<!-- Revisie-sectie -->
+    <section style="margin-top:2rem;">
+    <h2>Revisie van Productomschrijving</h2>
+    <p>Typ je kritiek op de gegenereerde omschrijving:</p>
+    <textarea id="critique" rows="5" style="width:100%" placeholder="Bijv.: Intro mag concreter, voeg bullets toe..."></textarea>
+    <div style="margin-top:8px;">
+        <button id="reviseBtn">Herschrijf Productomschrijving</button>
+    </div>
+    <!-- <h3 style="margin-top:16px;">Revisie-resultaat</h3>
+    // <pre id="revisedJson" style="background:#f6f8fa;padding:10px;border:1px solid #ddd;"></pre> --> 
+    </section>
+  </div>
+
+    <script>
+    const form = document.getElementById('csvForm');
+    const resultDiv = document.getElementById('result');
+    const spinner = document.getElementById('spinner');
+    //const API_BASE = "http://127.0.0.1:5001";
+    const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+
+    // Houd de laatst verkregen product-JSON bij (voor revisie)
+    let productJson = null;
+
+    // Correcte escaping (enkelvoudig)
+    function escapeHtml(s) {
+        return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    // Verwijder eventuele markdown-codeblokken uit modeloutput
+    function cleanJsonString(str) {
+        return String(str)
+        .replace(/^```[a-z]*\s*/i, '')
+        .replace(/```$/i, '')
+        .trim();
+    }
+
+    function section(title, bodyHtml) {
+        if (!bodyHtml || bodyHtml.trim() === '') return '';
+        return `
+        <h3>${escapeHtml(title)}</h3>
+        ${bodyHtml}
+        `;
+    }
+
+    function renderBelangrijksteSpecificaties(arr) {
+        if (!Array.isArray(arr) || arr.length === 0) {
+        return `<p class="muted">Geen belangrijkste specificaties ontvangen.</p>`;
+        }
+        return `<ul>${arr.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>`;
+    }
+
+    function renderAfmetingen(val) {
+        if (!val) return '';
+        if (typeof val === 'object' && !Array.isArray(val)) {
+        const fields = [
+            ['lengte_mm', 'Lengte (mm)'],
+            ['breedte_mm', 'Breedte (mm)'],
+            ['hoogte_mm', 'Hoogte (mm)'],
+            ['diameter_mm', 'Diameter (mm)'],
+            ['gewicht_kg', 'Gewicht (kg)'],
+            ['accu_compatibiliteit', 'Accu compatibiliteit'],
+            ['verpakking_lengte_mm', 'Verpakking lengte (mm)'],
+            ['verpakking_breedte_mm', 'Verpakking breedte (mm)'],
+            ['verpakking_hoogte_mm', 'Verpakking hoogte (mm)'],
+            ['verpakking_gewicht_kg', 'Verpakking gewicht (kg)']
+        ];
+        const rows = fields
+            .map(([key, label]) => {
+            const v = val[key];
+            return (v !== undefined && v !== null && String(v).trim() !== '')
+                ? `<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(String(v))}</li>`
+                : '';
+            })
+            .filter(Boolean)
+            .join('');
+        return rows
+            ? `<ul>${rows}</ul>`
+            : `<p class="muted">Geen afmetingen/compatibiliteit ontvangen.</p>`;
+        }
+        return `<p>${escapeHtml(String(val))}</p>`;
+    }
+
+    function renderStructured(maybeJson) {
+        // accepteer óf een string (JSON-text) óf een object
+        let data;
+        if (typeof maybeJson === 'string') {
+        const jsonText = maybeJson;
+        try {
+            data = JSON.parse(jsonText);
+        } catch {
+            return `
+            <div class="card">
+                <h2>Resultaat (ruwe output)</h2>
+                <pre>${escapeHtml(jsonText)}</pre>
+            </div>
+            `;
+        }
+        } else {
+        data = maybeJson; // al een object
+        }
+
+        let warningHtml = '';
+        if (Array.isArray(data.warning) && data.warning.length > 0) {
+        warningHtml = `
+            <div class="card" style="background:#fff3cd; border-color:#ffeeba; color:#856404; margin-bottom:1rem;">
+            <strong>Let op:</strong> De volgende kolommen zijn niet ingevuld:<br>
+            <ul>${data.warning.map(k => `<li>${escapeHtml(k)}</li>`).join('')}</ul>
+            </div>
+        `;
+        }
+
+        const title = data.title ?? '—';
+        const intro = data.intro ?? '';
+
+        const belangrijksteSpecificaties = Array.isArray(data.belangrijkste_specificaties)
+        ? data.belangrijkste_specificaties
+        : [];
+
+        const algemeneBeschrijving = data.algemene_beschrijving ?? '';
+
+        const afmetingenHtml = renderAfmetingen(data.afmetingen_en_compatibiliteit);
+        const functiesHtml   = data.functies ? `<p>${escapeHtml(String(data.functies))}</p>` : '';
+        const gebruikHtml    = data.gebruik ? `<p>${escapeHtml(String(data.gebruik))}</p>` : '';
+        const onderhoudHtml  = data.onderhoud_en_duurzaamheid ? `<p>${escapeHtml(String(data.onderhoud_en_duurzaamheid))}</p>` : '';
+        const verpakkingHtml = data.in_de_verpakking ? `<p>${escapeHtml(String(data.in_de_verpakking))}</p>` : '';
+
+        return `
+        ${warningHtml}
+        <div class="card">
+            <h2>${escapeHtml(title)}</h2>
+            ${intro ? `<p>${escapeHtml(intro)}</p>` : ''}
+
+            ${section('Algemene beschrijving', algemeneBeschrijving ? `<p>${escapeHtml(algemeneBeschrijving)}</p>` : '')}
+            ${section('Belangrijkste Specificaties', renderBelangrijksteSpecificaties(belangrijksteSpecificaties))}
+            ${section('Afmetingen & compatibiliteit', afmetingenHtml)}
+            ${section('Functies', functiesHtml)}
+            ${section('Gebruik', gebruikHtml)}
+            ${section('Onderhoud & duurzaamheid', onderhoudHtml)}
+            ${section('In de verpakking', verpakkingHtml)}
+
+            <details style="margin-top:.75rem;">
+            <summary class="muted">Ruwe JSON bekijken</summary>
+            <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+            </details>
+        </div>
+        `;
+    }
+
+    // Submit handler
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const csv_text = document.getElementById('csvText').value.trim();
+
+        resultDiv.innerHTML = `<div class="card">Bezig met genereren...</div>`;
+        spinner.style.display = 'block';
+
+        try {
+        const res = await fetch(`${API_BASE}/productdescription`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csv_text })
+        });
+
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(payload.error || `HTTP ${res.status} ${res.statusText}`);
+        }
+
+        // payload.result kan string of object zijn
+        let cleaned;
+        if (typeof payload.result === 'string') {
+            cleaned = cleanJsonString(payload.result);
+            try { productJson = JSON.parse(cleaned); } catch { productJson = null; }
+            resultDiv.innerHTML = renderStructured(cleaned);
+        } else {
+            productJson = payload.result; // al object
+            resultDiv.innerHTML = renderStructured(productJson);
+        }
+
+        } catch (err) {
+        resultDiv.innerHTML = `<div class="card"><strong>Fout:</strong> ${escapeHtml(err.message)}</div>`;
+        } finally {
+        spinner.style.display = 'none';
+        }
+    });
+
+    // ==== Revisie functionaliteit ====
+
+    async function postRevise(originalJson, critique) {
+        const resp = await fetch(`${API_BASE}/productdescription/revise`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ original_json: originalJson, critique })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Onbekende fout');
+        return data;
+    }
+    
+    document.getElementById('reviseBtn').addEventListener('click', async () => {
+    const critique = document.getElementById('critique').value.trim();
+    if (!critique) return alert('Vul eerst je kritiek in.');
+    if (!productJson) return alert('Genereer eerst een productomschrijving.');
+
+    try {
+        const revised = await postRevise(productJson, critique);
+        productJson = revised; // voor volgende revisie
+
+        // Vervang de hoofdweergave door de gereviseerde omschrijving
+        resultDiv.innerHTML = renderStructured(revised);
+
+        // Optioneel: ruwe JSON debug
+        //document.getElementById('revisedJson').textContent = JSON.stringify(revised, null, 2);
+
+    } catch (err) {
+        alert(err.message);
+    }
+    });
+    </script>
+</body>
+</html>
+
