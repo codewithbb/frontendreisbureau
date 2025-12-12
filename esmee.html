@@ -1,13 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
   <title>Mysterytrip Test</title>
-  <!-- Algemene stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
 
-  <!-- Script to load the shared navigation bar -->
-  <script src="nav_script.js" defer></script>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <!-- Algemene stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Script to load the shared navigation bar -->
+    <script src="nav_script.js" defer></script>
+
+       <!-- Azure Speech SDK -->
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
 </head>
 <body>
 
@@ -60,6 +80,9 @@
   </div>
 
   <script>
+
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+    //const API_BASE_URL = "http://127.0.0.1:5001";
     const form = document.getElementById('tripForm');
     const resultDiv = document.getElementById('result');
     const spinner = document.getElementById('spinner');
@@ -76,7 +99,7 @@
       spinner.style.display = 'block';
 
       try {
-        const res = await fetch("http://127.0.0.1:5001/esmee", {
+        const res = await fetch(`${API_BASE_URL}/esmee`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -85,21 +108,30 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || res.statusText);
 
-        resultDiv.innerHTML = `
-          <div class="card">
-            <p><strong>Hey ${data.klantnaam}, Jouw ideale ${data.type_reis} is bepaald!</strong></p>
-            <p>De bestemming is nog een verrassing...</p>
-            <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
-            <h2>Paklijst</h2>
-            <pre>${data.paklijst}</pre>
+      resultDiv.innerHTML = `
+        <div class="card">
+          <p>
+            <strong>
+              Hey <span id="klantnaamText">${data.klantnaam}</span>,
+              Jouw ideale <span id="type_reisText">${data.type_reis}</span> is bepaald!
+            </strong>
+          </p>
+          <p>De bestemming is nog een verrassing...</p>
+          <p>Om het vertrek goed te laten verlopen, hier alvast de paklijst!</p>
 
-            <button id="showMotivatieBtn" style="margin-top:10px;">Lees waarom deze trip perfect bij jou past!</button>
-            <p id="motivatieText" style="display:none; margin-top:10px; font-style:italic;">
-              ${data.motivatie}
-            </p>
-          </div>
-        `;
+          <h2>Paklijst</h2>
+          <pre id="paklijstText">${data.paklijst}</pre>
 
+          <button id="showMotivatieBtn" style="margin-top:10px;">Lees waarom deze trip perfect bij jou past!</button>
+          <p id="motivatieText" style="display:none; margin-top:10px; font-style:italic;">
+            ${data.motivatie}
+          </p>
+
+          <button id="leesVoorBtn" style="margin-top:10px;">Lees alles voor</button>
+        </div>
+      `;
+
+        
         const btn = document.getElementById("showMotivatieBtn");
         const motivatieText = document.getElementById("motivatieText");
         btn.addEventListener("click", () => {
@@ -113,4 +145,66 @@
       }
     });
   </script>
+
+  <script>
+    async function getSpeechToken() {
+      const res = await fetch(`${API_BASE_URL}/esmee/speech-token2`);
+      if (!res.ok) throw new Error("Kan speech token niet ophalen");
+      return res.json(); // { token, region }
+    }
+
+    function buildSpeechText() {
+      const motivatie = document.getElementById("motivatieText")?.innerText || "";
+      const paklijst = document.getElementById("paklijstText")?.innerText || "";
+      const klantnaam = document.getElementById("klantnaamText")?.innerText || "";
+      const type_reis= document.getElementById("type_reisText")?.innerText || "";
+      return `Hey ${klantnaam}, Jouw ideale ${type_reis} is bepaald! De bestemming is nog een verrassing. Om het vertrek goed te laten verlopen, hier alvast de paklijst: : ${paklijst}`;
+    }
+
+    async function leesVoorAzure() {
+      if (!window.SpeechSDK) {
+        alert("SpeechSDK niet geladen!");
+        return;
+      }
+
+      const tekst = buildSpeechText();
+      if (!tekst.trim()) {
+        alert("Geen tekst om voor te lezen.");
+        return;
+      }
+
+      try {
+        const { token, region } = await getSpeechToken();
+        const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+        speechConfig.speechSynthesisLanguage = "nl-NL";
+        speechConfig.speechSynthesisVoiceName = "nl-NL-ColetteNeural"; // Mooie NL-stem
+
+        const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+        synthesizer.speakTextAsync(
+          tekst,
+          result => {
+            console.log("Voorlezen voltooid:", result);
+            synthesizer.close();
+          },
+          err => {
+            console.error("Fout bij voorlezen:", err);
+            synthesizer.close();
+          }
+        );
+      } catch (err) {
+        console.error("Fout:", err);
+        alert("Er ging iets mis bij het ophalen van token of spraak.");
+      }
+    }
+
+    // Event listener voor de knop
+    document.addEventListener("click", e => {
+      if (e.target && e.target.id === "leesVoorBtn") {
+        leesVoorAzure();
+      }
+    });
+  </script>
 </body>
+</html>
