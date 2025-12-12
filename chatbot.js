@@ -47,7 +47,7 @@ function createStreamingMessage(sender) {
     div.innerHTML = `<strong>${sender}:</strong><br><div class="streaming-text"></div>`;
     chatWindow.appendChild(div);
     chatWindow.scrollTop = chatWindow.scrollHeight;
-    return div.querySelector(".streaming-text");
+    return div;
 }
 
 function appendFinalMarkdown(messageElement, fullText) {
@@ -83,7 +83,8 @@ async function sendMessage() {
         }
 
         // Create streaming message container
-        const msgElem = createStreamingMessage("Chatbot");
+        const msgDiv = createStreamingMessage("Chatbot");
+        const msgElem = msgDiv.querySelector(".streaming-text");
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
@@ -109,6 +110,10 @@ async function sendMessage() {
         appendFinalMarkdown(msgElem, fullText);
         statusText.textContent = "";
 
+        if (msgDiv) {
+            await checkPendingBookingAndRenderButton(msgDiv);
+        }
+
     } catch (err) {
         console.error(err);
         appendBotMessage("(Netwerkfout)");
@@ -126,6 +131,7 @@ function appendUserMessage(text) {
     div.innerHTML = `<strong>Jij:</strong><br><div>${text}</div>`;
     chatWindow.appendChild(div);
     chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
 }
 
 function appendBotMessage(text) {
@@ -134,8 +140,69 @@ function appendBotMessage(text) {
     div.innerHTML = `<strong>Chatbot:</strong><br><div>${marked.parse(text)}</div>`;
     chatWindow.appendChild(div);
     chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
 }
 
+async function checkPendingBookingAndRenderButton(parentDiv) {
+    try {
+        console.log("Checking for pending booking...");
+        const resp = await fetch(`${API_BASE}/chatbot/pending_booking`, {
+            method: "GET",
+            credentials: "include"
+        });
+        console.log("Pending booking response:", resp);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        console.log("Pending booking data received:", data);
+        if (!data.pending) return;
+        console.log("Pending booking data:", data);
+        const { flight_id, travel_date } = data;
+
+        // Create a small container under the chatbot message
+        const box = document.createElement("div");
+        box.style.marginTop = "6px";
+        box.style.fontSize = "0.9rem";
+
+        const info = document.createElement("span");
+        info.textContent = `De chatbot stelt voor vlucht ${flight_id} op ${travel_date || "(datum uit schema)"} te boeken. `;
+
+        const btn = document.createElement("button");
+        btn.textContent = "Boek deze vlucht";
+        btn.style.marginLeft = "6px";
+
+        btn.addEventListener("click", async () => {
+            btn.disabled = true;
+            btn.textContent = "Bezig met boeken...";
+
+            try {
+                const resp2 = await fetch(`${API_BASE}/chatbot/book_trip`, {
+                    method: "POST",
+                    credentials: "include"
+                });
+                const data2 = await resp2.json();
+
+                if (!resp2.ok || !data2.success) {
+                    appendBotMessage("Er ging iets mis bij het boeken van de vlucht.");
+                } else {
+                    appendBotMessage("Je vlucht is succesvol geboekt! 🎉");
+                }
+            } catch (err) {
+                console.error(err);
+                appendBotMessage("Er trad een netwerkfout op tijdens het boeken.");
+            } finally {
+                btn.disabled = true;
+                btn.textContent = "Geboekt";
+            }
+        });
+
+        box.appendChild(info);
+        box.appendChild(btn);
+
+        parentDiv.appendChild(box);
+    } catch (err) {
+        console.error("Error checking pending booking:", err);
+    }
+}
 
 // ===============================
 // 5) Speech-to-text
