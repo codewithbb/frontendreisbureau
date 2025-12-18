@@ -179,6 +179,22 @@ button:hover {
     background-color: #f0f0f0;
 }
 
+/* Bigger mic button */
+.chatbot-mic-btn{
+    flex: 0;
+    min-width: 180px;
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+/* Listening state (red) */
+.chatbot-mic-btn.listening{
+    background: #b00020 !important;
+    color: #fff !important;
+    transform: none; /* avoid the hover "jump" while recording */
+}
+
 /* Extra algemene styling */
 a {
     color: #3fa9f5;
