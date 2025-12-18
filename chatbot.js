@@ -208,51 +208,103 @@ async function checkPendingBookingAndRenderButton(parentDiv) {
 // 5) Speech-to-text
 // ===============================
 async function startSpeech() {
-    statusText.textContent = "";
-    micBtn.disabled = true;
+    // If somehow already running, don’t start again
+    if (speechRecognizer) return;
+
+    setMicUI(true);
 
     try {
+        // Fetch Azure token + region
         const tokenResp = await fetch(`${API_BASE_CB}/julian/speech-token`, {
             method: "GET",
             credentials: "include"
         });
 
-        const { token, region } = await tokenResp.json();
-        if (!token) {
+        if (!tokenResp.ok) {
+            const txt = await tokenResp.text();
+            console.error("Token error:", tokenResp.status, txt);
             statusText.textContent = "Kan geen spraak-token ophalen.";
-            micBtn.disabled = false;
+            setMicUI(false);
+            return;
+        }
+
+        const { token, region } = await tokenResp.json();
+        if (!token || !region) {
+            statusText.textContent = "Ongeldig speech-token antwoord.";
+            setMicUI(false);
             return;
         }
 
         const SpeechSDK = window.SpeechSDK;
+        if (!SpeechSDK) {
+            statusText.textContent = "Speech SDK niet geladen.";
+            setMicUI(false);
+            return;
+        }
+
         const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
         speechConfig.speechRecognitionLanguage = langSelect.value;
 
         const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
         speechRecognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
-        statusText.textContent = "Luisteren...";
+        // One-shot recognition
+        speechRecognizer.recognizeOnceAsync(
+            (result) => {
+                try {
+                    if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+                        const text = result.text || "";
+                        userMsgBox.value += (userMsgBox.value ? " " : "") + text;
+                        statusText.textContent = `Herkenning: ${text}`;
+                    } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
+                        statusText.textContent = "Geen spraak herkend.";
+                    } else {
+                        statusText.textContent = "Spraakherkenning gestopt.";
+                    }
+                } finally {
+                    // Cleanup + reset UI
+                    try { speechRecognizer.close(); } catch (e) {}
+                    speechRecognizer = null;
+                    setMicUI(false);
+                }
+            },
+            (err) => {
+                console.error("Speech recognition error:", err);
+                statusText.textContent = "Fout bij spraakherkenning.";
 
-        speechRecognizer.recognizeOnceAsync(result => {
-            if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                const text = result.text || "";
-                userMsgBox.value += (userMsgBox.value ? " " : "") + text;
-                statusText.textContent = "Herkenning: " + text;
-            } else {
-                statusText.textContent = "Geen spraak herkend.";
+                if (speechRecognizer) {
+                    try { speechRecognizer.close(); } catch (e) {}
+                    speechRecognizer = null;
+                }
+                setMicUI(false);
             }
-
-            speechRecognizer.close();
-            speechRecognizer = null;
-            micBtn.disabled = false;
-        });
+        );
 
     } catch (err) {
-        console.error(err);
-        statusText.textContent = "Fout bij spraakherkenning.";
+        console.error("Speech setup error:", err);
+        statusText.textContent = "Fout bij starten van spraakherkenning.";
+        if (speechRecognizer) {
+            try { speechRecognizer.close(); } catch (e) {}
+            speechRecognizer = null;
+        }
+        setMicUI(false);
+    }
+}
+
+
+function setMicUI(listening) {
+    if (listening) {
+        micBtn.classList.add("listening");
+        micBtn.textContent = "Aan het luisteren...";
+        statusText.textContent = "Aan het luisteren...";
+        micBtn.disabled = true; // prevents double-starts
+    } else {
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "🎤 Spreek";
         micBtn.disabled = false;
     }
 }
+
 
 
 // ===============================
