@@ -1,206 +1,377 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>CV Tool</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>CV Tool</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="nav-placeholder"></div>
-<script src="nav_script.js"></script>
-<h1>CV Tool</h1>
+  <div id="nav-placeholder"></div>
+  <script src="nav_script.js" defer></script>
 
-<div class="container">
-Laad hier je CV voor een analyse.<br><br>
+  <h1>CV Tool</h1>
 
+  <div class="container">
+    <h2>1) Upload CV</h2>
+    <p>Laad hier je CV voor opslag en analyse.</p>
 
-<input type="file" id="cvFile" accept="application/pdf" />
-<br><br>
-<button id="uploadBtn">Upload CV</button>
+    <input type="file" id="cvFile" accept="application/pdf" />
+    <div class="button-container">
+      <button id="uploadBtn">Upload CV</button>
+    </div>
 
-<h3>Response</h3>
-<pre id="responseBox">Nog geen response</pre>
+    <h3>Response</h3>
+    <pre id="uploadResponse">Nog geen response</pre>
+  </div>
 
-</div>
-<br><br>
-<div class="container">
-Maak hier een profiel op basis van een CV en aangevinkte elementen.<br><br>
+  <br />
 
+  <div class="container">
+    <h2>2) Profiel genereren</h2>
 
-<!-- (AS) Dropdown voor CV IDs -->
-<div style="display: flex; align-items: center; gap: 20px;">
-    <label for="available_cvs" style="white-space: nowrap;">Selecteer een CV:</label>
-    <select name="available_cvs" id="available_cvs">
+    <div style="display:flex; align-items:center; gap: 20px;">
+      <label for="available_cvs" style="white-space:nowrap;">Selecteer een CV:</label>
+      <select id="available_cvs">
         <option value="" disabled selected>CV ID</option>
+      </select>
+      <button id="refreshCvsBtn" style="line-height:10px;">Refresh</button>
+    </div>
+
+    <label class="profile-elements-title">Selecteer profiel elementen</label>
+    <div id="profile_elements_container" class="checklist"></div>
+
+    <div class="button-container">
+      <button id="generateProfile">Generate Profile</button>
+    </div>
+
+    <h3>Response</h3>
+    <pre id="profileResponse">Nog geen response</pre>
+  </div>
+
+  <br />
+
+  <div class="container">
+    <h2>3) CV beoordelen met AI</h2>
+    <p class="meta">
+      Let op: de evaluatie is een hulpmiddel. Geen automatische beslissing, geen profiling.
+    </p>
+
+    <label for="eval_cv_id">CV ID</label>
+    <select id="eval_cv_id">
+      <option value="" disabled selected>CV ID</option>
     </select>
 
-    <!-- (AS) Button voor het herladen van bovenstaande dropdown -->
-    <button id="refreshCvsBtn" style="line-height: 10px">Refresh</button>
-</div>
+    <label for="eval_role">Doelfunctie</label>
+    <select id="eval_role">
+      <option value="data_ai_traineeship" selected>Data &amp; AI traineeship</option>
+    </select>
 
-<!-- Create checklist for profile elements -->
-<label class="profile-elements-title">Selecteer profiel elementen</label>
-<div id="profile_elements_container" class="checklist"></div>
+    <label for="eval_notes">Extra context (optioneel)</label>
+    <textarea id="eval_notes" placeholder="Bijv. focus op Python/SQL, klantcontact is belangrijk, etc."></textarea>
 
-<button id="generateProfile" style="line-height: 10px">Generate Profile</button>
-<h3>Response</h3>
-<pre id="responseBox2">Nog geen response</pre>
-</div>
-<script>
-            // Basis URL voor API
-    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
-    // const API_BASE_URL = "http://127.0.0.1:5001/"
+    <div class="button-container">
+      <button id="evaluateBtn">Evaluate CV</button>
+      <button id="evaluateClearBtn" class="secondary">Clear</button>
+    </div>
+
+    <h3>AI Evaluatie</h3>
+    <div id="ai-eval-card" class="result-box" style="display:none;"></div>
+    <pre id="evalResponse">Nog geen evaluatie</pre>
+  </div>
+
+  <script>
+    // ✅ IMPORTANT: no trailing slash
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+    //const API_BASE_URL = "http://127.0.0.1:5001";
+
+    // --- DOM ---
     const uploadBtn = document.getElementById("uploadBtn");
-    const responseBox = document.getElementById("responseBox");
+    const uploadResponse = document.getElementById("uploadResponse");
+
     const refreshCvsBtn = document.getElementById("refreshCvsBtn");
     const dropdownCVs = document.getElementById("available_cvs");
-    const responseBox2 = document.getElementById("responseBox2");
 
+    const profileElementsContainer = document.getElementById("profile_elements_container");
+    const generateProfileBtn = document.getElementById("generateProfile");
+    const profileResponse = document.getElementById("profileResponse");
 
+    const evalCvDropdown = document.getElementById("eval_cv_id");
+    const evalRole = document.getElementById("eval_role");
+    const evalNotes = document.getElementById("eval_notes");
+    const evaluateBtn = document.getElementById("evaluateBtn");
+    const evaluateClearBtn = document.getElementById("evaluateClearBtn");
+    const evalResponse = document.getElementById("evalResponse");
 
+    // --- Helpers ---
+    function setPre(el, objOrText) {
+      el.textContent = (typeof objOrText === "string")
+        ? objOrText
+        : JSON.stringify(objOrText, null, 2);
+    }
+
+    async function fetchJson(url, options = {}) {
+      const resp = await fetch(url, options);
+      const text = await resp.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch { /* keep as null */ }
+
+      if (!resp.ok) {
+        const msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+        throw new Error(msg || `HTTP ${resp.status}`);
+      }
+      return data;
+    }
+
+    function fillCvDropdown(selectEl, ids) {
+      selectEl.innerHTML = '<option value="" disabled selected>CV ID</option>';
+      ids.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.ID;
+        option.textContent = item.ID;
+        selectEl.appendChild(option);
+      });
+    }
+
+    async function loadAvailableCvs() {
+      const ids = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
+      fillCvDropdown(dropdownCVs, ids);
+      fillCvDropdown(evalCvDropdown, ids); // keep both in sync
+    }
+
+    async function loadProfileElementsAsChecklist() {
+      profileElementsContainer.innerHTML = "";
+      const profileElements = await fetchJson(`${API_BASE_URL}/cv/get_profile_elements`);
+
+      if (!Array.isArray(profileElements) || profileElements.length === 0) {
+        profileElementsContainer.innerHTML = "<em>Geen profiel elementen gevonden.</em>";
+        return;
+      }
+
+      profileElements.forEach(pe => {
+        const row = document.createElement("div");
+        row.className = "checklist-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = `profile_element_${pe.ID}`;
+        checkbox.value = pe.element;
+        checkbox.name = "profile_elements";
+
+        const label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.className = "checklist-label";
+        label.textContent = pe.element;
+
+        row.appendChild(checkbox);
+        row.appendChild(label);
+        profileElementsContainer.appendChild(row);
+      });
+    }
+
+    function getSelectedProfileElements() {
+      const checked = Array.from(
+        document.querySelectorAll('#profile_elements_container input[type="checkbox"]:checked')
+      );
+      return checked.map(cb => cb.value);
+    }
+
+    function scoreClass(score) {
+      // score assumed 0-100
+      if (score >= 70) return "high";
+      if (score >= 40) return "mid";
+      return "low";
+    }
+
+    function renderAiEvaluation(result) {
+      const card = document.getElementById("ai-eval-card");
+      if (!card) return;
+
+      if (!result) {
+        card.style.display = "block";
+        card.innerHTML = "<p class='ai-eval-muted'>Geen evaluatie-resultaat ontvangen.</p>";
+        return;
+      }
+
+      const fitScore = Number(result.fit_score ?? 0);
+      const summary = result.fit_summary ?? "";
+      const strengths = Array.isArray(result.strengths) ? result.strengths : [];
+      const gaps = Array.isArray(result.gaps) ? result.gaps : [];
+      const steps = Array.isArray(result.recommended_next_steps) ? result.recommended_next_steps : [];
+
+      const strengthsHtml = strengths.length
+        ? `<ul>${strengths.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+        : `<p class="ai-eval-muted">Geen sterke punten gedetecteerd op basis van de aangeleverde tekst.</p>`;
+
+      const gapsHtml = gaps.length
+        ? `<ul>${gaps.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+        : `<p class="ai-eval-muted">Geen duidelijke hiaten genoemd.</p>`;
+
+      const stepsHtml = steps.length
+        ? `<ul>${steps.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+        : `<p class="ai-eval-muted">Geen vervolgstappen voorgesteld.</p>`;
+
+      card.innerHTML = `
+        <div class="ai-eval-header">
+          <div>
+            <div style="font-weight:700;">Match met Data & AI traineeship</div>
+            <div class="ai-eval-muted">AI is hulpmiddel — geen definitieve beslissing.</div>
+          </div>
+          <div class="ai-eval-score ${scoreClass(fitScore)}">${fitScore}/100</div>
+        </div>
+
+        <div class="ai-eval-section">
+          <h3>Samenvatting</h3>
+          <p>${escapeHtml(summary)}</p>
+        </div>
+
+        <div class="ai-eval-section">
+          <h3>Sterktes</h3>
+          ${strengthsHtml}
+        </div>
+
+        <div class="ai-eval-section">
+          <h3>Hiaten / onzekerheden</h3>
+          ${gapsHtml}
+        </div>
+
+        <div class="ai-eval-section">
+          <h3>Aanbevolen vervolgstappen</h3>
+          ${stepsHtml}
+        </div>
+      `;
+
+      card.style.display = "block";
+    }
+
+    // Basic escaping so CV text / AI text can't inject HTML
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // --- Upload ---
     uploadBtn.addEventListener("click", async () => {
-        const fileInput = document.getElementById("cvFile");
+      const fileInput = document.getElementById("cvFile");
+      if (!fileInput.files.length) {
+        alert("Selecteer eerst een PDF");
+        return;
+      }
 
-        if (!fileInput.files.length) {
-            alert("Selecteer eerst een PDF");
-            return;
-        }
+      setPre(uploadResponse, "Bezig met uploaden...");
 
+      try {
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
 
-        responseBox.textContent = "Bezig met uploaden...";
+        const data = await fetchJson(`${API_BASE_URL}/cv/upload`, {
+          method: "POST",
+          body: formData
+        });
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/cv/upload`, {
-                method: "POST",
-                body: formData
-            });
+        setPre(uploadResponse, data);
 
-            const data = await response.json();
-            responseBox.textContent = JSON.stringify(data, null, 2);
+        // refresh dropdowns after upload
+        await loadAvailableCvs();
 
-        } catch (err) {
-            responseBox.textContent = "Fout: " + err;
-        }
+      } catch (err) {
+        setPre(uploadResponse, "Fout: " + err.message);
+      }
     });
 
-    // Function die CV IDs dropdown laadt
-    async function loadAvailableCvs() {
+    // --- Refresh CV IDs ---
+    refreshCvsBtn.addEventListener("click", async () => {
+      try {
+        await loadAvailableCvs();
+      } catch (err) {
+        alert("Fout bij laden CV IDs: " + err.message);
+      }
+    });
 
-        dropdownCVs.innerHTML = '<option value="" disabled selected>CV ID</option>';
+    // --- Generate Profile ---
+    generateProfileBtn.addEventListener("click", async () => {
+      const selectedCvId = dropdownCVs.value || null;
+      const selectedElements = getSelectedProfileElements();
 
-        fetch(`${API_BASE_URL}/cv/get_available_cvs`)
-        .then(response => response.json())
-        .then(CV_ids => {
-            const dropdown = document.getElementById("available_cvs");
-            CV_ids.forEach(CV_id => {
-                const option = document.createElement("option");
-                option.value = CV_id.ID;
-                option.textContent = CV_id.ID;
-                dropdown.appendChild(option);
-            });
+      if (!selectedCvId) {
+        alert("Selecteer eerst een CV ID.");
+        return;
+      }
+      if (selectedElements.length === 0) {
+        alert("Vink ten minste één profiel element aan.");
+        return;
+      }
+
+      setPre(profileResponse, "Bezig met genereren...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/cv/generate_profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            CV_ID: selectedCvId,
+            selected_elements: selectedElements
+          })
         });
 
-    };
+        setPre(profileResponse, data);
+      } catch (err) {
+        setPre(profileResponse, "Fout: " + err.message);
+      }
+    });
 
-    // (AS) initieel laden bij page load
-    loadAvailableCvs();
+    // --- Evaluate CV ---
+    evaluateBtn.addEventListener("click", async () => {
+      const cvId = evalCvDropdown.value || null;
+      const role = evalRole.value;
+      const notes = (evalNotes.value || "").trim();
 
-    // (AS) Refresh button triggert herladen
-    refreshCvsBtn.addEventListener("click", loadAvailableCvs);
+      if (!cvId) {
+        alert("Selecteer eerst een CV ID om te evalueren.");
+        return;
+      }
 
-    
+      setPre(evalResponse, "Bezig met evalueren...");
 
-    async function loadProfileElementsAsChecklist() {
-        const container = document.getElementById("profile_elements_container");
-        container.innerHTML = ""; // leegmaken bij refresh
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/cv/get_profile_elements`);
-            const profile_elements = await response.json();
-
-            if (!Array.isArray(profile_elements) || profile_elements.length === 0) {
-                container.innerHTML = "<em>Geen profiel elementen gevonden.</em>";
-                return;
-            }
-
-            // RENDER: geen fieldset/legend -> alleen rows
-            profile_elements.forEach(pe => {
-                // Verwachte vorm: { ID: "...", element: "..." }
-                const row = document.createElement("div");
-                row.className = "checklist-item";
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = `profile_element_${pe.ID}`;
-                checkbox.value = pe.element;
-                checkbox.name = "profile_elements";
-
-                const label = document.createElement("label");
-                label.htmlFor = checkbox.id;
-                label.className = "checklist-label";
-                label.textContent = pe.element;
-
-                // Volgorde: checkbox -> tekst op één lijn
-                row.appendChild(checkbox);
-                row.appendChild(label);
-                container.appendChild(row);
-            });
-
-        } catch (err) {
-            container.innerHTML = `<em>Fout bij laden profiel elementen: ${err}</em>`;
-        }
-    }
-
-    function getSelectedProfileElementIds() {
-        const checked = Array.from(
-            document.querySelectorAll('#profile_elements_container input[type="checkbox"]:checked')
-        );
-        return checked.map(cb => cb.value);
-    }
-
-    // Init bij pageload
-    loadProfileElementsAsChecklist();
-
-    // Generate Profile blijft hetzelfde (zoals eerder)
-    const generateBtn = document.getElementById("generateProfile");
-    if (generateBtn) {
-        generateBtn.addEventListener("click", async () => {
-            const cvSelect = document.getElementById("available_cvs");
-            const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
-            const selectedElementIds = getSelectedProfileElementIds();
-
-            if (!selectedCvId) {
-                alert("Selecteer eerst een CV ID.");
-                return;
-            }
-            if (selectedElementIds.length === 0) {
-                alert("Vink ten minste één profiel element aan.");
-                return;
-            }
-
-            try {
-                const resp = await fetch(`${API_BASE_URL}/cv/generate_profile`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        CV_ID: selectedCvId,
-                        selected_elements: selectedElementIds
-                    })
-                });
-                const data = await resp.json();
-                (document.getElementById("responseBox2") || { textContent: "" }).textContent =
-                    "Hier is het profiel: " + JSON.stringify(data, null, 2);
-            } catch (err) {
-                (document.getElementById("responseBox2") || { textContent: "" }).textContent =
-                     err;
-            }
+      try {
+        // Assuming your backend has something like:
+        // POST /cv/evaluate
+        // { "cv_id": "...", "role": "...", "notes": "..." }
+        const data = await fetchJson(`${API_BASE_URL}/cv/evaluate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cv_id: cvId,
+            role: role,
+            notes: notes
+          })
         });
-    }
 
+        const nicedata = renderAiEvaluation(data.result);
+        setPre(evalResponse, nicedata);
 
-</script>
+      } catch (err) {
+        setPre(evalResponse, "Fout: " + err.message);
+      }
+    });
 
+    evaluateClearBtn.addEventListener("click", () => {
+      evalNotes.value = "";
+      setPre(evalResponse, "Nog geen evaluatie");
+    });
+
+    // --- Init ---
+    (async function init() {
+      try {
+        await loadAvailableCvs();
+        await loadProfileElementsAsChecklist();
+      } catch (err) {
+        alert("Init fout: " + err.message);
+      }
+    })();
+  </script>
 </body>
 </html>
