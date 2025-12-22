@@ -44,7 +44,7 @@
       <button id="generateProfile">Generate Profile</button>
       <label for="profile_name">Profile name:</label>
       <input type="text" id="profile_name" name="profile_name" placeholder="Type here...">
-      <button id="saveProfile" style="line-height: 10px">Save Profile</button>
+      <button id="saveProfile">Save Profile</button>
     </div>
 
     <h3>Response</h3>
@@ -72,7 +72,6 @@
 
     <label for="eval_notes">Extra context (optioneel)</label>
     <textarea id="eval_notes" placeholder="Bijv. focus op Python/SQL, klantcontact is belangrijk, etc."></textarea>
-</div>
 
     <div class="button-container">
       <button id="evaluateBtn">Evaluate CV</button>
@@ -88,7 +87,7 @@
   <script>
     // ✅ IMPORTANT: no trailing slash
     const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-    //const API_BASE_URL = "http://127.0.0.1:5001";
+    // const API_BASE_URL = "http://127.0.0.1:5001";
 
     // --- DOM ---
     const uploadBtn = document.getElementById("uploadBtn");
