@@ -2,73 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Julian Travel Dashboard</title>
+    <title>Mijn Reizen</title>
+
+    <!-- Shared styling for the whole site -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Script to load the shared navigation bar -->
+    <script src="nav_script.js" defer></script>
+
+    <!-- Azure Speech SDK -->
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+    <!-- Marked.js for Markdown parsing (bold/italic from ChatGPT output) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Page-specific extra styles (things not covered by style.css) -->
     <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            margin: 0;
-            padding: 1.5rem;
-            background: #f5f5f5;
-        }
-
-        h1, h2 {
-            margin-top: 0;
-        }
-
+        /* Small reusable card container, visually matching .container */
         .card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card label {
+            color: #000000;
         }
 
         .hidden {
             display: none;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        input, select, textarea {
-            padding: 0.4rem 0.5rem;
-            margin-bottom: 0.75rem;
-            width: 100%;
-            max-width: 280px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        button {
-            padding: 0.45rem 0.9rem;
-            border-radius: 4px;
-            border: 1px solid #007bff;
-            background: #007bff;
-            color: #ffffff;
-            cursor: pointer;
-        }
-
-        button.secondary {
-            border-color: #999;
-            background: #eeeeee;
-            color: #333;
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: default;
-        }
-
-        .error {
-            color: #b00020;
-            margin-top: 0.25rem;
         }
 
         .trip, .review {
@@ -84,6 +48,11 @@
         .meta {
             font-size: 0.9rem;
             color: #555;
+        }
+
+        .error {
+            color: #b00020;
+            margin-top: 0.25rem;
         }
 
         /* ==== AI overlay styles ==== */
@@ -103,8 +72,24 @@
         }
 
         #ai-dialog {
-            max-width: 520px;
+            max-width: 900px;
             width: 100%;
+        }
+
+        .ai-layout {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .ai-column {
+            flex: 1 1 0;
+        }
+
+        @media (max-width: 800px) {
+            .ai-layout {
+                flex-direction: column;
+            }
         }
 
         #ai-warning {
@@ -124,10 +109,23 @@
             border-radius: 8px;
             padding: 0.75rem 1rem;
             border: 1px solid #ddd;
-            max-height: 400px;           /* <- limit height */
-            overflow-y: auto;            /* <- scroll if it gets long */
+            max-height: 400px;
+            overflow-y: auto;            /* scroll if long */
             overflow-wrap: break-word;   /* handle long words/URLs */
             box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .stt-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8px;
+        }
+
+        .icon-button {
+            flex: 0 0 auto;
+            width: auto;
+            padding: 6px 10px;
+            font-size: 18px;
         }
 
         #ai-result-container h2,
@@ -144,69 +142,84 @@
             margin: 0.3rem 0 0.3rem 1.2rem;
         }
 
-        #ai-result-container .meta {
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-
         #ai-meta {
             font-size: 0.8rem;
             color: #666;
             margin-top: 0.25rem;
         }
+
+        #ai-speech-status {
+            font-size: 0.85rem;
+            color: #555;
+            min-height: 1.2em;
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* Make the login/app content align with the general site look */
+        .page-inner {
+            max-width: 800px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Julian's Travel Overview</h1>
+    <!-- Shared navigation bar will be injected here from nav.html -->
+    <div id="nav-placeholder"></div>
+        <h1>Mijn Reizen</h1>
+    <div class="container page-inner">
 
-    <!-- LOGIN SECTION (shown when NOT logged in) -->
-    <div id="login-section" class="card">
-        <h2>Log in</h2>
-        <form id="login-form">
-            <label>
-                Username
-                <input type="text" id="username" name="username" required />
-            </label>
-            <label>
-                Password
-                <input type="password" id="password" name="password" required />
-            </label>
-            <button type="submit" id="login-button">Log in</button>
-            <div id="login-error" class="error"></div>
-        </form>
-    </div>
 
-    <!-- APP SECTION (shown when logged in) -->
-    <div id="app-section" class="hidden">
-
-        <div class="card" id="user-info-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap: 0.75rem;">
-                <div>
-                    <h2>Your Trips &amp; Reviews</h2>
-                    <div id="user-info" class="meta"></div>
+        <!-- LOGIN SECTION (shown when NOT logged in) -->
+        <div id="login-section" class="card">
+            <h2>Log in</h2>
+            <form id="login-form">
+                <label>
+                    Gebruikersnaam
+                    <input type="text" id="username" name="username" value="business_bart" required />
+                </label>
+                <label>
+                    Wachtwoord
+                    <input type="password" id="password" name="password" value="TravelBart4!" required />
+                </label>
+                <div class="button-container">
+                    <button type="submit" id="login-button">Log in</button>
                 </div>
-                <div style="display:flex; gap: 0.5rem;">
-                    <!-- NEW: AI Recommendation button -->
-                    <button id="ai-button">AI Recommendation</button>
-                    <button id="refresh-button" class="secondary">Refresh</button>
-                    <button id="logout-button" class="secondary">Log out</button>
-                </div>
-            </div>
+                <div id="login-error" class="error"></div>
+            </form>
         </div>
 
-        <div class="card">
-            <h2>Trips</h2>
-            <div id="trips-container">
-                <p class="meta">No trips loaded yet.</p>
-            </div>
-        </div>
+        <!-- APP SECTION (shown when logged in) -->
+        <div id="app-section" class="hidden">
 
-        <div class="card">
-            <h2>Reviews</h2>
-            <div id="reviews-container">
-                <p class="meta">No reviews loaded yet.</p>
+            <div class="card" id="user-info-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 0.75rem;">
+                    <div>
+                        <h2>Mijn Reizen &amp; Reviews</h2>
+                        <div id="user-info" class="meta"></div>
+                    </div>
+                    <div style="display:flex; gap: 0.5rem;">
+                        <!-- AI Recommendation button -->
+                        <button id="ai-button">AI Aanbeveling</button>
+                        <button id="refresh-button" class="secondary">Herlaad</button>
+                        <button id="logout-button" class="secondary">Log uit</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Reizen</h2>
+                <div id="trips-container">
+                    <p class="meta">Geen reizen geladen.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Reviews</h2>
+                <div id="reviews-container">
+                    <p class="meta">Geen reviews geladen.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -214,61 +227,83 @@
     <!-- ==== AI Recommendation overlay ==== -->
     <div id="ai-overlay" class="hidden">
         <div id="ai-dialog" class="card">
-            <h2>AI Travel Recommendation</h2>
+            <h2>AI Aanbeveling</h2>
             <p id="ai-warning">
-                The information you select below (trips, reviews and optional notes) will be sent
-                to the ChatGPT API to generate a personalised travel suggestion. By clicking
-                “Generate recommendation”, you consent to this data being shared with ChatGPT.
+                De informatie die je hieronder selecteert (reizen, reviews en optionele notities) zal
+                worden verzonden naar de ChatGPT API om een gepersonaliseerde reisaanbeveling te genereren.
+                Door te klikken op "Genereer aanbeveling", geef je toestemming dat deze gegevens worden gedeeld met ChatGPT.
             </p>
 
-            <form id="ai-form">
-                <label>
-                    <input type="checkbox" id="ai-include-trips" checked />
-                    Include my past trips
-                </label>
+            <!-- Two-column layout -->
+            <div class="ai-layout">
+                <!-- LEFT COLUMN: options + form -->
+                <div class="ai-column">
+                    <form id="ai-form">
+                        <label>
+                            <input type="checkbox" id="ai-include-trips" checked />
+                            Geef mijn reizen mee
+                        </label>
 
-                <label>
-                    <input type="checkbox" id="ai-include-reviews" checked />
-                    Include my reviews
-                </label>
+                        <label>
+                            <input type="checkbox" id="ai-include-reviews" checked />
+                            Geef mijn reviews mee
+                        </label>
 
-                <label>
-                    Recommendation preference
-                    <select id="ai-strategy">
-                        <option value="surprise" selected>Surprise me</option>
-                        <option value="far">Go somewhere far away</option>
-                        <option value="new">Go somewhere new</option>
-                        <option value="repeat">Go somewhere I've been before</option>
-                    </select>
-                </label>
+                        <label>
+                            Type reis die ik wil:
+                            <select id="ai-strategy">
+                                <option value="surprise" selected>Verras me! (Geen mening)</option>
+                                <option value="far">Naar een verre bestemming</option>
+                                <option value="new">Naar een plaats waar ik nog niet ben geweest</option>
+                                <option value="repeat">Naar een plaats waar ik wel al ben geweest</option>
+                            </select>
+                        </label>
 
-                <label>
-                    Extra info for the AI (optional)
-                    <textarea id="ai-notes"
-                        placeholder="E.g. I hate very hot weather, I like hiking and city trips, I have 1 week of vacation..."></textarea>
-                </label>
+                        <label>
+                            Extra informatie voor de AI (optioneel)
+                            <textarea id="ai-notes"
+                                placeholder="Bvb. Ik haat hoge temperaturen, ik wil kunnen hiken, ik heb maar 1 dag..."></textarea>
+                        </label>
 
-                <div id="ai-error" class="error"></div>
+                        <label>
+                            Spreek hier uw tekst mee in:
+                            <div class="stt-row">
+                                <select id="ai-stt-language">
+                                    <option value="nl-NL">Dutch (NL)</option>
+                                    <option value="en-US">English (US)</option>                                    
+                                </select>
+                                <!-- small mic icon button to the right -->
+                                <button type="button"
+                                        id="ai-speech-btn"
+                                        class="secondary icon-button"
+                                        title="Speak">
+                                    🎤
+                                </button>
+                            </div>
+                            <span id="ai-speech-status"></span>
+                        </label>
 
-                <div style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem;">
-                    <button type="button" id="ai-cancel" class="secondary">Cancel</button>
-                    <button type="submit" id="ai-submit">Generate recommendation</button>
+                        <div id="ai-error" class="error"></div>
+
+                        <div style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem;">
+                            <button type="button" id="ai-cancel" class="secondary">Annuleer</button>
+                            <button type="submit" id="ai-submit">Genereer aanbeveling</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
 
-            <div id="ai-meta"></div>
-            <div id="ai-result-wrapper" class="hidden">
-                <h3>AI Recommendation</h3>
-                <div id="ai-result-container">
-                    <p class="meta">Your personalised recommendation will appear here.</p>
+                <!-- RIGHT COLUMN: AI result -->
+                <div class="ai-column">
+                    <h3>Uw persoonlijke aanbeveling</h3>
+                    <div id="ai-meta" class="meta"></div>
+                    <div id="ai-result-container">
+                        <p class="meta">Uw aanbeveling zal hier verschijnen.</p>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Marked.js for Markdown parsing (More accurately shows bold/italic text from ChatGPT output.)-->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
         let currentUser = null; // { user_id, username, full_name }
@@ -300,7 +335,46 @@
         const aiResult        = document.getElementById("ai-result-container");
         const aiMeta          = document.getElementById("ai-meta");
 
-        // ==== Login / App logic ====
+        const aiSpeechBtn     = document.getElementById("ai-speech-btn");
+        const aiSpeechStatus  = document.getElementById("ai-speech-status");
+
+        let speechRecognizer = null;  // keep a reference to stop/cancel if needed
+
+        //const API_BASE = "http://127.0.0.1:5001";
+        const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+
+        async function checkSessionAndInit() {
+            try {
+                const resp = await fetch(`${API_BASE}/julian/session`, {
+                    method: "GET",
+                    credentials: "include",   // <-- IMPORTANT so the cookie is sent
+                });
+
+                if (!resp.ok) {
+                    console.error("Session check non-OK:", resp.status, await resp.text());
+                    // Fall back to logged-out state
+                    showLogin();
+                    return;
+                }
+
+                const data = await resp.json();
+                console.log("Session status:", data);
+
+                if (data.logged_in && data.user) {
+                    // We have a valid logged-in user on this session
+                    currentUser = data.user;
+                    showApp();          // show the app section
+                    await loadJulianData();  // or the relevant data loader for that page
+                } else {
+                    // Not logged in
+                    showLogin();
+                }
+            } catch (err) {
+                console.error("Session check error:", err);
+                showLogin();
+            }
+        }
+
         function showLogin() {
             loginSection.classList.remove("hidden");
             appSection.classList.add("hidden");
@@ -309,8 +383,7 @@
             currentUser = null;
             closeAiOverlay();
         }
-        
-        // Show the main app section after login
+
         function showApp() {
             loginSection.classList.add("hidden");
             appSection.classList.remove("hidden");
@@ -325,18 +398,6 @@
             closeAiOverlay();
         }
 
-        // Simple HTML escaping to avoid injecting raw model text as HTML
-        function escapeHtml(str) {
-            if (!str) return "";
-            return str
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // Handle login form submission
         async function handleLogin(event) {
             event.preventDefault();
             loginError.textContent = "";
@@ -352,7 +413,7 @@
             loginButton.disabled = true;
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian/login", {
+                const resp = await fetch(`${API_BASE}/julian/login`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -402,13 +463,12 @@
             }
         }
 
-        // Load trips and reviews from /julian
         async function loadJulianData() {
             tripsContainer.innerHTML = "<p class='meta'>Loading trips...</p>";
             reviewsContainer.innerHTML = "<p class='meta'>Loading reviews...</p>";
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian", {
+                const resp = await fetch(`${API_BASE}/julian`, {
                     method: "GET",
                     credentials: "include"
                 });
@@ -449,7 +509,6 @@
             }
         }
 
-        // Render trips into the trips container
         function renderTrips(trips) {
             if (!trips.length) {
                 tripsContainer.innerHTML = "<p class='meta'>You have no recorded trips yet.</p>";
@@ -478,7 +537,6 @@
             tripsContainer.innerHTML = parts.join("");
         }
 
-        // Render reviews into the reviews container
         function renderReviews(reviews) {
             if (!reviews.length) {
                 reviewsContainer.innerHTML = "<p class='meta'>You have not written any reviews yet.</p>";
@@ -508,10 +566,9 @@
             reviewsContainer.innerHTML = parts.join("");
         }
 
-        // Handle logout
         async function handleLogout() {
             try {
-                await fetch("http://127.0.0.1:5001/julian/logout", {
+                await fetch(`${API_BASE}/julian/logout`, {
                     method: "POST",
                     credentials: "include"
                 });
@@ -545,27 +602,27 @@
             aiSubmit.disabled = true;
             aiSubmit.textContent = "Generating...";
 
-                const rawPref = aiStrategy.value; // "surprise" | "far" | "new" | "repeat"
-                let distancePreference = null;
-                if (rawPref === "far") {
-                    distancePreference = "far";
-                } else if (rawPref === "new") {
-                    distancePreference = "new";
-                } else if (rawPref === "repeat") {
-                    distancePreference = "been_before";
-                } else {
-                    distancePreference = null; // "surprise me" => no constraint
-                }
+            const rawPref = aiStrategy.value; // "surprise" | "far" | "new" | "repeat"
+            let distancePreference = null;
+            if (rawPref === "far") {
+                distancePreference = "far";
+            } else if (rawPref === "new") {
+                distancePreference = "new";
+            } else if (rawPref === "repeat") {
+                distancePreference = "been_before";
+            } else {
+                distancePreference = null; // "surprise me" => no constraint
+            }
 
             const payload = {
                 include_trips:   aiIncludeTrips.checked,
                 include_reviews: aiIncludeReviews.checked,
-                distance_preference:      aiStrategy.value,
+                distance_preference: distancePreference,
                 extra_notes:      aiNotes.value || ""
             };
 
             try {
-                const resp = await fetch("http://127.0.0.1:5001/julian/ai_recommendation", {
+                const resp = await fetch(`${API_BASE}/julian/ai_recommendation`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -607,9 +664,9 @@
                 const aiResultWrapper = document.getElementById("ai-result-wrapper");
                 const aiResultContainer = document.getElementById("ai-result-container");
 
+                // Use marked to render markdown from ChatGPT
                 let html = marked.parse(rec);
                 aiResultContainer.innerHTML = html;
-                aiResultWrapper.classList.remove("hidden");
 
                 aiMeta.textContent = metaPieces.length
                     ? `Based on ${metaPieces.join(", ")}.`
@@ -624,6 +681,87 @@
             }
         }
 
+        function getSelectedSpeechLanguage() {
+            const dropdown = document.getElementById("ai-stt-language");
+            return dropdown.value || "en-US";
+        }
+
+        async function startSpeechToText() {
+            aiSpeechStatus.textContent = "";
+            aiSpeechBtn.disabled = true;
+
+            try {
+                const tokenResp = await fetch(`${API_BASE}/julian/speech-token`, {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (!tokenResp.ok) {
+                    const text = await tokenResp.text();
+                    console.error("Speech token error:", tokenResp.status, text);
+                    aiSpeechStatus.textContent = "Failed to start speech recognition.";
+                    return;
+                }
+
+                const { token, region } = await tokenResp.json();
+                if (!token || !region) {
+                    aiSpeechStatus.textContent = "Invalid speech token response.";
+                    return;
+                }
+
+                const SpeechSDK = window.SpeechSDK;
+                if (!SpeechSDK) {
+                    aiSpeechStatus.textContent = "Speech SDK not loaded.";
+                    return;
+                }
+
+                const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+                speechConfig.speechRecognitionLanguage = getSelectedSpeechLanguage();
+
+                const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+                speechRecognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+                aiSpeechStatus.textContent = "Listening... (please speak)";
+
+                speechRecognizer.recognizeOnceAsync(
+                    (result) => {
+                        if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+                            const text = result.text || "";
+                            if (text) {
+                                if (aiNotes.value && !aiNotes.value.endsWith(" ")) {
+                                    aiNotes.value += " ";
+                                }
+                                aiNotes.value += text;
+                            }
+                            aiSpeechStatus.textContent = "Recognised: " + text;
+                        } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
+                            aiSpeechStatus.textContent = "No speech recognised.";
+                        } else {
+                            aiSpeechStatus.textContent = "Speech recognition ended.";
+                        }
+
+                        speechRecognizer.close();
+                        speechRecognizer = null;
+                        aiSpeechBtn.disabled = false;
+                    },
+                    (err) => {
+                        console.error("Speech recognition error:", err);
+                        aiSpeechStatus.textContent = "Error during speech recognition.";
+                        if (speechRecognizer) {
+                            speechRecognizer.close();
+                            speechRecognizer = null;
+                        }
+                        aiSpeechBtn.disabled = false;
+                    }
+                );
+
+            } catch (err) {
+                console.error("Speech setup error:", err);
+                aiSpeechStatus.textContent = "Could not start speech recognition.";
+                aiSpeechBtn.disabled = false;
+            }
+        }
+
         // Event listeners
         loginForm.addEventListener("submit", handleLogin);
         refreshButton.addEventListener("click", loadJulianData);
@@ -633,8 +771,12 @@
         aiCancel.addEventListener("click", closeAiOverlay);
         aiForm.addEventListener("submit", handleAiSubmit);
 
+        aiSpeechBtn.addEventListener("click", startSpeechToText);
+
         // Start in logged-out state
-        showLogin();
+        document.addEventListener("DOMContentLoaded", () => {
+            checkSessionAndInit();
+        });
     </script>
 </body>
 </html>

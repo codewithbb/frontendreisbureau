@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vlucht Boeken</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Navigation -->
+    <script src="nav_script.js" defer></script>
+
+    <!-- Session helper -->
+    <script src="session.js" defer></script>
+
+    <style>
+        /* Extra styling to match page */
+        #booking-section.hidden,
+        #must-login.hidden {
+            display: none;
+        }
+
+        #result-message {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="nav-placeholder"></div>
+
+    <h1>Boek hier je vlucht!</h1>
+
+    <!-- MESSAGE WHEN NOT LOGGED IN -->
+    <div id="must-login" class="container hidden">
+        <p>Je moet ingelogd zijn om een vlucht te boeken.</p>
+        <p>Ga naar de <a href="julian.html">loginpagina</a> om verder te gaan.</p>
+    </div>
+
+    <!-- MAIN BOOKING SECTION -->
+    <div id="booking-section" class="container hidden">
+
+        <label for="fly_from">Vertrek van:</label>
+        <select name="fly_from" id="fly_from" onchange="createDropdownFlyTo()">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
+
+        <label for="fly_to">Aankomst op:</label>
+        <select name="fly_to" id="fly_to" onchange="createDropDownDepartureDate()">
+            <option value="" disabled selected>Selecteer luchthaven</option>
+        </select>
+
+        <label for="departure_date">Vertrekdatum:</label>
+        <select name="departure_date" id="departure_date">
+            <option value="" disabled selected>Selecteer vertrekdatum</option>
+        </select>
+
+        <label for="email">E-mailadres voor bevestiging:</label>
+        <input type="email" id="email" name="email" placeholder="jouw@email.com" required>
+
+        <label for="extra_info">(Optioneel): Wat ga je doen op vakantie?</label>
+        <input type="text" id="extra_info" name="extra_info" placeholder="Typ hier wat je gaat doen...">
+
+        <button id="boek-btn" type="button" style="margin-top:20px;">Boek Vlucht</button>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div> Bezig met boeken...
+        </div>
+
+        <style>
+        #loading {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #2c3e50;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ddd;
+            border-top-color: #2c3e50;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .hidden { display: none !important; }
+        </style>
+
+
+        <div id="result-message" class="hidden"></div>
+
+        <img id="genImg" hidden>
+    </div>
+
+
+<script>
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+    // const API_BASE_URL = "http://127.0.0.1:5001";
+
+    let currentUser = null;
+
+    // === Prompt genereren ===
+    function buildImagePrompt(destinationName, extraInfo) {
+        const plaats = (destinationName || "").trim();
+        const activiteit = (extraInfo || "").trim();
+
+        if (!plaats) return null;
+
+        if (activiteit) {
+            return `Fotorealistische afbeelding van een vakantie in ${plaats}, waar iemand ${activiteit} doet. Realistische stijl, zonder tekst.`;
+        }
+
+        return `Fotorealistische afbeelding van een vakantie in ${plaats}. Realistische stijl, zonder tekst.`;
+
+    }
+
+    // === Afbeelding genereren via backend ===
+    async function generateImageForBooking(destinationName, extraInfo) {
+        const prompt = buildImagePrompt(destinationName, extraInfo);
+        const imgEl = document.getElementById("genImg");
+
+        if (!prompt) return;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/images/generate`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || data.error) {
+                throw new Error(data.error || "Fout bij genereren van afbeelding");
+            }
+        
+            // (BB) Afbeelding blijft onzichtbaar op de website, maar url wordt wel bewaard
+            imgEl.src = data.image_url;
+
+
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
+    }
+
+
+    // --- 1. Run login check ON PAGE LOAD ---
+    document.addEventListener("DOMContentLoaded", async () => {
+        const {loggedIn, user} = await getCurrentSession();
+
+        if (loggedIn) {
+            currentUser = user;
+            showBookingPage();
+            loadDepartureAirports();
+        } else {
+            showMustLogin();
+        }
+    });
+
+    function showBookingPage() {
+        document.getElementById("booking-section").classList.remove("hidden");
+        document.getElementById("must-login").classList.add("hidden");
+    }
+
+    function showMustLogin() {
+        document.getElementById("booking-section").classList.add("hidden");
+        document.getElementById("must-login").classList.remove("hidden");
+    }
+
+    // --- 2. Load airports ---
+
+    function loadDepartureAirports() {
+        fetch(`${API_BASE_URL}/vlucht_boeken/departureFrom`)
+        .then(response => response.json())
+        .then(airports => {
+            const dropdown = document.getElementById("fly_from");
+            airports.forEach(airport => {
+                const option = document.createElement("option");
+                option.value = airport.airportID;
+                option.textContent = airport.airportName;
+                dropdown.appendChild(option);
+            });
+        });
+    }
+
+    function createDropdownFlyTo() {
+        const selectedValue = document.getElementById("fly_from").value;
+        const dropdown = document.getElementById("fly_to");
+
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer luchthaven</option>';
+
+        fetch(`${API_BASE_URL}/vlucht_boeken/arrivalAt`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fly_from: selectedValue })
+        })
+        .then(response => response.json())
+        .then(airports => {
+            airports.forEach(airport => {
+                const option = document.createElement("option");
+                option.value = airport.airportID;
+                option.textContent = airport.airportName;
+                dropdown.appendChild(option);
+            });
+        });
+    }
+
+    function createDropDownDepartureDate() {
+        const fly_from = document.getElementById("fly_from").value;
+        const fly_to   = document.getElementById("fly_to").value;
+
+        const dropdown = document.getElementById("departure_date");
+        dropdown.innerHTML = '<option value="" disabled selected>Selecteer datum</option>';
+
+        fetch(`${API_BASE_URL}/vlucht_boeken/departureDate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fly_from, fly_to })
+        })
+        .then(response => response.json())
+        .then(dates => {
+            dates.forEach(date => {
+                const option = document.createElement("option");
+                option.value = date.departure_date;
+                option.textContent = date.departure_date;
+                dropdown.appendChild(option);
+            });
+        });
+    }
+
+    // --- 3. BOOKING BUTTON ---
+    document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("boek-btn").addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        const loading = document.getElementById("loading");
+        const result = document.getElementById("result-message");
+
+        loading.classList.remove("hidden");
+        result.classList.add("hidden");
+
+        const flyFrom = document.getElementById("fly_from").value;
+        const flyTo = document.getElementById("fly_to").value;
+        const date = document.getElementById("departure_date").value;
+        const extraInfo = document.getElementById("extra_info").value;
+        const email = document.getElementById("email").value;
+
+        const fromName = document.getElementById("fly_from").selectedOptions[0].text;
+        const toName = document.getElementById("fly_to").selectedOptions[0].text;
+
+        if (!flyFrom || !flyTo || !date || !email) {
+            result.textContent = "Vul alle velden in.";
+            result.classList.remove("hidden");
+            loading.classList.add("hidden");
+            return;
+        }
+
+        try {
+            // === BOEK VLUCHT IN DATABASE ===
+            const bookRes = await fetch(`${API_BASE_URL}/vlucht_boeken/boeken`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    fly_from: flyFrom,
+                    fly_to: flyTo,
+                    travel_date: date
+                })
+            });
+
+            const bookData = await bookRes.json();
+
+            if (!bookData.success) {
+                throw new Error(bookData.error || "Boeken mislukt");
+            }
+
+            // === AFBEELDING GENEREREN ===
+            await generateImageForBooking(toName, extraInfo);
+            const imageUrl = document.getElementById("genImg").src;
+
+            // === BEVESTIGINGSMAIL ===
+            const mailRes = await fetch(`${API_BASE_URL}/vlucht_boeken/send_email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: email,
+                    from_name: fromName,
+                    to_name: toName,
+                    date: date,
+                    image_url: imageUrl
+                })
+            });
+
+            const mailData = await mailRes.json();
+
+            result.textContent =
+                mailData.success
+                    ? "Vlucht succesvol geboekt! Bevestigingsmail verzonden."
+                    : "Vlucht geboekt, maar mail kon niet worden verzonden.";
+
+            result.classList.remove("hidden");
+
+        } catch (err) {
+            console.error(err);
+            result.textContent = err.message || "Er ging iets mis.";
+            result.classList.remove("hidden");
+        } finally {
+            loading.classList.add("hidden");
+        }
+    });
+});
+
+
+</script>
+</body>
+</html>
