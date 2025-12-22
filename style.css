@@ -179,6 +179,22 @@ button:hover {
     background-color: #f0f0f0;
 }
 
+/* Bigger mic button */
+.chatbot-mic-btn{
+    flex: 0;
+    min-width: 180px;
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+/* Listening state (red) */
+.chatbot-mic-btn.listening{
+    background: #b00020 !important;
+    color: #fff !important;
+    transform: none; /* avoid the hover "jump" while recording */
+}
+
 /* Extra algemene styling */
 a {
     color: #3fa9f5;
@@ -345,4 +361,47 @@ tr:hover td {
 /* (BB) Hover effect */
 .dropdown:hover .dropdown-menu {
     display: block;
+}
+
+/* AI evaluation card */
+.ai-eval-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ai-eval-score {
+  font-size: 22px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #3fa9f5;
+  color: #fff;
+  min-width: 90px;
+  text-align: center;
+}
+
+.ai-eval-score.low { background: #d9534f; }     /* red */
+.ai-eval-score.mid { background: #f0ad4e; }     /* orange */
+.ai-eval-score.high { background: #5cb85c; }    /* green */
+
+.ai-eval-section {
+  margin-top: 12px;
+}
+
+.ai-eval-section h3 {
+  text-align: left; /* override your center headers just inside the card */
+  margin: 12px 0 6px 0;
+  color: #06141c;
+}
+
+.ai-eval-section ul {
+  margin: 6px 0 0 20px;
+}
+
+.ai-eval-muted {
+  color: #555;
+  font-size: 0.95rem;
 }
