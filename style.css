@@ -1,6 +1,195 @@
 /* Algemene body-styling */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f4f7f9;
+    margin: 0;
+    padding: 20px;
+    color: #06141c;
+    line-height: 1.6;
+}
+
+/* Titel styling */
+h1, h2, h3 {
+    text-align: center;
+    color: #3fa9f5;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Container */
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 15px;
+    color: #06141c;
+}
+
+/* Form elementen */
+select,
+input[type="date"],
+input[type="time"],
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    background-color: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+    border-color: #3fa9f5;
+    box-shadow: 0 0 5px rgba(63,169,245,0.3);
+    outline: none;
+}
+
+/* Flex-rij voor meerdere velden naast elkaar */
+.flex-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.flex-row .field {
+    flex: 1;
+}
+
+/* Knoppencontainer */
+.button-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+/* Knop styling */
+button {
+    flex: 1;
+    padding: 14px;
+    background: #3fa9f5;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background: #3692d3;
+    transform: translateY(-2px);
+}
+
+/* Info-icoon en tooltip */
+.info-container {
+    position: relative;
+    display: inline-block;
+}
+
+.info-icon {
+    width: 24px;
+    height: 24px;
+    background: #3fa9f5;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 400px;
+    background-color: #06141c;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+.info-container:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip a {
+    color: #40acfa;
+    text-decoration: underline;
+}
+
+/* Resultaat / feedback container */
+.result-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #ecf0f1;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Suggestiebox styling */
+#airline_suggestions {
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 5px;
+}
+
+#airline_suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+#airline_suggestions div:hover {
+    background-color: #f0f0f0;
+}
+
+/* Extra algemene styling */
+a {
+    color: #3fa9f5;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
     background-color: #000000;
     margin: 0;
     padding: 20px;
