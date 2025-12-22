@@ -42,10 +42,14 @@
 
     <div class="button-container">
       <button id="generateProfile">Generate Profile</button>
+      <label for="profile_name">Profile name:</label>
+      <input type="text" id="profile_name" name="profile_name" placeholder="Type here...">
+      <button id="saveProfile" style="line-height: 10px">Save Profile</button>
     </div>
 
     <h3>Response</h3>
     <pre id="profileResponse">Nog geen response</pre>
+
   </div>
 
   <br />
@@ -68,6 +72,7 @@
 
     <label for="eval_notes">Extra context (optioneel)</label>
     <textarea id="eval_notes" placeholder="Bijv. focus op Python/SQL, klantcontact is belangrijk, etc."></textarea>
+</div>
 
     <div class="button-container">
       <button id="evaluateBtn">Evaluate CV</button>
@@ -78,6 +83,7 @@
     <div id="ai-eval-card" class="result-box" style="display:none;"></div>
     <pre id="evalResponse">Nog geen evaluatie</pre>
   </div>
+
 
   <script>
     // ✅ IMPORTANT: no trailing slash
@@ -91,9 +97,11 @@
     const refreshCvsBtn = document.getElementById("refreshCvsBtn");
     const dropdownCVs = document.getElementById("available_cvs");
 
+
     const profileElementsContainer = document.getElementById("profile_elements_container");
-    const generateProfileBtn = document.getElementById("generateProfile");
-    const profileResponse = document.getElementById("profileResponse");
+    const generateProfileBtn = document.getElementById("generateProfile"); //generateBtn
+    const profileResponse = document.getElementById("profileResponse"); //responsebox2
+    const saveBtn = document.getElementById("saveProfile");
 
     const evalCvDropdown = document.getElementById("eval_cv_id");
     const evalRole = document.getElementById("eval_role");
@@ -127,7 +135,7 @@
       ids.forEach(item => {
         const option = document.createElement("option");
         option.value = item.ID;
-        option.textContent = item.ID;
+        option.textContent = `${item.ID}-${item.FileName}`;
         selectEl.appendChild(option);
       });
     }
@@ -362,6 +370,134 @@
       evalNotes.value = "";
       setPre(evalResponse, "Nog geen evaluatie");
     });
+
+
+    async function loadProfileElementsAsChecklist() {
+        const container = document.getElementById("profile_elements_container");
+        container.innerHTML = ""; // leegmaken bij refresh
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/cv/get_profile_elements`);
+            const profile_elements = await response.json();
+
+            if (!Array.isArray(profile_elements) || profile_elements.length === 0) {
+                container.innerHTML = "<em>Geen profiel elementen gevonden.</em>";
+                return;
+            }
+
+            // RENDER: geen fieldset/legend -> alleen rows
+            profile_elements.forEach(pe => {
+                // Verwachte vorm: { ID: "...", element: "..." }
+                const row = document.createElement("div");
+                row.className = "checklist-item";
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.id = `profile_element_${pe.ID}`;
+                checkbox.value = pe.element;
+                checkbox.name = "profile_elements";
+
+                const label = document.createElement("label");
+                label.htmlFor = checkbox.id;
+                label.className = "checklist-label";
+                label.textContent = pe.element;
+
+                // Volgorde: checkbox -> tekst op één lijn
+                row.appendChild(checkbox);
+                row.appendChild(label);
+                container.appendChild(row);
+            });
+
+        } catch (err) {
+            container.innerHTML = `<em>Fout bij laden profiel elementen: ${err}</em>`;
+        }
+    }
+
+    function getSelectedProfileElementIds() {
+        const checked = Array.from(
+            document.querySelectorAll('#profile_elements_container input[type="checkbox"]:checked')
+        );
+        return checked.map(cb => cb.value);
+    }
+
+    // Init bij pageload
+    loadProfileElementsAsChecklist();
+
+    // Generate Profile blijft hetzelfde (zoals eerder)
+    generateProfileBtn.addEventListener("click", async () => {
+        const cvSelect = document.getElementById("available_cvs");
+        const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
+        const selectedElementIds = getSelectedProfileElementIds();
+
+        if (!selectedCvId) {
+            alert("Selecteer eerst een CV.");
+            return;
+        }
+        if (selectedElementIds.length === 0) {
+            alert("Vink ten minste één profiel element aan.");
+            return;
+        }
+
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/cv/generate_profile`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    CV_ID: selectedCvId,
+                    selected_elements: selectedElementIds
+                })
+            });
+            const data = await resp.json();
+            (document.getElementById("profileResponse") || { textContent: "" }).textContent =
+                "Hier is het profiel: " + JSON.stringify(data, null, 2);
+        } catch (err) {
+            (document.getElementById("profileResponse") || { textContent: "" }).textContent =
+                    err;
+        }
+    });
+    
+
+
+     saveBtn.addEventListener("click", async () => {
+        const cvSelect = document.getElementById("available_cvs");
+        const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
+        const selectedElementIds = getSelectedProfileElementIds();
+        const profile_name = document.getElementById("profile_name");
+
+        // check if we have have selected criteria for a profile 
+         if (!selectedCvId) {
+                alert("Selecteer eerst een CV.");
+                return;
+            }
+        if (selectedElementIds.length === 0) {
+            alert("Vink ten minste één profiel element aan.");
+            return;
+            }
+        if (!profile_name.value.trim()) {
+            alert("Geef aub een naam voor het profiel");
+            return;
+        }
+
+        // save this profile into our DB
+        try {
+            const resp = await fetch(`${API_BASE_URL}/cv/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    CV_ID: selectedCvId,
+                    selected_elements: selectedElementIds,
+                    profile_name: profile_name.value.trim()
+                })
+            });
+            const data = await resp.json();
+            (document.getElementById("profileResponse") || { textContent: "" }).textContent =
+            "Het profiel is opgeslagen, met ID: " + data.output;
+        } catch (err){
+            console.error("Error saving profile", err)
+        }
+    });
+
 
     // --- Init ---
     (async function init() {
