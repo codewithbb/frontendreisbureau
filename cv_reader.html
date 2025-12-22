@@ -43,19 +43,26 @@ Maak hier een profiel op basis van een CV en aangevinkte elementen.<br><br>
 <div id="profile_elements_container" class="checklist"></div>
 
 <button id="generateProfile" style="line-height: 10px">Generate Profile</button>
+
+<label for="profile_name">Profile name:</label>
+<input type="text" id="profile_name" name="profile_name" placeholder="Type here...">
+<button id="saveProfile" style="line-height: 10px">Save Profile</button>
+
+
 <h3>Response</h3>
 <pre id="responseBox2">Nog geen response</pre>
 </div>
 <script>
     // Basis URL voor API
-    // const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-    const API_BASE_URL = "http://127.0.0.1:5001"
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+    // const API_BASE_URL = "http://127.0.0.1:5001"
     const uploadBtn = document.getElementById("uploadBtn");
     const responseBox = document.getElementById("responseBox");
     const refreshCvsBtn = document.getElementById("refreshCvsBtn");
     const dropdownCVs = document.getElementById("available_cvs");
     const responseBox2 = document.getElementById("responseBox2");
-
+    const generateBtn = document.getElementById("generateProfile");
+    const saveBtn = document.getElementById("saveProfile");
 
 
     uploadBtn.addEventListener("click", async () => {
@@ -92,17 +99,16 @@ Maak hier een profiel op basis van een CV en aangevinkte elementen.<br><br>
 
         fetch(`${API_BASE_URL}/cv/get_available_cvs`)
         .then(response => response.json())
-        .then(CV_ids => {
-            const dropdown = document.getElementById("available_cvs");
-            CV_ids.forEach(CV_id => {
-                const option = document.createElement("option");
-                option.value = CV_id.ID;
-                option.textContent = CV_id.ID;
-                dropdown.appendChild(option);
+        .then(cvs => {
+            cvs.forEach(cv => {
+            const option = document.createElement("option");
+            option.value = cv.ID;            // like airport.airportID
+            option.textContent = `${cv.ID} - ${cv.FileName}`;
+            dropdownCVs.appendChild(option);
             });
-        });
-
-    };
+        })
+        .catch(error => console.error("Error fetching CVs:", error)
+    )};
 
     // (AS) initieel laden bij page load
     loadAvailableCvs();
@@ -164,40 +170,80 @@ Maak hier een profiel op basis van een CV en aangevinkte elementen.<br><br>
     loadProfileElementsAsChecklist();
 
     // Generate Profile blijft hetzelfde (zoals eerder)
-    const generateBtn = document.getElementById("generateProfile");
-    if (generateBtn) {
-        generateBtn.addEventListener("click", async () => {
-            const cvSelect = document.getElementById("available_cvs");
-            const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
-            const selectedElementIds = getSelectedProfileElementIds();
+    generateBtn.addEventListener("click", async () => {
+        const cvSelect = document.getElementById("available_cvs");
+        const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
+        const selectedElementIds = getSelectedProfileElementIds();
 
-            if (!selectedCvId) {
-                alert("Selecteer eerst een CV ID.");
+        if (!selectedCvId) {
+            alert("Selecteer eerst een CV.");
+            return;
+        }
+        if (selectedElementIds.length === 0) {
+            alert("Vink ten minste één profiel element aan.");
+            return;
+        }
+
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/cv/generate_profile`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    CV_ID: selectedCvId,
+                    selected_elements: selectedElementIds
+                })
+            });
+            const data = await resp.json();
+            (document.getElementById("responseBox2") || { textContent: "" }).textContent =
+                "Hier is het profiel: " + JSON.stringify(data, null, 2);
+        } catch (err) {
+            (document.getElementById("responseBox2") || { textContent: "" }).textContent =
+                    err;
+        }
+    });
+    
+
+
+     saveBtn.addEventListener("click", async () => {
+        const cvSelect = document.getElementById("available_cvs");
+        const selectedCvId = cvSelect && cvSelect.value ? cvSelect.value : null;
+        const selectedElementIds = getSelectedProfileElementIds();
+        const profile_name = document.getElementById("profile_name");
+
+        // check if we have have selected criteria for a profile 
+         if (!selectedCvId) {
+                alert("Selecteer eerst een CV.");
                 return;
             }
-            if (selectedElementIds.length === 0) {
-                alert("Vink ten minste één profiel element aan.");
-                return;
+        if (selectedElementIds.length === 0) {
+            alert("Vink ten minste één profiel element aan.");
+            return;
             }
+        if (!profile_name.value.trim()) {
+            alert("Geef aub een naam voor het profiel");
+            return;
+        }
 
-            try {
-                const resp = await fetch(`${API_BASE_URL}/cv/generate_profile`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        CV_ID: selectedCvId,
-                        selected_elements: selectedElementIds
-                    })
-                });
-                const data = await resp.json();
-                (document.getElementById("responseBox2") || { textContent: "" }).textContent =
-                    "Hier is het profiel: " + JSON.stringify(data, null, 2);
-            } catch (err) {
-                (document.getElementById("responseBox2") || { textContent: "" }).textContent =
-                     err;
-            }
-        });
-    }
+        // save this profile into our DB
+        try {
+            const resp = await fetch(`${API_BASE_URL}/cv/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    CV_ID: selectedCvId,
+                    selected_elements: selectedElementIds,
+                    profile_name: profile_name.value.trim()
+                })
+            });
+            const data = await resp.json();
+            (document.getElementById("responseBox2") || { textContent: "" }).textContent =
+            "Het profiel is opgeslagen, met ID: " + data.output;
+        } catch (err){
+            console.error("Error saving profile", err)
+        }
+    });
+
 
 
 </script>
