@@ -116,33 +116,90 @@
 
   <br />
 
-<div class="container">
-  <h2>4) Vacature beoordelen met AI</h2>
-  <p>Selecteer een vacature uit de database en laat AI feedback geven op de vacature zelf.</p>
+  <div class="container">
+    <h2>4) Vacature beoordelen met AI</h2>
+    <p>Selecteer een vacature uit de database en laat AI feedback geven op de vacature zelf.</p>
 
-  <label for="vac_eval_id">Vacancy</label>
-  <select id="vac_eval_id">
-    <option value="" disabled selected>Vacancy</option>
-  </select>
+    <label for="vac_eval_id">Vacancy</label>
+    <select id="vac_eval_id">
+      <option value="" disabled selected>Vacancy</option>
+    </select>
 
-  <label for="vac_eval_notes">Extra context (optioneel)</label>
-  <textarea id="vac_eval_notes" placeholder="Bijv. interne context: teamgrootte, tooling, must-haves die niet in vacature staan..."></textarea>
+    <label for="vac_eval_notes">Extra context (optioneel)</label>
+    <textarea id="vac_eval_notes" placeholder="Bijv. interne context: teamgrootte, tooling, must-haves die niet in vacature staan..."></textarea>
 
-  <div class="button-container">
-    <button id="vac_eval_btn">Evaluate Vacancy</button>
+    <div class="button-container">
+      <button id="vac_eval_btn">Evaluate Vacancy</button>
+    </div>
+
+    <div id="vac-eval-card" style="display:none;"></div>
+
+    <h3>Response</h3>
+    <pre id="vac_eval_response">Nog geen response</pre>
   </div>
 
-  <div id="vac-eval-card" style="display:none;"></div>
+  <br />
 
-  <h3>Response</h3>
-  <pre id="vac_eval_response">Nog geen response</pre>
-</div>
+  <div class="container">
+    <h2>5) Viewer + Notities</h2>
+
+    <label for="viewer_type">Type</label>
+    <select id="viewer_type">
+      <option value="cv" selected>CV</option>
+      <option value="vacancy">Vacancy</option>
+    </select>
+
+    <label for="viewer_id">Selecteer item</label>
+    <select id="viewer_id">
+      <option value="" disabled selected>Kies eerst type</option>
+    </select>
+
+    <h3>Details</h3>
+    <pre id="viewer_details">Nog niets geselecteerd.</pre>
+
+    <label for="viewer_notes">Notities</label>
+    <textarea id="viewer_notes" placeholder="Voeg hier notities toe..."></textarea>
+
+    <div class="button-container">
+      <button id="viewer_save_notes">Notities opslaan</button>
+    </div>
+
+    <pre id="viewer_save_response">Nog geen response</pre>
+  </div>
+
+  <br />
+
+  <div class="container">
+    <h2>6) Matching op kernwoorden</h2>
+
+    <h3>Match CVs voor een Vacancy</h3>
+    <label for="match_vacancy_id">Vacancy</label>
+    <select id="match_vacancy_id">
+      <option value="" disabled selected>Vacancy</option>
+    </select>
+    <div class="button-container">
+      <button id="match_vacancy_btn">Match CVs</button>
+    </div>
+    <pre id="match_vacancy_results">Nog geen resultaten.</pre>
+
+    <hr />
+
+    <h3>Match Vacancies voor een CV</h3>
+    <label for="match_cv_id">CV</label>
+    <select id="match_cv_id">
+      <option value="" disabled selected>CV</option>
+    </select>
+    <div class="button-container">
+      <button id="match_cv_btn">Match Vacancies</button>
+    </div>
+    <pre id="match_cv_results">Nog geen resultaten.</pre>
+  </div>
 
 
   <script>
     // ✅ IMPORTANT: no trailing slash
-    //const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-     const API_BASE_URL = "http://127.0.0.1:5001";
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+    //const API_BASE_URL = "http://127.0.0.1:5001";
 
     // --- DOM ---
     const uploadBtn = document.getElementById("uploadBtn");
@@ -173,6 +230,24 @@
     const vacEvalNotes = document.getElementById("vac_eval_notes");
     const vacEvalBtn = document.getElementById("vac_eval_btn");
     const vacEvalResponse = document.getElementById("vac_eval_response");
+
+    // Viewer + notes
+    const viewerType = document.getElementById("viewer_type");
+    const viewerId = document.getElementById("viewer_id");
+    const viewerDetails = document.getElementById("viewer_details");
+    const viewerNotes = document.getElementById("viewer_notes");
+    const viewerSaveBtn = document.getElementById("viewer_save_notes");
+    const viewerSaveResponse = document.getElementById("viewer_save_response");
+
+    // Matching
+    const matchVacancyDropdown = document.getElementById("match_vacancy_id");
+    const matchVacancyBtn = document.getElementById("match_vacancy_btn");
+    const matchVacancyResults = document.getElementById("match_vacancy_results");
+
+    const matchCvDropdown = document.getElementById("match_cv_id");
+    const matchCvBtn = document.getElementById("match_cv_btn");
+    const matchCvResults = document.getElementById("match_cv_results");
+
 
     // --- Helpers ---
     function setPre(el, objOrText) {
@@ -205,9 +280,17 @@
     }
 
     async function loadAvailableCvs() {
-      const ids = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
-      fillCvDropdown(dropdownCVs, ids);
-      fillCvDropdown(evalCvDropdown, ids); // keep both in sync
+      const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
+
+      // Existing dropdowns you already fill:
+      fillCvDropdown(matchCvDropdown, cvs);        // profile section
+      fillCvDropdown(evalCvDropdown, cvs);    // evaluate CV section
+
+      // New dropdowns:
+      fillGenericDropdown(matchCvDropdown, cvs, "CV");
+      if (viewerType.value === "cv") {
+        fillGenericDropdown(viewerId, cvs, "CV");
+      }
     }
 
     function fillVacancyDropdown(selectEl, vacancies) {
@@ -223,8 +306,34 @@
 
     async function loadAvailableVacancies() {
       const vacancies = await fetchJson(`${API_BASE_URL}/vacancy/get_available_vacancies`);
-      fillVacancyDropdown(evalVacancyDropdown, vacancies);
-      fillVacancyDropdown(vacEvalDropdown, vacancies);
+
+      // Existing dropdowns you already fill:
+      fillVacancyDropdown(evalVacancyDropdown, vacancies); // evaluate CV section
+      fillVacancyDropdown(vacEvalDropdown, vacancies);     // evaluate vacancy section
+
+      // New dropdowns:
+      fillVacancyDropdown(matchVacancyDropdown, vacancies);
+
+      if (viewerType.value === "vacancy") {
+        fillGenericDropdown(viewerId, vacancies, "Vacancy");
+      }
+    }
+
+    function fillGenericDropdown(selectEl, items, placeholder) {
+      selectEl.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+      items.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.ID;
+
+        // CV list currently returns {ID, FileName} but your UI previously only used ID.
+        // Vacancy list returns {ID, DisplayName}.
+        const label = item.DisplayName
+          ? `${item.ID} — ${item.DisplayName}`
+          : (item.FileName ? `${item.ID} — ${item.FileName}` : String(item.ID));
+
+        option.textContent = label;
+        selectEl.appendChild(option);
+      });
     }
 
 
@@ -611,6 +720,143 @@
         }
     }
 
+    async function refreshViewerDropdown() {
+      if (viewerType.value === "cv") {
+        const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
+        fillGenericDropdown(viewerId, cvs, "CV");
+      } else {
+        const vacancies = await fetchJson(`${API_BASE_URL}/vacancy/get_available_vacancies`);
+        fillGenericDropdown(viewerId, vacancies, "Vacancy");
+      }
+      setPre(viewerDetails, "Selecteer een item.");
+      viewerNotes.value = "";
+    }
+
+    viewerType.addEventListener("change", async () => {
+      try {
+        await refreshViewerDropdown();
+      } catch (err) {
+        setPre(viewerDetails, "Fout: " + err.message);
+      }
+    });
+
+    viewerId.addEventListener("change", async () => {
+      const id = viewerId.value;
+      if (!id) return;
+
+      try {
+        if (viewerType.value === "cv") {
+          const data = await fetchJson(`${API_BASE_URL}/cv/get_meta?id=${encodeURIComponent(id)}`);
+          if (!data.success) throw new Error(data.error || "CV meta error");
+          setPre(viewerDetails, data.result);
+          viewerNotes.value = data.result.Notities || "";
+        } else {
+          const data = await fetchJson(`${API_BASE_URL}/vacancy/get_meta?id=${encodeURIComponent(id)}`);
+          if (!data.success) throw new Error(data.error || "Vacancy meta error");
+          setPre(viewerDetails, data.result);
+          viewerNotes.value = data.result.Notities || "";
+        }
+      } catch (err) {
+        setPre(viewerDetails, "Fout: " + err.message);
+      }
+    });
+
+    viewerSaveBtn.addEventListener("click", async () => {
+      const id = viewerId.value;
+      if (!id) {
+        alert("Selecteer eerst een item.");
+        return;
+      }
+
+      const notities = viewerNotes.value || "";
+
+      setPre(viewerSaveResponse, "Opslaan...");
+
+      try {
+        if (viewerType.value === "cv") {
+          const resp = await fetchJson(`${API_BASE_URL}/cv/update_notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cv_id: id, notities })
+          });
+          if (!resp.success) throw new Error(resp.error || "Save failed");
+        } else {
+          const resp = await fetchJson(`${API_BASE_URL}/vacancy/update_notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vacancy_id: id, notities })
+          });
+          if (!resp.success) throw new Error(resp.error || "Save failed");
+        }
+
+        setPre(viewerSaveResponse, "Opgeslagen ✅");
+
+        // Reload meta so the viewer reflects DB
+        viewerId.dispatchEvent(new Event("change"));
+      } catch (err) {
+        setPre(viewerSaveResponse, "Fout: " + err.message);
+      }
+    });
+
+    function renderMatchResults(title, payload) {
+      if (!payload || !payload.success) return "Geen resultaten.";
+
+      const lines = [];
+      lines.push(title);
+      lines.push("");
+
+      const results = payload.results || [];
+      if (!results.length) {
+        lines.push("(geen matches gevonden)");
+        return lines.join("\n");
+      }
+
+      results.forEach((r, idx) => {
+        const scorePct = Math.round((r.score || 0) * 100);
+        const overlap = Array.isArray(r.overlap) ? r.overlap.join(", ") : "";
+        lines.push(`${idx + 1}. ${r.display} — ${scorePct}% match`);
+        if (overlap) lines.push(`   overlap: ${overlap}`);
+      });
+
+      return lines.join("\n");
+    }
+
+    matchVacancyBtn.addEventListener("click", async () => {
+      const vacancyId = matchVacancyDropdown.value;
+      if (!vacancyId) {
+        alert("Selecteer eerst een Vacancy.");
+        return;
+      }
+
+      setPre(matchVacancyResults, "Matching...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/match/cvs_for_vacancy?vacancy_id=${encodeURIComponent(vacancyId)}&limit=20`);
+        setPre(matchVacancyResults, renderMatchResults("CV matches", data));
+      } catch (err) {
+        setPre(matchVacancyResults, "Fout: " + err.message);
+      }
+    });
+
+    matchCvBtn.addEventListener("click", async () => {
+      const cvId = matchCvDropdown.value;
+      if (!cvId) {
+        alert("Selecteer eerst een CV.");
+        return;
+      }
+
+      setPre(matchCvResults, "Matching...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/match/vacancies_for_cv?cv_id=${encodeURIComponent(cvId)}&limit=20`);
+        setPre(matchCvResults, renderMatchResults("Vacancy matches", data));
+      } catch (err) {
+        setPre(matchCvResults, "Fout: " + err.message);
+      }
+    });
+
+
+
     function getSelectedProfileElementIds() {
         const checked = Array.from(
             document.querySelectorAll('#profile_elements_container input[type="checkbox"]:checked')
@@ -703,6 +949,8 @@
         await loadAvailableCvs();
         await loadAvailableVacancies();
         await loadProfileElementsAsChecklist();
+
+        await refreshViewerDropdown();
       } catch (err) {
         alert("Init fout: " + err.message);
       }
