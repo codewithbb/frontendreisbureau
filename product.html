@@ -255,6 +255,9 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
     if (!critique) return alert('Vul eerst je kritiek in.');
     if (!productJson) return alert('Genereer eerst een productomschrijving.');
 
+    resultDiv.innerHTML = `<div class="card">Bezig met genereren...</div>`;
+    spinner.style.display = 'block';
+
     try {
         const revised = await postRevise(productJson, critique);
         productJson = revised; // voor volgende revisie

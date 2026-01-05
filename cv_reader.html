@@ -27,6 +27,31 @@
   <br />
 
   <div class="container">
+    <h2>1B) Upload Vacancy</h2>
+    <p>Upload een vacature (PDF/DOCX/TXT) of plak tekst.</p>
+
+    <label for="vacTitle">Titel (optioneel)</label>
+    <input type="text" id="vacTitle" placeholder="Bijv. Data Engineer (Junior)" />
+
+    <input type="file" id="vacFile" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+    <div class="button-container">
+      <button id="uploadVacBtn">Upload Vacancy File</button>
+    </div>
+
+    <label for="vacText">Of plak vacaturetekst</label>
+    <textarea id="vacText" placeholder="Plak hier een vacature..."></textarea>
+    <div class="button-container">
+      <button id="uploadVacTextBtn">Upload Vacancy Text</button>
+    </div>
+
+    <h3>Response</h3>
+    <pre id="vacUploadResponse">Nog geen response</pre>
+  </div>
+
+
+  <br />
+
+  <div class="container">
     <h2>2) Profiel genereren</h2>
 
     <div style="display:flex; align-items:center; gap: 20px;">
@@ -65,10 +90,16 @@
       <option value="" disabled selected>CV ID</option>
     </select>
 
-    <label for="eval_role">Doelfunctie</label>
+    <label for="eval_vacancy_id">Vacancy</label>
+    <select id="eval_vacancy_id">
+      <option value="" disabled selected>Vacancy</option>
+    </select>
+
+
+    <!-- <label for="eval_role">Doelfunctie</label>
     <select id="eval_role">
       <option value="data_ai_traineeship" selected>Data &amp; AI traineeship</option>
-    </select>
+    </select> -->
 
     <label for="eval_notes">Extra context (optioneel)</label>
     <textarea id="eval_notes" placeholder="Bijv. focus op Python/SQL, klantcontact is belangrijk, etc."></textarea>
@@ -83,15 +114,99 @@
     <pre id="evalResponse">Nog geen evaluatie</pre>
   </div>
 
-  
+  <br />
+
+  <div class="container">
+    <h2>4) Vacature beoordelen met AI</h2>
+    <p>Selecteer een vacature uit de database en laat AI feedback geven op de vacature zelf.</p>
+
+    <label for="vac_eval_id">Vacancy</label>
+    <select id="vac_eval_id">
+      <option value="" disabled selected>Vacancy</option>
+    </select>
+
+    <label for="vac_eval_notes">Extra context (optioneel)</label>
+    <textarea id="vac_eval_notes" placeholder="Bijv. interne context: teamgrootte, tooling, must-haves die niet in vacature staan..."></textarea>
+
+    <div class="button-container">
+      <button id="vac_eval_btn">Evaluate Vacancy</button>
+    </div>
+
+    <div id="vac-eval-card" style="display:none;"></div>
+
+    <h3>Response</h3>
+    <pre id="vac_eval_response">Nog geen response</pre>
+  </div>
+
+  <br />
+
+  <div class="container">
+    <h2>5) Viewer + Notities</h2>
+
+    <label for="viewer_type">Type</label>
+    <select id="viewer_type">
+      <option value="cv" selected>CV</option>
+      <option value="vacancy">Vacancy</option>
+    </select>
+
+    <label for="viewer_id">Selecteer item</label>
+    <select id="viewer_id">
+      <option value="" disabled selected>Kies eerst type</option>
+    </select>
+
+    <h3>Details</h3>
+    <pre id="viewer_details">Nog niets geselecteerd.</pre>
+
+    <label for="viewer_notes">Notities</label>
+    <textarea id="viewer_notes" placeholder="Voeg hier notities toe..."></textarea>
+
+    <div class="button-container">
+      <button id="viewer_save_notes">Notities opslaan</button>
+    </div>
+
+    <pre id="viewer_save_response">Nog geen response</pre>
+  </div>
+
+  <br />
+
+  <div class="container">
+    <h2>6) Matching op kernwoorden</h2>
+
+    <h3>Match CVs voor een Vacancy</h3>
+    <label for="match_vacancy_id">Vacancy</label>
+    <select id="match_vacancy_id">
+      <option value="" disabled selected>Vacancy</option>
+    </select>
+    <div class="button-container">
+      <button id="match_vacancy_btn">Match CVs</button>
+    </div>
+    <pre id="match_vacancy_results">Nog geen resultaten.</pre>
+
+    <hr />
+
+    <h3>Match Vacancies voor een CV</h3>
+    <label for="match_cv_id">CV</label>
+    <select id="match_cv_id">
+      <option value="" disabled selected>CV</option>
+    </select>
+    <div class="button-container">
+      <button id="match_cv_btn">Match Vacancies</button>
+    </div>
+    <pre id="match_cv_results">Nog geen resultaten.</pre>
+  </div>
+
   <script>
     // ✅ IMPORTANT: no trailing slash
     const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-    // const API_BASE_URL = "http://127.0.0.1:5001";
+    //const API_BASE_URL = "http://127.0.0.1:5001";
 
     // --- DOM ---
     const uploadBtn = document.getElementById("uploadBtn");
     const uploadResponse = document.getElementById("uploadResponse");
+
+    const uploadVacBtn = document.getElementById("uploadVacBtn");
+    const uploadVacTextBtn = document.getElementById("uploadVacTextBtn");
+    const vacUploadResponse = document.getElementById("vacUploadResponse");
 
     const refreshCvsBtn = document.getElementById("refreshCvsBtn");
     const dropdownCVs = document.getElementById("available_cvs");
@@ -102,11 +217,35 @@
     const saveBtn = document.getElementById("saveProfile");
 
     const evalCvDropdown = document.getElementById("eval_cv_id");
+    const evalVacancyDropdown = document.getElementById("eval_vacancy_id");
     const evalRole = document.getElementById("eval_role");
     const evalNotes = document.getElementById("eval_notes");
     const evaluateBtn = document.getElementById("evaluateBtn");
     const evaluateClearBtn = document.getElementById("evaluateClearBtn");
     const evalResponse = document.getElementById("evalResponse");
+
+    const vacEvalDropdown = document.getElementById("vac_eval_id");
+    const vacEvalNotes = document.getElementById("vac_eval_notes");
+    const vacEvalBtn = document.getElementById("vac_eval_btn");
+    const vacEvalResponse = document.getElementById("vac_eval_response");
+
+    // Viewer + notes
+    const viewerType = document.getElementById("viewer_type");
+    const viewerId = document.getElementById("viewer_id");
+    const viewerDetails = document.getElementById("viewer_details");
+    const viewerNotes = document.getElementById("viewer_notes");
+    const viewerSaveBtn = document.getElementById("viewer_save_notes");
+    const viewerSaveResponse = document.getElementById("viewer_save_response");
+
+    // Matching
+    const matchVacancyDropdown = document.getElementById("match_vacancy_id");
+    const matchVacancyBtn = document.getElementById("match_vacancy_btn");
+    const matchVacancyResults = document.getElementById("match_vacancy_results");
+
+    const matchCvDropdown = document.getElementById("match_cv_id");
+    const matchCvBtn = document.getElementById("match_cv_btn");
+    const matchCvResults = document.getElementById("match_cv_results");
+
 
     // --- Helpers ---
     function setPre(el, objOrText) {
@@ -139,10 +278,62 @@
     }
 
     async function loadAvailableCvs() {
-      const ids = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
-      fillCvDropdown(dropdownCVs, ids);
-      fillCvDropdown(evalCvDropdown, ids); // keep both in sync
+      const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
+
+      // Existing dropdowns you already fill:
+      fillCvDropdown(matchCvDropdown, cvs);        // profile section
+      fillCvDropdown(evalCvDropdown, cvs);    // evaluate CV section
+
+      // New dropdowns:
+      fillGenericDropdown(matchCvDropdown, cvs, "CV");
+      if (viewerType.value === "cv") {
+        fillGenericDropdown(viewerId, cvs, "CV");
+      }
     }
+
+    function fillVacancyDropdown(selectEl, vacancies) {
+      selectEl.innerHTML = '<option value="" disabled selected>Vacancy</option>';
+      vacancies.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.ID;
+        // Phase 2 endpoint returns DisplayName (recommended). If not present, fall back to ID.
+        option.textContent = item.DisplayName ? `${item.ID} — ${item.DisplayName}` : String(item.ID);
+        selectEl.appendChild(option);
+      });
+    }
+
+    async function loadAvailableVacancies() {
+      const vacancies = await fetchJson(`${API_BASE_URL}/vacancy/get_available_vacancies`);
+
+      // Existing dropdowns you already fill:
+      fillVacancyDropdown(evalVacancyDropdown, vacancies); // evaluate CV section
+      fillVacancyDropdown(vacEvalDropdown, vacancies);     // evaluate vacancy section
+
+      // New dropdowns:
+      fillVacancyDropdown(matchVacancyDropdown, vacancies);
+
+      if (viewerType.value === "vacancy") {
+        fillGenericDropdown(viewerId, vacancies, "Vacancy");
+      }
+    }
+
+    function fillGenericDropdown(selectEl, items, placeholder) {
+      selectEl.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+      items.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.ID;
+
+        // CV list currently returns {ID, FileName} but your UI previously only used ID.
+        // Vacancy list returns {ID, DisplayName}.
+        const label = item.DisplayName
+          ? `${item.ID} — ${item.DisplayName}`
+          : (item.FileName ? `${item.ID} — ${item.FileName}` : String(item.ID));
+
+        option.textContent = label;
+        selectEl.appendChild(option);
+      });
+    }
+
 
     async function loadProfileElementsAsChecklist() {
       profileElementsContainer.innerHTML = "";
@@ -219,7 +410,7 @@
       card.innerHTML = `
         <div class="ai-eval-header">
           <div>
-            <div style="font-weight:700;">Match met Data & AI traineeship</div>
+            <div style="font-weight:700;">Match met vacature</div>
             <div class="ai-eval-muted">AI is hulpmiddel — geen definitieve beslissing.</div>
           </div>
           <div class="ai-eval-score ${scoreClass(fitScore)}">${fitScore}/100</div>
@@ -247,6 +438,39 @@
       `;
 
       card.style.display = "block";
+    }
+
+    function renderVacancyEvaluation(result) {
+      if (!result) return "Geen evaluatie-resultaat ontvangen.";
+
+      const lines = [];
+
+      if (result.summary) {
+        lines.push("=== Samenvatting ===");
+        lines.push(result.summary, "");
+      }
+      if (result.role_profile) {
+        lines.push("=== Gewenst profiel ===");
+        lines.push(result.role_profile, "");
+      }
+
+      const listSection = (title, arr) => {
+        lines.push(`=== ${title} ===`);
+        if (Array.isArray(arr) && arr.length) {
+          arr.forEach(x => lines.push("- " + x));
+        } else {
+          lines.push("- (geen)");
+        }
+        lines.push("");
+      };
+
+      listSection("Must-have skills", result.must_have_skills);
+      listSection("Nice-to-have skills", result.nice_to_have_skills);
+      listSection("Traits/competenties om op te screenen", result.traits_to_screen_for);
+      listSection("Interviewvragen", result.interview_questions);
+      listSection("Red flags / onduidelijkheden", result.red_flags_or_ambiguities);
+
+      return lines.join("\n");
     }
 
     // Basic escaping so CV text / AI text can't inject HTML
@@ -285,6 +509,56 @@
 
       } catch (err) {
         setPre(uploadResponse, "Fout: " + err.message);
+      }
+    });
+
+    uploadVacBtn.addEventListener("click", async () => {
+      const title = (document.getElementById("vacTitle").value || "").trim();
+      const fileInput = document.getElementById("vacFile");
+      if (!fileInput.files.length) {
+        alert("Selecteer eerst een vacaturebestand (pdf/docx/txt).");
+        return;
+      }
+
+      setPre(vacUploadResponse, "Bezig met uploaden...");
+
+      try {
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        if (title) formData.append("title", title);
+
+        const data = await fetchJson(`${API_BASE_URL}/vacancy/upload`, {
+          method: "POST",
+          body: formData
+        });
+
+        setPre(vacUploadResponse, data);
+      } catch (err) {
+        setPre(vacUploadResponse, "Fout: " + err.message);
+      }
+    });
+
+    uploadVacTextBtn.addEventListener("click", async () => {
+      const title = (document.getElementById("vacTitle").value || "").trim();
+      const text = (document.getElementById("vacText").value || "").trim();
+
+      if (!text) {
+        alert("Plak eerst vacaturetekst.");
+        return;
+      }
+
+      setPre(vacUploadResponse, "Bezig met uploaden...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/vacancy/upload_text`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, text })
+        });
+
+        setPre(vacUploadResponse, data);
+      } catch (err) {
+        setPre(vacUploadResponse, "Fout: " + err.message);
       }
     });
 
@@ -332,26 +606,27 @@
     // --- Evaluate CV ---
     evaluateBtn.addEventListener("click", async () => {
       const cvId = evalCvDropdown.value || null;
-      const role = evalRole.value;
+      const vacancyId = evalVacancyDropdown.value || null;
       const notes = (evalNotes.value || "").trim();
 
       if (!cvId) {
         alert("Selecteer eerst een CV ID om te evalueren.");
         return;
       }
+      if (!vacancyId) {
+        alert("Selecteer eerst een Vacancy.");
+        return;
+      }
 
-      setPre(evalResponse, "Bezig met evalueren...");
+      setPre(evalResponse, "Bezig met evalueren.");
 
       try {
-        // Assuming your backend has something like:
-        // POST /cv/evaluate
-        // { "cv_id": "...", "role": "...", "notes": "..." }
         const data = await fetchJson(`${API_BASE_URL}/cv/evaluate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             cv_id: cvId,
-            role: role,
+            vacancy_id: vacancyId,
             notes: notes
           })
         });
@@ -369,6 +644,38 @@
       setPre(evalResponse, "Nog geen evaluatie");
     });
 
+    vacEvalBtn.addEventListener("click", async () => {
+      const vacancyId = vacEvalDropdown.value || null;
+      const notes = (vacEvalNotes.value || "").trim();
+
+      if (!vacancyId) {
+        alert("Selecteer eerst een Vacancy.");
+        return;
+      }
+
+      setPre(vacEvalResponse, "Bezig met evalueren...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/vacancy/evaluate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            vacancy_id: vacancyId,
+            notes: notes
+          })
+        });
+
+        if (!data.success) {
+          setPre(vacEvalResponse, data.error || "Onbekende fout");
+          return;
+        }
+
+        const text = renderVacancyEvaluation(data.result);
+        setPre(vacEvalResponse, text);
+      } catch (err) {
+        setPre(vacEvalResponse, "Fout: " + err.message);
+      }
+    });
 
     async function loadProfileElementsAsChecklist() {
         const container = document.getElementById("profile_elements_container");
@@ -411,6 +718,143 @@
         }
     }
 
+    async function refreshViewerDropdown() {
+      if (viewerType.value === "cv") {
+        const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
+        fillGenericDropdown(viewerId, cvs, "CV");
+      } else {
+        const vacancies = await fetchJson(`${API_BASE_URL}/vacancy/get_available_vacancies`);
+        fillGenericDropdown(viewerId, vacancies, "Vacancy");
+      }
+      setPre(viewerDetails, "Selecteer een item.");
+      viewerNotes.value = "";
+    }
+
+    viewerType.addEventListener("change", async () => {
+      try {
+        await refreshViewerDropdown();
+      } catch (err) {
+        setPre(viewerDetails, "Fout: " + err.message);
+      }
+    });
+
+    viewerId.addEventListener("change", async () => {
+      const id = viewerId.value;
+      if (!id) return;
+
+      try {
+        if (viewerType.value === "cv") {
+          const data = await fetchJson(`${API_BASE_URL}/cv/get_meta?id=${encodeURIComponent(id)}`);
+          if (!data.success) throw new Error(data.error || "CV meta error");
+          setPre(viewerDetails, data.result);
+          viewerNotes.value = data.result.Notities || "";
+        } else {
+          const data = await fetchJson(`${API_BASE_URL}/vacancy/get_meta?id=${encodeURIComponent(id)}`);
+          if (!data.success) throw new Error(data.error || "Vacancy meta error");
+          setPre(viewerDetails, data.result);
+          viewerNotes.value = data.result.Notities || "";
+        }
+      } catch (err) {
+        setPre(viewerDetails, "Fout: " + err.message);
+      }
+    });
+
+    viewerSaveBtn.addEventListener("click", async () => {
+      const id = viewerId.value;
+      if (!id) {
+        alert("Selecteer eerst een item.");
+        return;
+      }
+
+      const notities = viewerNotes.value || "";
+
+      setPre(viewerSaveResponse, "Opslaan...");
+
+      try {
+        if (viewerType.value === "cv") {
+          const resp = await fetchJson(`${API_BASE_URL}/cv/update_notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cv_id: id, notities })
+          });
+          if (!resp.success) throw new Error(resp.error || "Save failed");
+        } else {
+          const resp = await fetchJson(`${API_BASE_URL}/vacancy/update_notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vacancy_id: id, notities })
+          });
+          if (!resp.success) throw new Error(resp.error || "Save failed");
+        }
+
+        setPre(viewerSaveResponse, "Opgeslagen ✅");
+
+        // Reload meta so the viewer reflects DB
+        viewerId.dispatchEvent(new Event("change"));
+      } catch (err) {
+        setPre(viewerSaveResponse, "Fout: " + err.message);
+      }
+    });
+
+    function renderMatchResults(title, payload) {
+      if (!payload || !payload.success) return "Geen resultaten.";
+
+      const lines = [];
+      lines.push(title);
+      lines.push("");
+
+      const results = payload.results || [];
+      if (!results.length) {
+        lines.push("(geen matches gevonden)");
+        return lines.join("\n");
+      }
+
+      results.forEach((r, idx) => {
+        const scorePct = Math.round((r.score || 0) * 100);
+        const overlap = Array.isArray(r.overlap) ? r.overlap.join(", ") : "";
+        lines.push(`${idx + 1}. ${r.display} — ${scorePct}% match`);
+        if (overlap) lines.push(`   overlap: ${overlap}`);
+      });
+
+      return lines.join("\n");
+    }
+
+    matchVacancyBtn.addEventListener("click", async () => {
+      const vacancyId = matchVacancyDropdown.value;
+      if (!vacancyId) {
+        alert("Selecteer eerst een Vacancy.");
+        return;
+      }
+
+      setPre(matchVacancyResults, "Matching...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/match/cvs_for_vacancy?vacancy_id=${encodeURIComponent(vacancyId)}&limit=20`);
+        setPre(matchVacancyResults, renderMatchResults("CV matches", data));
+      } catch (err) {
+        setPre(matchVacancyResults, "Fout: " + err.message);
+      }
+    });
+
+    matchCvBtn.addEventListener("click", async () => {
+      const cvId = matchCvDropdown.value;
+      if (!cvId) {
+        alert("Selecteer eerst een CV.");
+        return;
+      }
+
+      setPre(matchCvResults, "Matching...");
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/match/vacancies_for_cv?cv_id=${encodeURIComponent(cvId)}&limit=20`);
+        setPre(matchCvResults, renderMatchResults("Vacancy matches", data));
+      } catch (err) {
+        setPre(matchCvResults, "Fout: " + err.message);
+      }
+    });
+
+
+
     function getSelectedProfileElementIds() {
         const checked = Array.from(
             document.querySelectorAll('#profile_elements_container input[type="checkbox"]:checked')
@@ -419,7 +863,7 @@
     }
 
     // Init bij pageload
-    loadProfileElementsAsChecklist();
+    //loadProfileElementsAsChecklist();
 
     // Generate Profile blijft hetzelfde (zoals eerder)
     generateProfileBtn.addEventListener("click", async () => {
@@ -501,7 +945,10 @@
     (async function init() {
       try {
         await loadAvailableCvs();
+        await loadAvailableVacancies();
         await loadProfileElementsAsChecklist();
+
+        await refreshViewerDropdown();
       } catch (err) {
         alert("Init fout: " + err.message);
       }
