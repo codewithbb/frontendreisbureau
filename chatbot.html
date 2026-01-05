@@ -46,16 +46,20 @@
             <label for="user-message">Je bericht:</label>
             <textarea id="user-message" placeholder="Typ hier je vraag..." style="height:80px;"></textarea>
 
+            <label>Taal voor spraakherkenning:</label>
             <div class="flex-row" style="align-items:center;">
                 <div class="field">
-                    <label>Taal voor spraakherkenning:</label>
+                    
                     <select id="chatbot-lang">
-                        <option value="en-US">Engels (US)</option>
                         <option value="nl-NL">Nederlands (NL)</option>
+                        <option value="en-US">Engels (US)</option>
                     </select>
                 </div>
 
-                <button id="chatbot-mic" style="flex:0; width:50px; padding:10px;">🎤</button>
+                <button id="chatbot-mic" type="button" class="chatbot-mic-btn">
+                    🎤 Spreek
+                </button>
+
             </div>
 
             <div class="button-container">
