@@ -58,16 +58,35 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
         <div id="revisespinner" style="display:none;"><div class="loader"></div></div>
     </div>
         
-    <div style="margin-top:16px;">
-    <label for="versionSelect"><strong>Kies een versie:</strong></label>
-    <select id="versionSelect" style="margin-left:8px;">
+    
+    <div style="margin-top:16px; display:flex; align-items:center; gap:8px;">
+    <label for="versionSelect"><strong>Versie:</strong></label>
+    <select id="versionSelect">
         <option value="">-- Geen selectie --</option>
     </select>
-    </div>
 
-        
-    <button id="downloadJsonBtn" type="button" style="margin-top:8px;">
-    Download geselecteerde versie (JSON)
+  
+    <button
+    id="downloadJsonBtn"
+    type="button"
+    title="Download geselecteerde versie"
+    aria-label="Download geselecteerde versie"
+    style="
+        background:#3fa9f5;      /* primaire knopkleur */
+        color:#fff;              /* bepaalt ook de SVG-kleur via currentColor */
+        border:none;
+        border-radius:6px;
+        padding:6px 8px;
+        height:36px;             /* mooi uitlijnen met je select */
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+    ">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+        fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M.5 9.9V14h15V9.9H13V13H3V9.9H.5zM8 1v8.1l3.5-3.5.7.7L8 11.1 3.8 6.3l.7-.7L8 9.1V1z"/>
+    </svg>
     </button>
 
 
@@ -80,11 +99,11 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
     const form = document.getElementById('csvForm');
     const resultDiv = document.getElementById('result');
     const spinner = document.getElementById('spinner');
-    const API_BASE = "http://127.0.0.1:5001";
-    //const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
+    //const API_BASE = "http://127.0.0.1:5001";
+    const API_BASE = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
 
 
-    let versions = []; // Hier slaan we alle versies op
+    let versions = []; // alle versies opslan
     // Houd de laatst verkregen product-JSON bij (voor revisie)
     let productJson = null;
 
@@ -99,6 +118,7 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
         versionSelect.appendChild(opt);
         });
     }
+
 
 
     document.getElementById('downloadJsonBtn').addEventListener('click', () => {
@@ -124,6 +144,7 @@ product_id, fabrikant_sku,	eigen_sku,  ean , merk
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     });
+
 
 
     // Correcte escaping (enkelvoudig)
