@@ -248,6 +248,37 @@
 
 
     // --- Helpers ---
+    function formatProfileOutput(data) {
+      let html = "";
+      for (const [key, value] of Object.entries(data)) {
+        if (key === "CV_ID") continue;
+
+        // Hoofdsectie (Persoonlijk, Opleiding, etc.) blijft in een <h4> (dikgedrukt)
+        html += `<div style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">`;
+        html += `<h4 style="color: #2c3e50; margin-bottom: 5px;">${key.replace('Json', '')}</h4>`;
+
+       let content = value;
+        if (typeof value === "string" && (value.trim().startsWith("{") || value.trim().startsWith("["))) {
+          try { content = JSON.parse(value); } catch (e) { content = value; }
+       }
+
+       if (typeof content === "object" && content !== null) {
+         html += `<ul style="list-style: none; padding-left: 10px;">`;
+          for (const [subKey, subValue] of Object.entries(content)) {
+           if (subValue) {
+              // AANPASSING: <strong> is hier verwijderd, dus de labels zijn nu normaal
+              html += `<li>${subKey}: ${subValue}</li>`;
+            }
+         }
+          html += `</ul>`;
+        } else {
+          html += `<p>${content || "<em>Geen gegevens beschikbaar</em>"}</p>`;
+        }
+        html += `</div>`;
+     }
+     return html;
+    }
+    
     function setPre(el, objOrText) {
       el.textContent = (typeof objOrText === "string")
         ? objOrText
@@ -954,6 +985,61 @@
         alert("Init fout: " + err.message);
       }
     })();
+
+    // checklist met sub-items (DL)
+    dropdownCVs.addEventListener("change", async () => {
+      const cvId = dropdownCVs.value;
+      if (!cvId) return;
+
+      const container = document.getElementById("profile_elements_container");
+      container.innerHTML = "<em>Laden van velden...</em>";
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/cv/get_meta?id=${cvId}`);
+        const data = await resp.json();
+        const meta = data.result;
+
+        container.innerHTML = ""; // Leegmaken voor nieuwe velden
+
+        // Helper om checkboxes te maken voor JSON velden
+        const addGroup = (title, jsonStr, columnName) => {
+          try {
+            const obj = JSON.parse(jsonStr);
+            if (Object.keys(obj).length > 0) {
+              const groupDiv = document.createElement("div");
+              groupDiv.innerHTML = `<strong style="display:block; margin-top:10px;">${title}</strong>`;
+              container.appendChild(groupDiv);
+
+              for (const key in obj) {
+                const row = document.createElement("div");
+                row.className = "checklist-item";
+                row.innerHTML = `
+                  <input type="checkbox" id="${columnName}_${key}" value="${columnName}.${key}" name="profile_elements">
+                  <label for="${columnName}_${key}" style="font-weight: normal;">${key}</label>
+                `;
+                container.appendChild(row);
+              }
+            }
+          } catch (e) { /* Sla over als geen valide JSON */ }
+       };
+
+       // Voeg de groepen toe
+       addGroup("Persoonlijke Gegevens", meta.PersoonlijkJson, "PersoonlijkJson");
+       addGroup("Opleidingen", meta.OpleidingenJson, "OpleidingenJson");
+       addGroup("Werkervaring", meta.WerkervaringJson, "WerkervaringJson");
+    
+        // Voeg Beschrijving apart toe (is geen JSON)
+        if (meta.Beschrijving) {
+           const row = document.createElement("div");
+           row.className = "checklist-item";
+           row.innerHTML = `<input type="checkbox" id="desc" value="Beschrijving" name="profile_elements"><label for="desc">Beschrijving</label>`;
+            container.appendChild(row);
+        }
+
+      } catch (err) {
+        container.innerHTML = "Fout bij laden velden.";
+      }
+    });    
   </script>
 </body>
 </html>
