@@ -1,0 +1,44 @@
+/* =========================
+   REISBUREAU THEME
+   ========================= */
+
+body.reis{
+  --bg: radial-gradient(1200px 700px at 10% 0%, rgba(56,189,248,.22), transparent 55%),
+         radial-gradient(900px 500px at 90% 20%, rgba(34,197,94,.18), transparent 60%),
+         linear-gradient(180deg, #070b12 0%, #0a1020 55%, #0a0f1b 100%);
+  --panel: rgba(255,255,255,.06);
+  --panel-2: rgba(255,255,255,.10);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.72);
+  --border: rgba(255,255,255,.14);
+
+  --accent: #38bdf8;  /* sky */
+  --accent-2: #22c55e;/* green */
+  --focus: 0 0 0 4px rgba(56, 189, 248, .22);
+}
+
+body.reis .card{
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  border-color: rgba(255,255,255,.14);
+}
+
+body.reis .navbar-brand{
+  font-weight: 900;
+}
+
+body.reis h1{
+  background: linear-gradient(90deg, rgba(56,189,248,1), rgba(34,197,94,1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.reis .btn-primary{
+  background: linear-gradient(135deg, rgba(56,189,248,1), rgba(34,197,94,1));
+}
+
+body.reis input:focus,
+body.reis select:focus,
+body.reis textarea:focus{
+  box-shadow: 0 0 0 4px rgba(56,189,248,.18);
+}

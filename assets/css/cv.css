@@ -1,0 +1,80 @@
+/* =========================
+   CV-TOOL THEME
+   ========================= */
+
+body.cv{
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --panel-2: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: rgba(15, 23, 42, .12);
+
+  --accent: #0f62fe;   /* enterprise blue */
+  --accent-2: #7c3aed; /* purple accent */
+  --focus: 0 0 0 4px rgba(15,98,254,.18);
+}
+
+body.cv .navbar{
+  background: rgba(255,255,255,.82);
+  border-bottom: 1px solid rgba(15,23,42,.10);
+}
+
+body.cv .navbar-menu a{
+  color: #0f172a;
+}
+body.cv .navbar-menu a:hover{
+  background: rgba(15,98,254,.08);
+  border-color: rgba(15,98,254,.16);
+}
+body.cv .navbar-menu a.active{
+  background: rgba(15,98,254,.12);
+  border-color: rgba(15,98,254,.22);
+  color: #0f62fe;
+}
+
+body.cv .card{
+  box-shadow: 0 10px 22px rgba(2, 6, 23, .08);
+}
+
+body.cv p{ color: var(--muted); }
+
+body.cv input, body.cv select, body.cv textarea{
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(15,23,42,.14);
+}
+
+body.cv input::placeholder, body.cv textarea::placeholder{
+  color: rgba(15,23,42,.45);
+}
+
+body.cv h1{
+  color: #0f172a;
+}
+
+body.cv .btn-primary{
+  background: #0f62fe;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(15,98,254,.20);
+}
+body.cv .btn-primary:hover{
+  box-shadow: 0 16px 34px rgba(15,98,254,.26);
+}
+
+/* CV-tool: tables extra clean */
+body.cv table{
+  background: #fff;
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(2,6,23,.06);
+}
+body.cv table th{
+  background: #0f62fe;
+  color: #fff;
+  border-bottom: none;
+}
+body.cv table tr:hover td{
+  background: rgba(15,98,254,.06);
+}

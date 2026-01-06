@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vlucht boeken</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/reis.css" />
+
+  <!-- Session helper (jullie bestaande bestand) -->
+  <script src="/assets/js/session.js" defer></script>
+
+  <style>
+    .split {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1000px) { .split { grid-template-columns: 1fr; } }
+
+    .step {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+    }
+    .step .num{
+      width: 28px; height: 28px;
+      border-radius: 999px;
+      display:flex; align-items:center; justify-content:center;
+      border: 1px solid var(--border);
+      background: rgba(56,189,248,.12);
+      font-weight: 900;
+    }
+
+    .loader {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 5px solid rgba(255,255,255,.18);
+      border-top-color: rgba(56,189,248,.9);
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .summary-kv{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px 12px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+    }
+    @media (max-width: 520px){ .summary-kv{ grid-template-columns: 1fr; } }
+    .summary-kv .k{ color: var(--muted); font-size: 13px; font-weight: 700; }
+    .summary-kv .v{ color: rgba(255,255,255,.92); font-weight: 750; }
+
+    .hidden { display:none !important; }
+  </style>
+</head>
+
+<body class="reis">
+  <div id="nav-placeholder"></div>
+
+  <main class="page">
+    <header class="page-title">
+      <h1>Vlucht boeken</h1>
+      <p>Kies je route en vertrekdatum. We boeken je vlucht en sturen een bevestiging per e-mail.</p>
+    </header>
+
+    <!-- Niet ingelogd -->
+    <section id="must-login" class="card hidden" style="max-width:720px; margin: 0 auto;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Inloggen vereist</h2>
+          <p class="card-subtitle">Je moet ingelogd zijn om een vlucht te boeken.</p>
+        </div>
+      </div>
+      <div class="alert alert-danger" style="margin:0;">
+        Ga naar de <a href="/reis/mijn-reizen.html">inlogpagina</a> om verder te gaan.
+      </div>
+    </section>
+
+    <!-- Booking UI -->
+    <section id="booking-section" class="split hidden">
+      <!-- LEFT: form -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Boeking</h2>
+            <p class="card-subtitle">Volg de stappen hieronder.</p>
+          </div>
+        </div>
+
+        <div class="stack-sm">
+          <div class="step">
+            <div class="num">1</div>
+            <div style="flex:1;">
+              <label for="fly_from">Vertrek vanaf</label>
+              <select id="fly_from">
+                <option value="" selected disabled>Selecteer luchthaven</option>
+              </select>
+              <div class="help-text">We laden de beschikbare vertrekluchthavens automatisch.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="num">2</div>
+            <div style="flex:1;">
+              <label for="fly_to">Aankomst op</label>
+              <select id="fly_to" disabled>
+                <option value="" selected disabled>Selecteer eerst vertrek</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="num">3</div>
+            <div style="flex:1;">
+              <label for="departure_date">Vertrekdatum</label>
+              <select id="departure_date" disabled>
+                <option value="" selected disabled>Selecteer eerst route</option>
+              </select>
+            </div>
+          </div>
+
+          <hr />
+
+          <label for="email">E-mailadres voor bevestiging</label>
+          <input type="email" id="email" placeholder="jouw@email.com" required />
+
+          <label for="extra_info">Wat ga je doen op vakantie? (optioneel)</label>
+          <input type="text" id="extra_info" placeholder="Bijv. hiken, museum, strand…" />
+
+          <div id="form-error" class="alert alert-danger hidden"></div>
+
+          <div class="button-container">
+            <button id="boek-btn" type="button" class="btn btn-primary">Boek vlucht</button>
+            <button id="reset-btn" type="button" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: summary & status -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Samenvatting</h2>
+            <p class="card-subtitle">Controleer je keuze voordat je boekt.</p>
+          </div>
+        </div>
+
+        <div id="summary" class="summary-kv">
+          <div class="k">Vertrek</div><div class="v" id="sum-from">—</div>
+          <div class="k">Aankomst</div><div class="v" id="sum-to">—</div>
+          <div class="k">Datum</div><div class="v" id="sum-date">—</div>
+          <div class="k">E-mail</div><div class="v" id="sum-email">—</div>
+        </div>
+
+        <div id="loading" class="hidden" style="margin-top:14px; text-align:center;">
+          <div class="loader" aria-label="Laden"></div>
+          <div class="help-text" style="margin-top:10px;">Bezig met boeken…</div>
+        </div>
+
+        <div id="result-message" class="hidden" style="margin-top:14px;"></div>
+
+        <!-- hidden image holder -->
+        <img id="genImg" hidden alt="" />
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/js/nav-reis.js" defer></script>
+  <script src="/assets/js/vlucht-boeken.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+/* =========================
+   OVERIG / TOOLS THEME
+   ========================= */
+
+body.tools{
+  --bg: radial-gradient(900px 600px at 70% 10%, rgba(244,63,94,.18), transparent 60%),
+         radial-gradient(900px 600px at 20% 30%, rgba(168,85,247,.16), transparent 55%),
+         linear-gradient(180deg, #06060a 0%, #0a0a12 60%, #070711 100%);
+  --panel: rgba(255,255,255,.06);
+  --panel-2: rgba(255,255,255,.10);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.70);
+  --border: rgba(255,255,255,.14);
+
+  --accent: #f43f5e;   /* rose */
+  --accent-2: #a855f7; /* purple */
+  --focus: 0 0 0 4px rgba(244,63,94,.20);
+}
+
+body.tools h1{
+  background: linear-gradient(90deg, rgba(244,63,94,1), rgba(168,85,247,1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.tools .card{
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+}
+
+body.tools .btn-primary{
+  background: linear-gradient(135deg, rgba(244,63,94,1), rgba(168,85,247,1));
+}

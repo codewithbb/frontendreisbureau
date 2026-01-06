@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reis Chatbot</title>
+
+  <!-- New design system -->
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/reis.css" />
+
+  <!-- Speech SDK for microphone -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Page-specific tiny styling (mag later naar reis.css) -->
+  <style>
+    /* Chat layout */
+    .chat-shell { display: grid; gap: 16px; }
+    .chat-card { padding: 0; overflow: hidden; }
+    .chat-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .chat-head .meta { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .chat-log{
+      height: 420px;
+      overflow-y: auto;
+      padding: 16px 16px 10px;
+      display: grid;
+      gap: 10px;
+      background: rgba(255,255,255,.03);
+    }
+
+    .chat-msg{
+      display: grid;
+      gap: 6px;
+      max-width: 820px;
+    }
+
+    .chat-msg .who{
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bubble{
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow-sm);
+      background: rgba(255,255,255,.06);
+    }
+
+    .chat-msg.user { margin-left: auto; align-items: end; }
+    .chat-msg.user .bubble{
+      background: rgba(56,189,248,.14);
+      border-color: rgba(56,189,248,.25);
+    }
+
+    .chat-msg.bot .bubble{
+      background: rgba(255,255,255,.06);
+    }
+
+    .chat-controls{
+      padding: 16px 18px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      gap: 12px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .chat-input-row{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .chat-actions{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chat-actions .field{
+      min-width: 220px;
+      flex: 1;
+    }
+
+    .chat-status{
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    .kbd-hint{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Make default button styles align with new system */
+    button.btn { width: auto; }
+  </style>
+</head>
+
+<body class="reis">
+  <div id="nav-placeholder"></div>
+
+  <main class="page">
+    <header class="page-title">
+      <h1>Reis Chatbot</h1>
+      <p>Stel vragen over reizen en vluchten. De chatbot kan ook je komende reizen bekijken en (waar beschikbaar) een vlucht voor je boeken.</p>
+    </header>
+
+    <div class="chat-shell">
+
+      <!-- Logged out -->
+      <section id="chatbot-logged-out" class="card" style="display:none;">
+        <div class="card-header">
+          <h2 class="card-title">Inloggen vereist</h2>
+        </div>
+        <p>Je moet ingelogd zijn om de chatbot te gebruiken.</p>
+        <div class="button-container">
+          <a class="btn btn-primary" href="/reis/mijn-reizen.html">Naar inloggen</a>
+          <a class="btn btn-secondary" href="/reis/index.html">Terug naar Reisbureau</a>
+        </div>
+      </section>
+
+      <!-- Logged in UI -->
+      <section id="chatbot-ui" class="card chat-card" style="display:none;">
+        <div class="chat-head">
+          <div>
+            <div class="card-title">Chat</div>
+            <p class="meta">Tip: druk op Enter om te verzenden (Shift+Enter voor nieuwe regel).</p>
+          </div>
+          <div class="row">
+            <button id="chatbot-clear" type="button" class="btn btn-secondary">Chat wissen</button>
+          </div>
+        </div>
+
+        <div id="chat-window" class="chat-log" role="log" aria-live="polite" aria-label="Chatgeschiedenis">
+          <div class="chat-msg bot">
+            <div class="who">🤖 Chatbot <span>•</span> <span>klaar</span></div>
+            <div class="bubble">
+              <p style="margin:0;">Waar kan ik je mee helpen? Bijvoorbeeld: “Zoek een vlucht naar Barcelona”, “Welke reizen heb ik binnenkort?” of “Boek die vlucht.”</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-controls">
+          <div class="chat-input-row">
+            <label for="user-message">Je bericht</label>
+            <textarea id="user-message" placeholder="Typ hier je vraag..." rows="3"></textarea>
+            <div class="kbd-hint">Enter = verzenden • Shift+Enter = nieuwe regel</div>
+          </div>
+
+          <div class="chat-actions">
+            <div class="field">
+              <label for="chatbot-lang" style="margin-top:0;">Taal voor spraakherkenning</label>
+              <select id="chatbot-lang">
+                <option value="nl-NL">Nederlands (NL)</option>
+                <option value="en-US">Engels (US)</option>
+              </select>
+            </div>
+
+            <button id="chatbot-mic" type="button" class="btn btn-secondary chatbot-mic-btn">🎤 Spreek</button>
+            <button id="chatbot-send" type="button" class="btn btn-primary">Versturen</button>
+          </div>
+
+          <div id="chatbot-status" class="chat-status"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Nav -->
+  <script src="/assets/js/nav-reis.js" defer></script>
+
+  <!-- Session -->
+  <script src="/assets/js/session.js" defer></script>
+
+  <!-- Chat logic (nieuwe versie hieronder) -->
+  <script src="/assets/js/chatbot.js" defer></script>
+</body>
+</html>

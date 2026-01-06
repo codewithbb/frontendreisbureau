@@ -1,22 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReisRijk</title>
-        <link rel="stylesheet" href="style.css">     <!-- (BB) refereren naar algemeen css bestand-->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portaal</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/tools.css" />
 </head>
 
-<body>
+<body class="tools">
+  <main class="page">
+    <header class="page-title">
+      <h1>Projectportaal</h1>
+      <p>Kies een onderdeel om te starten.</p>
+    </header>
 
-<div id="nav-placeholder"></div>
+    <section class="grid-2">
+      <a class="card" href="/reis/index.html" style="text-decoration:none;">
+        <div class="card-header">
+          <h2 class="card-title">✈️ Reisbureau</h2>
+          <span class="btn btn-secondary" style="pointer-events:none;">Open</span>
+        </div>
+        <p>Boek vluchten, scan tickets, bereken CO₂ en gebruik de reis-chatbot.</p>
+      </a>
 
-<script src="nav_script.js"></script>
-    <h1>Welkom op ReisRijk!</h1>
-<div class="container">
+      <a class="card" href="/cv/index.html" style="text-decoration:none;">
+        <div class="card-header">
+          <h2 class="card-title">📄 CV-tool</h2>
+          <span class="btn btn-secondary" style="pointer-events:none;">Open</span>
+        </div>
+        <p>Upload CV’s en vacatures, genereer profielen, voeg notities toe en match op kernwoorden.</p>
+      </a>
 
-    <img src="travel-meme.jpg" alt="" style="width:400px; display:block; margin:0 auto;">
-</div>
+      <a class="card" href="/tools/product-omschrijving.html" style="text-decoration:none;">
+        <div class="card-header">
+          <h2 class="card-title">🧪 Overig</h2>
+          <span class="btn btn-secondary" style="pointer-events:none;">Open</span>
+        </div>
+        <p>Tools zoals de productomschrijving-generator.</p>
+      </a>
 
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">ℹ️ Tip</h2>
+        </div>
+        <p>Als je een link deelt naar een CV-tool pagina, ziet de ontvanger alleen CV-tool content (geen reisbureau navigatie).</p>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
