@@ -1,0 +1,422 @@
+/* =========================
+   CORE DESIGN SYSTEM (NEUTRAAL)
+   - Laad dit overal
+   - Thema komt uit reis.css / cv.css / tools.css
+   ========================= */
+
+:root{
+  /* Typografie */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+
+  /* Spacing */
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 18px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Schatten */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 1px rgba(15, 23, 42, .04);
+  --shadow-md: 0 10px 25px rgba(15, 23, 42, .10), 0 2px 6px rgba(15, 23, 42, .06);
+  --shadow-lg: 0 18px 50px rgba(15, 23, 42, .18);
+
+  /* Deze tokens worden per thema overschreven */
+  --bg: #0b1220;
+  --panel: rgba(255,255,255,.05);
+  --panel-2: rgba(255,255,255,.08);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.72);
+  --border: rgba(255,255,255,.14);
+
+  --accent: #2563eb;
+  --accent-2: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+
+  --focus: 0 0 0 4px rgba(37, 99, 235, .22);
+}
+
+/* ====== Global reset-ish ====== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed; /* voorkomt “reset” bij scroll */
+  color: var(--text);
+  line-height: 1.55;
+}
+
+
+/* ====== Layout helpers ====== */
+.page{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.container{
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.stack{ display: grid; gap: var(--space-4); }
+.stack-sm{ display: grid; gap: var(--space-2); }
+.row{
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.grid-2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 900px){
+  .grid-2{ grid-template-columns: 1fr; }
+}
+
+/* ====== Typography ====== */
+h1,h2,h3{
+  margin: 0 0 14px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+h1{ font-size: clamp(28px, 3.2vw, 40px); }
+h2{ font-size: clamp(20px, 2.2vw, 28px); }
+h3{ font-size: 18px; }
+
+p{ margin: 0 0 12px 0; color: var(--muted); }
+
+.page-title{
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.page-title p{ margin: 0; }
+
+/* ====== Cards / Panels ====== */
+.card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.card-header{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.card-title{
+  margin: 0;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.card-subtitle{
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ====== Buttons ====== */
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 650;
+  letter-spacing: .01em;
+  text-decoration: none;
+  user-select: none;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.btn:active{ transform: translateY(1px); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0,0,0,.22);
+}
+
+.btn-primary:hover{ box-shadow: 0 16px 34px rgba(0,0,0,.30); }
+
+.btn-secondary{
+  background: var(--panel-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn-secondary:hover{
+  border-color: rgba(255,255,255,.22);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-ghost{
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn-danger{
+  background: rgba(239, 68, 68, .16);
+  border-color: rgba(239, 68, 68, .35);
+  color: #fff;
+}
+
+.button-container{
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.button-container > * { flex: 1; min-width: 180px; }
+
+/* ====== Forms ====== */
+label{
+  display: block;
+  font-weight: 650;
+  color: var(--text);
+  margin: 14px 0 6px;
+}
+
+.input, select, textarea,
+input[type="text"], input[type="email"], input[type="number"],
+input[type="password"], input[type="date"], input[type="time"], input[type="file"]{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  outline: none;
+  transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
+}
+
+textarea{ min-height: 120px; resize: vertical; }
+
+input::placeholder, textarea::placeholder{ color: rgba(255,255,255,.55); }
+
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(255,255,255,.28);
+  box-shadow: var(--focus);
+  background: rgba(255,255,255,.09);
+}
+
+.help-text{
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ====== “legacy” helpers (zodat oude HTML blijft werken) ====== */
+.flex-row{
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.flex-row .field{ flex: 1; }
+
+/* ====== Alerts / Result box ====== */
+.alert{
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.alert-success{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.14); }
+.alert-warning{ border-color: rgba(245,158,11,.40); background: rgba(245,158,11,.14); }
+.alert-danger{ border-color: rgba(239,68,68,.40); background: rgba(239,68,68,.14); }
+
+.result-box{ /* legacy */
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+
+/* ====== Tables ====== */
+.table{
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
+}
+
+.table th, .table td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  text-align: left;
+  font-size: 14px;
+}
+
+.table th{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.06);
+}
+
+.table tr:hover td{
+  background: rgba(255,255,255,.05);
+}
+
+/* Als jullie nog plain <table> gebruiken */
+table{ width: 100%; border-collapse: collapse; }
+table th, table td{ padding: 12px 12px; border-bottom: 1px solid rgba(255,255,255,.10); }
+table th{ font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ====== Navbar (jouw stap 3 navbar, theme-aware) ====== */
+.navbar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 15, 25, .72);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(14px);
+}
+
+.navbar-inner{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.navbar-brand{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.navbar-menu{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.navbar-menu a{
+  color: rgba(255,255,255,.82);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.navbar-menu a:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+}
+
+.navbar-menu a.active{
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+}
+
+.navbar-right{ margin-left: auto; }
+
+/* ====== Tooltip (legacy) ====== */
+.info-container{ position: relative; display: inline-block; }
+.info-icon{
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff;
+}
+.tooltip{
+  visibility: hidden;
+  opacity: 0;
+  width: min(420px, 85vw);
+  background: rgba(15,23,42,.96);
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 12px;
+  position: absolute;
+  z-index: 100;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity .12s ease;
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+}
+.info-container:hover .tooltip{ visibility: visible; opacity: 1; }
+
+/* Fix: dropdown options readable in all themes */
+select option {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+/* Ensure streamed/inserted result content always matches theme */
+.result-box,
+.result-box * {
+  color: var(--text);
+}
+
+.result-box a {
+  color: var(--accent);
+}
+
+.result-box h1, .result-box h2, .result-box h3 {
+  color: var(--text);
+  text-align: left;
+}
+
+html { background: var(--bg); }
+
+.result-box,
+.result-box *{
+  overflow-wrap: anywhere;   /* breek desnoods midden in lange tokens */
+  word-break: break-word;    /* fallback */
+}
+
+pre, .pre{
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;          /* behoud formatting */
+}

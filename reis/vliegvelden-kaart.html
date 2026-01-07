@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vliegveldenkaart</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/reis.css" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    /* Full-height layout */
+    html, body { height: 100%; margin: 0; }
+    .map-page { height: 100%; display: flex; flex-direction: column; }
+
+    .map-shell{
+      flex: 1;
+      min-height: 0; /* important for nested flex + map */
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 980px){
+      .map-shell{ grid-template-columns: 1fr; }
+      #map{ height: 60vh; }
+    }
+
+    #map{
+      width: 100%;
+      height: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Tooltip style (arrival) */
+    .my-tooltip {
+      text-align: center;
+      font-weight: 800;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(0,0,0,.25);
+      padding: 4px 8px;
+      border-radius: 10px;
+      pointer-events: none;
+      color: #111;
+    }
+
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .map-status{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 10px 12px;
+      color: rgba(255,255,255,.86);
+    }
+
+    /* Make leaflet controls blend a bit */
+    .leaflet-control-zoom a{
+      border-radius: 10px !important;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="reis map-page">
+  <div id="nav-placeholder"></div>
+
+  <div class="map-shell">
+    <!-- Sidebar controls -->
+    <aside class="card" style="margin:0;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Prijzenvergelijker</h2>
+          <p class="card-subtitle">Kies een vertrek- en aankomstluchthaven. We tekenen de route op de kaart.</p>
+        </div>
+      </div>
+
+      <div class="stack-sm">
+        <div class="row">
+          <span class="pill">🗺️ Interactieve kaart</span>
+          <span class="pill">💶 Min. prijs per bestemming</span>
+        </div>
+
+        <label for="select-departure">Vertrekluchthaven</label>
+        <select id="select-departure">
+          <option value="">— Kies een luchthaven —</option>
+        </select>
+
+        <label for="select-arrival">Aankomstluchthaven</label>
+        <select id="select-arrival" disabled>
+          <option value="">— Kies eerst vertrek —</option>
+        </select>
+
+        <div class="map-status">
+          <div id="status-line"><span class="mini">Status:</span> <span>Luchthavens laden…</span></div>
+          <div id="status-sub" class="mini" style="margin-top:6px;"></div>
+        </div>
+
+        <div class="button-container">
+          <button id="btn-reset" type="button" class="btn btn-secondary">Reset selectie</button>
+        </div>
+
+        <div class="mini">
+          Tip: bij sommige Japanse luchthavens opent een klik op de marker een PowerBI dashboard.
+        </div>
+      </div>
+    </aside>
+
+    <!-- Map -->
+    <section style="min-height:0;">
+      <div id="map" aria-label="Kaart"></div>
+    </section>
+  </div>
+
+  <script src="/assets/js/nav-reis.js" defer></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="/assets/js/vliegvelden-kaart.js" defer></script>
+</body>
+</html>

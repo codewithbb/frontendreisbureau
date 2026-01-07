@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mijn reizen</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/reis.css" />
+
+  <!-- Azure Speech SDK -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* Page-specific polish (mag later naar reis.css) */
+    .dash-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .user-meta{
+      display:grid;
+      gap: 6px;
+    }
+    .user-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .hidden{ display:none !important; }
+
+    .list{
+      display:grid;
+      gap: 10px;
+    }
+    .item{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 12px;
+    }
+    .item-title{
+      display:flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .item-title strong{ font-size: 15px; }
+    .meta{ color: var(--muted); font-size: 13px; }
+    .error-text{ color: #ffd1d1; font-size: 13px; }
+
+    /* Modal overlay (AI) */
+    #ai-overlay.hidden{ display:none; }
+    #ai-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 1000;
+    }
+    #ai-dialog{
+      width: min(980px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      padding: 0;
+    }
+    .ai-head{
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .ai-body{
+      padding: 16px 18px;
+      display:grid;
+      gap: 14px;
+    }
+    .ai-layout{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .ai-layout{ grid-template-columns: 1fr; }
+    }
+    .ai-warning{
+      font-size: 13px;
+      color: rgba(255,255,255,.82);
+      border: 1px solid rgba(245,158,11,.35);
+      background: rgba(245,158,11,.12);
+      border-radius: 14px;
+      padding: 12px 12px;
+    }
+    #ai-result-container{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 12px;
+      max-height: 420px;
+      overflow:auto;
+      box-shadow: var(--shadow-sm);
+    }
+    .stt-row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .icon-btn{
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body class="reis">
+  <div id="nav-placeholder"></div>
+
+  <main class="page">
+    <header class="page-title">
+      <h1>Mijn reizen</h1>
+      <p>Log in om je reizen en reviews te bekijken. Je kunt ook een AI-aanbeveling laten genereren op basis van jouw gegevens.</p>
+    </header>
+
+    <!-- LOGIN -->
+    <section id="login-section" class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Inloggen</h2>
+          <p class="card-subtitle">Gebruik je account om je persoonlijke gegevens te bekijken.</p>
+        </div>
+      </div>
+
+      <form id="login-form" class="stack-sm">
+        <div class="grid-2">
+          <div>
+            <label for="username">Gebruikersnaam</label>
+            <input type="text" id="username" name="username" autocomplete="username" value="business_bart" required />
+          </div>
+          <div>
+            <label for="password">Wachtwoord</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" value="TravelBart4!" required />
+          </div>
+        </div>
+
+        <div class="button-container">
+          <button type="submit" id="login-button" class="btn btn-primary">Log in</button>
+          <a class="btn btn-secondary" href="/reis/index.html">Terug naar Reisbureau</a>
+        </div>
+
+        <div id="login-error" class="alert alert-danger" style="display:none;"></div>
+      </form>
+    </section>
+
+    <!-- APP -->
+    <section id="app-section" class="hidden">
+      <div class="card">
+        <div class="dash-top">
+          <div class="user-meta">
+            <h2 class="card-title" style="margin:0;">Dashboard</h2>
+            <div id="user-info" class="meta"></div>
+            <div class="row">
+              <span class="user-pill">🧳 Reizen & reviews</span>
+              <span class="user-pill">🤖 AI-aanbeveling</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <button id="ai-button" class="btn btn-primary" type="button">AI-aanbeveling</button>
+            <button id="refresh-button" class="btn btn-secondary" type="button">Herlaad</button>
+            <button id="logout-button" class="btn btn-ghost" type="button">Log uit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Reizen</h2>
+              <p class="card-subtitle">Overzicht van je geboekte reizen.</p>
+            </div>
+          </div>
+          <div id="trips-container" class="list">
+            <div class="alert" style="margin:0;">Nog geen reizen geladen.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Reviews</h2>
+              <p class="card-subtitle">Jouw ervaringen en beoordelingen.</p>
+            </div>
+          </div>
+          <div id="reviews-container" class="list">
+            <div class="alert" style="margin:0;">Nog geen reviews geladen.</div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- AI overlay -->
+  <div id="ai-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="AI-aanbeveling">
+    <div id="ai-dialog" class="card">
+      <div class="ai-head">
+        <div>
+          <h2 class="card-title" style="margin:0;">AI-aanbeveling</h2>
+          <p class="meta" style="margin:6px 0 0 0;">Kies welke gegevens je wilt meenemen en genereer een persoonlijke suggestie.</p>
+        </div>
+        <button id="ai-cancel-x" class="btn btn-ghost" type="button" aria-label="Sluiten">✕</button>
+      </div>
+
+      <div class="ai-body">
+        <div class="ai-warning">
+          <strong>Let op:</strong> De geselecteerde informatie (reizen, reviews en optionele notities) wordt verzonden naar de ChatGPT API om een reisaanbeveling te genereren.
+          Door op “Genereer aanbeveling” te klikken geef je toestemming.
+        </div>
+
+        <div class="ai-layout">
+          <!-- LEFT -->
+          <div class="card" style="box-shadow:none;">
+            <form id="ai-form" class="stack-sm">
+              <label>
+                <input type="checkbox" id="ai-include-trips" checked />
+                Neem mijn reizen mee
+              </label>
+
+              <label>
+                <input type="checkbox" id="ai-include-reviews" checked />
+                Neem mijn reviews mee
+              </label>
+
+              <label for="ai-strategy">Type reis dat ik wil</label>
+              <select id="ai-strategy">
+                <option value="surprise" selected>Verras me (geen voorkeur)</option>
+                <option value="far">Verre bestemming</option>
+                <option value="new">Nieuwe bestemming</option>
+                <option value="repeat">Bekende bestemming</option>
+              </select>
+
+              <label for="ai-notes">Extra informatie voor de AI (optioneel)</label>
+              <textarea id="ai-notes" placeholder="Bijv. Ik wil hiken, ik hou niet van hitte, ik heb maar 1 dag..."></textarea>
+
+              <label for="ai-stt-language">Spraakherkenning (optioneel)</label>
+              <div class="stt-row">
+                <select id="ai-stt-language">
+                  <option value="nl-NL">Nederlands (NL)</option>
+                  <option value="en-US">Engels (US)</option>
+                </select>
+                <button type="button" id="ai-speech-btn" class="btn btn-secondary icon-btn" title="Spreek">🎤 Spreek</button>
+              </div>
+              <div id="ai-speech-status" class="meta"></div>
+
+              <div id="ai-error" class="alert alert-danger" style="display:none;"></div>
+
+              <div class="button-container" style="margin-top:6px;">
+                <button type="button" id="ai-cancel" class="btn btn-secondary">Annuleren</button>
+                <button type="submit" id="ai-submit" class="btn btn-primary">Genereer aanbeveling</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="card" style="box-shadow:none;">
+            <h3 style="margin:0 0 8px 0;">Jouw persoonlijke aanbeveling</h3>
+            <div id="ai-meta" class="meta"></div>
+            <div id="ai-result-container">
+              <div class="alert" style="margin:0;">Je aanbeveling verschijnt hier.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/nav-reis.js" defer></script>
+  <script src="/assets/js/mijn-reizen.js" defer></script>
+</body>
+</html>

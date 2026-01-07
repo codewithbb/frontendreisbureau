@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CV & Vacature Analyse</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/cv.css" />
+
+  <!-- (optioneel) Icons/font via core.css als je die gebruikt -->
+</head>
+
+<body class="cv">
+  <main class="page">
+    <header class="page-title">
+      <div class="title-row">
+        <div>
+          <h1>CV & Vacature Analyse</h1>
+          <p>Beoordeel CV’s en vacatures met AI, vergelijk kernwoorden en beheer notities. Profielen beheer je in <a href="/cv/profielen.html">Profielen</a>.</p>
+        </div>
+
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="/cv/profielen.html">Naar Profielen</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Quick actions / Uploads -->
+    <section class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">CV uploaden</h2>
+          <p class="card-subtitle">Upload een CV (PDF/DOCX/afbeelding) voor opslag en analyse.</p>
+        </div>
+
+        <div class="stack-sm">
+          <input
+            type="file"
+            id="cvFile"
+            accept=".pdf,.docx,.png,.jpg,.jpeg,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg"
+          />
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="uploadBtn">Upload CV</button>
+            <button class="btn btn-ghost" id="uploadCvClear">Wissen</button>
+          </div>
+
+          <div id="uploadCvStatus" class="alert hidden"></div>
+          <pre id="uploadResponse" class="pre hidden"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Vacature uploaden</h2>
+          <p class="card-subtitle">Upload een bestand of plak vacaturetekst. Titel is optioneel.</p>
+        </div>
+
+        <div class="stack-sm">
+          <label for="vacTitle">Titel (optioneel)</label>
+          <input type="text" id="vacTitle" placeholder="Bijv. Data Engineer (Junior)" />
+
+          <label for="vacFile">Bestand</label>
+          <input type="file" id="vacFile" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="uploadVacBtn">Upload bestand</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <label for="vacText">Of plak tekst</label>
+          <textarea id="vacText" placeholder="Plak hier een vacature..."></textarea>
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="uploadVacTextBtn">Upload tekst</button>
+            <button class="btn btn-ghost" id="uploadVacClear">Wissen</button>
+          </div>
+
+          <div id="uploadVacStatus" class="alert hidden"></div>
+          <pre id="vacUploadResponse" class="pre hidden"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main dashboard -->
+    <section class="card" style="margin-top:16px;">
+      <div class="card-header">
+        <div class="tabs" role="tablist" aria-label="Dashboard tabs">
+          <button class="tab active" data-tab="analyse" role="tab" aria-selected="true">Analyse</button>
+          <button class="tab" data-tab="viewer" role="tab" aria-selected="false">Viewer & Notities</button>
+        </div>
+      </div>
+
+      <!-- TAB: Analyse -->
+      <div class="tab-panel" id="tab-analyse">
+        <div class="grid-2">
+          <!-- Evaluate CV -->
+          <div class="card card-inner">
+            <div class="card-header">
+              <h2 class="card-title">CV beoordelen</h2>
+              <p class="card-subtitle">AI-match op basis van CV + vacature. Hulpmiddel, geen automatische beslissing.</p>
+            </div>
+
+            <div class="stack-sm">
+              <label for="eval_cv_id">CV</label>
+              <select id="eval_cv_id">
+                <option value="" disabled selected>CV kiezen…</option>
+              </select>
+
+              <label for="eval_vacancy_id">Vacature</label>
+              <select id="eval_vacancy_id">
+                <option value="" disabled selected>Vacature kiezen…</option>
+              </select>
+
+              <label for="eval_notes">Extra context (optioneel)</label>
+              <textarea id="eval_notes" placeholder="Bijv. focus op Python/SQL, klantcontact is belangrijk, etc."></textarea>
+
+              <div class="button-row">
+                <button class="btn btn-primary" id="evaluateBtn">Beoordeel CV</button>
+                <button class="btn btn-secondary" id="evaluateClearBtn">Leegmaken</button>
+              </div>
+
+              <div id="evalStatus" class="alert hidden"></div>
+
+              <div id="ai-eval-card" class="result-box hidden"></div>
+              <pre id="evalResponse" class="pre hidden"></pre>
+            </div>
+          </div>
+
+          <!-- Evaluate Vacancy -->
+          <div class="card card-inner">
+            <div class="card-header">
+              <h2 class="card-title">Vacature beoordelen</h2>
+              <p class="card-subtitle">AI feedback op vacaturekwaliteit, must-haves en mogelijke red flags.</p>
+            </div>
+
+            <div class="stack-sm">
+              <label for="vac_eval_id">Vacature</label>
+              <select id="vac_eval_id">
+                <option value="" disabled selected>Vacature kiezen…</option>
+              </select>
+
+              <label for="vac_eval_notes">Extra context (optioneel)</label>
+              <textarea id="vac_eval_notes" placeholder="Bijv. interne context: teamgrootte, tooling, must-haves die niet in vacature staan..."></textarea>
+
+              <div class="button-row">
+                <button class="btn btn-primary" id="vac_eval_btn">Beoordeel vacature</button>
+              </div>
+
+              <div id="vacEvalStatus" class="alert hidden"></div>
+              <pre id="vac_eval_response" class="pre hidden"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matching -->
+        <div class="card card-inner" style="margin-top:16px;">
+          <div class="card-header">
+            <h2 class="card-title">Matching op kernwoorden</h2>
+            <p class="card-subtitle">Snel overzicht van beste matches. Handig als pre-screening.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="stack-sm">
+              <h3 class="section-title">Match CV’s voor vacature</h3>
+              <label for="match_vacancy_id">Vacature</label>
+              <select id="match_vacancy_id">
+                <option value="" disabled selected>Vacature kiezen…</option>
+              </select>
+              <div class="button-row">
+                <button class="btn btn-primary" id="match_vacancy_btn">Match CV’s</button>
+              </div>
+              <pre id="match_vacancy_results" class="pre">Nog geen resultaten.</pre>
+            </div>
+
+            <div class="stack-sm">
+              <h3 class="section-title">Match vacatures voor CV</h3>
+              <label for="match_cv_id">CV</label>
+              <select id="match_cv_id">
+                <option value="" disabled selected>CV kiezen…</option>
+              </select>
+              <div class="button-row">
+                <button class="btn btn-primary" id="match_cv_btn">Match vacatures</button>
+              </div>
+              <pre id="match_cv_results" class="pre">Nog geen resultaten.</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Viewer -->
+      <div class="tab-panel hidden" id="tab-viewer">
+        <div class="grid-2">
+          <div class="card card-inner">
+            <div class="card-header">
+              <h2 class="card-title">Viewer</h2>
+              <p class="card-subtitle">Bekijk metadata + opgeslagen tekst, en bewerk notities.</p>
+            </div>
+
+            <div class="stack-sm">
+              <label for="viewer_type">Type</label>
+              <select id="viewer_type">
+                <option value="cv" selected>CV</option>
+                <option value="vacancy">Vacature</option>
+              </select>
+
+              <label for="viewer_id">Item</label>
+              <select id="viewer_id">
+                <option value="" disabled selected>Kies eerst type…</option>
+              </select>
+
+              <div id="viewerStatus" class="alert hidden"></div>
+
+              <label for="viewer_details">Details</label>
+              <pre id="viewer_details" class="pre">Nog niets geselecteerd.</pre>
+            </div>
+          </div>
+
+          <div class="card card-inner">
+            <div class="card-header">
+              <h2 class="card-title">Notities</h2>
+              <p class="card-subtitle">Notities worden opgeslagen per item (CV of vacature).</p>
+            </div>
+
+            <div class="stack-sm">
+              <label for="viewer_notes">Notities</label>
+              <textarea id="viewer_notes" placeholder="Voeg hier notities toe..."></textarea>
+
+              <div class="button-row">
+                <button class="btn btn-primary" id="viewer_save_notes">Notities opslaan</button>
+              </div>
+
+              <pre id="viewer_save_response" class="pre hidden"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="/assets/js/cv-vacature-analyse.js" defer></script>
+</body>
+</html>
