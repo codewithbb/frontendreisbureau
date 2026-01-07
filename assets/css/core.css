@@ -408,3 +408,15 @@ select option {
 }
 
 html { background: var(--bg); }
+
+.result-box,
+.result-box *{
+  overflow-wrap: anywhere;   /* breek desnoods midden in lange tokens */
+  word-break: break-word;    /* fallback */
+}
+
+pre, .pre{
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;          /* behoud formatting */
+}

@@ -78,3 +78,19 @@ body.cv table th{
 body.cv table tr:hover td{
   background: rgba(15,98,254,.06);
 }
+html, body{
+  height: auto;
+  min-height: 100%;
+}
+
+/* CV: paint background on body, ensure it extends beyond viewport */
+body.cv{
+  background: var(--bg);
+  background-repeat: no-repeat;
+
+  /* Belangrijk: dit voorkomt "background stopt na 1 scherm" gedoe */
+  background-attachment: scroll;  /* override core's fixed */
+  background-size: auto;          /* cover is vooral voor images; niet nodig voor flat color */
+
+  min-height: 100vh;              /* tenminste 1 scherm */
+}
