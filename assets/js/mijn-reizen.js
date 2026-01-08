@@ -256,7 +256,7 @@ function renderReviews(reviews) {
           <span class="meta">${rating}${when ? " · " + when : ""}</span>
         </div>
         <div class="meta">${place}</div>
-        <div style="margin-top:8px; color: rgba(255,255,255,.86);">
+        <div style="margin-top:6px; color: rgba(86, 191, 207, 0.73); font-style: italic">
           ${(r.review_text || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}
         </div>
       </div>
