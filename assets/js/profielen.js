@@ -1,6 +1,6 @@
 // /assets/js/cv/profielen.js
-// const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-const API_BASE_URL = "http://127.0.0.1:5001"
+const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+// const API_BASE_URL = "http://127.0.0.1:5001"
 
 const dropdownCVs = document.getElementById("available_cvs");
 const refreshCvsBtn = document.getElementById("refreshCvsBtn");
