@@ -1,5 +1,6 @@
 // /assets/js/cv/cv-vacature-analyse.js
 const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+// const API_BASE_URL = "http://127.0.0.1:5001"
 
 // ---- DOM (upload) ----
 const uploadBtn = document.getElementById("uploadBtn");
@@ -375,6 +376,38 @@ vacEvalBtn.addEventListener("click", async () => {
   }
 });
 
+function renderPrettyMeta(data) {
+  let html = "";
+
+  for (const [key, value] of Object.entries(data || {})) {
+    if (key === "CV_ID" || key === "ID") continue;
+
+    html += `<div class="profile-block">`;
+    html += `<h4>${escapeHtml(key.replace("Json", ""))}</h4>`;
+
+    let content = value;
+
+    if (typeof value === "string" && value.trim().startsWith("{")) {
+      try { content = JSON.parse(value); } catch {}
+    }
+
+    if (typeof content === "object" && content !== null) {
+      html += "<ul>";
+      for (const [k, v] of Object.entries(content)) {
+        if (v) html += `<li>${escapeHtml(k)}: ${escapeHtml(v)}</li>`;
+      }
+      html += "</ul>";
+    } else {
+      html += `<p>${escapeHtml(content || "—")}</p>`;
+    }
+
+    html += "</div>";
+  }
+
+  return html;
+}
+
+
 // ---- Viewer + Notes ----
 async function refreshViewerDropdown() {
   if (viewerType.value === "cv") {
@@ -408,11 +441,20 @@ viewerId.addEventListener("change", async () => {
       const data = await fetchJson(`${API_BASE_URL}/cv/get_meta?id=${encodeURIComponent(id)}`);
       if (!data.success) throw new Error(data.error || "CV meta error");
       setPre(viewerDetails, data.result);
+      const pretty = document.getElementById("viewer_details_pretty");
+      if (pretty) {
+        pretty.innerHTML = renderPrettyMeta(data.result);
+      }
+
       viewerNotes.value = data.result.Notities || "";
     } else {
       const data = await fetchJson(`${API_BASE_URL}/vacancy/get_meta?id=${encodeURIComponent(id)}`);
       if (!data.success) throw new Error(data.error || "Vacancy meta error");
       setPre(viewerDetails, data.result);
+      const pretty = document.getElementById("viewer_details_pretty");
+      if (pretty) {
+        pretty.innerHTML = renderPrettyMeta(data.result);
+      }
       viewerNotes.value = data.result.Notities || "";
     }
     setAlert(viewerStatus, "success", "Geladen.");

@@ -214,7 +214,19 @@
               <div id="viewerStatus" class="alert hidden"></div>
 
               <label for="viewer_details">Details</label>
-              <pre id="viewer_details" class="pre">Nog niets geselecteerd.</pre>
+              <label>Details</label>
+
+              <!-- Pretty view (uitgeklapt) -->
+              <div id="viewer_details_pretty" class="result-box">
+                <p class="muted">Nog niets geselecteerd.</p>
+              </div>
+
+              <!-- Raw JSON blijft beschikbaar -->
+              <details style="margin-top:10px;">
+                <summary class="muted">Ruwe JSON</summary>
+                <pre id="viewer_details" class="pre">Nog niets geselecteerd.</pre>
+              </details>
+
             </div>
           </div>
 
