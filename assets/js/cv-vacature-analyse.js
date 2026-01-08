@@ -1,6 +1,6 @@
 // /assets/js/cv/cv-vacature-analyse.js
-// const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
-const API_BASE_URL = "http://127.0.0.1:5001"
+const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+// const API_BASE_URL = "http://127.0.0.1:5001"
 
 // ---- DOM (upload) ----
 const uploadBtn = document.getElementById("uploadBtn");
