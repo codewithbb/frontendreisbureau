@@ -1,5 +1,6 @@
 // /assets/js/cv/profielen.js
-const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+// const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+const API_BASE_URL = "http://127.0.0.1:5001"
 
 const dropdownCVs = document.getElementById("available_cvs");
 const refreshCvsBtn = document.getElementById("refreshCvsBtn");
@@ -128,18 +129,28 @@ dropdownCVs.addEventListener("change", async () => {
         if (Object.keys(obj).length > 0) {
           const header = document.createElement("div");
           header.className = "checklist-group-title";
-          header.textContent = title;
+          header.innerHTML = `<strong>${escapeHtml(title)}</strong>`;
           profileElementsContainer.appendChild(header);
 
           for (const key in obj) {
+            const value = obj[key];
+
+            // verberg lege waarden volledig
+            if (!value || String(value).trim() === "") continue;
+
+            const preview = `${key}: ${value}`;
+
             const row = document.createElement("div");
             row.className = "checklist-item";
+
             row.innerHTML = `
               <input type="checkbox" id="${columnName}_${key}" value="${columnName}.${key}" name="profile_elements">
-              <label for="${columnName}_${key}" class="checklist-label">${escapeHtml(key)}</label>
+              <label for="${columnName}_${key}" class="checklist-label">${escapeHtml(preview)}</label>
             `;
-            profileElementsContainer.appendChild(row);
-          }
+
+  profileElementsContainer.appendChild(row);
+}
+
         }
       } catch {}
     };
@@ -147,13 +158,23 @@ dropdownCVs.addEventListener("change", async () => {
     addGroup("Persoonlijke gegevens", meta.PersoonlijkJson, "PersoonlijkJson");
     addGroup("Opleidingen", meta.OpleidingenJson, "OpleidingenJson");
     addGroup("Werkervaring", meta.WerkervaringJson, "WerkervaringJson");
+    addGroup("Vaardigheden", meta.VaardighedenJson, "VaardighedenJson");
+    addGroup("Certificeringen", meta.CertificeringenJson, "CertificeringenJson");
+    addGroup("Extra zaken", meta.ExtraZakenJson, "ExtraZakenJson");
 
     if (meta.Beschrijving) {
+      const desc = String(meta.Beschrijving).trim();
+      const preview = desc.length > 160 ? desc.slice(0, 160) + "..." : desc;
+
       const row = document.createElement("div");
       row.className = "checklist-item";
-      row.innerHTML = `<input type="checkbox" id="desc" value="Beschrijving" name="profile_elements"><label for="desc" class="checklist-label">Beschrijving</label>`;
+      row.innerHTML = `
+        <input type="checkbox" id="desc" value="Beschrijving" name="profile_elements">
+        <label for="desc" class="checklist-label">Beschrijving: ${escapeHtml(preview)}</label>
+      `;
       profileElementsContainer.appendChild(row);
     }
+
 
   } catch (err) {
     profileElementsContainer.innerHTML = "<em>Fout bij laden velden.</em>";

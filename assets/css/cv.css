@@ -94,3 +94,36 @@ body.cv{
 
   min-height: 100vh;              /* tenminste 1 scherm */
 }
+
+/* Checklist: alleen groepstitels vet, items niet vet */
+body.cv .checklist-group-title {
+  font-weight: 700;
+}
+
+body.cv .checklist-item label,
+body.cv label.checklist-label {
+  font-weight: 400 !important;  /* force override als core CSS labels bold maakt */
+}
+
+/* Checklist: checkbox en tekst naast elkaar */
+body.cv .checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;              /* ruimte tussen checkbox en tekst */
+}
+
+/* Zorg dat labels geen extra margins hebben */
+body.cv .checklist-item label {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Extra witruimte tussen checklist-items */
+body.cv .checklist-item {
+  margin-bottom: 10px;   /* pas aan naar smaak: 8–14px */
+}
+
+body.cv .checklist-group-title {
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
