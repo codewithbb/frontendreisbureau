@@ -140,10 +140,11 @@ let globalData = [];
 function renderTable(data, columns) {
   const tableContainer = document.getElementById("tableContainer");
   if (!data || data.length === 0) {
-    tableContainer.innerHTML = '<p>Geen data gevonden.</p>';
+    tableContainer.innerHTML = '<div class="alert" style="margin:0;">Geen resultaten voor de gekozen filters.</div>';
     return;
   }
   const table = document.createElement('table');
+  table.classList.add("table");
 
   const headerRow = document.createElement('tr');
   columns.forEach(col => {
@@ -232,7 +233,9 @@ async function init() {
     addFilterListeners(columns);
   } catch (err) {
     console.error(err);
-    document.getElementById('tableContainer').innerHTML = '<p>Fout bij ophalen data.</p>';
+    document.getElementById('tableContainer').innerHTML =
+      '<div class="alert alert-danger" style="margin:0;">Fout bij het ophalen van data. Probeer opnieuw.</div>';
+
   }
 }
 init();

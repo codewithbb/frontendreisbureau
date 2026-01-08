@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profielen</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/cv.css" />
+</head>
+
+<body class="cv">
+  <main class="page">
+    <header class="page-title">
+      <div class="title-row">
+        <div>
+          <h1>Profielen</h1>
+          <p>Genereer en beheer profielen op basis van CV’s. Bekijk, deel en (optioneel) exporteer.</p>
+        </div>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="/cv/cv-vacature-analyse.html">Terug naar Analyse</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid-2">
+      <!-- Profile generator -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Nieuw profiel genereren</h2>
+          <p class="card-subtitle">Selecteer CV + onderdelen die je in het profiel wil opnemen.</p>
+        </div>
+
+        <div class="stack-sm">
+          <div class="row-inline">
+            <div class="grow">
+              <label for="available_cvs">CV</label>
+              <select id="available_cvs">
+                <option value="" disabled selected>CV kiezen…</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" id="refreshCvsBtn" title="Ververs CV lijst">Ververs</button>
+          </div>
+
+          <div class="hint">
+            Tip: na het kiezen van een CV tonen we subvelden (bijv. WerkervaringJson.*) zodat je gericht kunt selecteren.
+          </div>
+
+          <label>Profielonderdelen</label>
+          <div id="profile_elements_container" class="checklist"></div>
+
+          <label for="profile_name">Profielnaam</label>
+          <input type="text" id="profile_name" placeholder="Bijv. Julian – Data Engineer focus" />
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="generateProfile">Genereer (preview)</button>
+            <button class="btn btn-secondary" id="saveProfile">Opslaan</button>
+          </div>
+
+          <div id="profileStatus" class="alert hidden"></div>
+          <div class="card card-inner">
+            <h3 class="section-title">Preview</h3>
+            <div id="profilePreview" class="result-box">
+              <p class="muted">Nog geen profiel gegenereerd.</p>
+            </div>
+            <details style="margin-top:10px;">
+              <summary class="muted">Ruwe JSON</summary>
+              <pre id="profileResponse" class="pre">Nog geen response</pre>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile viewer -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Bestaande profielen</h2>
+          <p class="card-subtitle">Selecteer een CV en een profiel om te bekijken en te delen.</p>
+        </div>
+
+        <div class="stack-sm">
+          <label for="viewer_cv">CV</label>
+          <select id="viewer_cv">
+            <option value="" disabled selected>CV kiezen…</option>
+          </select>
+
+          <label for="profiles">Profiel</label>
+          <select id="profiles">
+            <option value="" disabled selected>Selecteer profiel…</option>
+          </select>
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="BtnViewProfile">Bekijk profiel</button>
+            <button class="btn btn-secondary" id="BtnDelen">Delen</button>
+          </div>
+
+          <div id="viewerStatus" class="alert hidden"></div>
+
+          <div class="card card-inner">
+            <h3 class="section-title">Weergave</h3>
+            <div id="profileView" class="result-box">
+              <p class="muted">Nog niets geselecteerd.</p>
+            </div>
+            <details style="margin-top:10px;">
+              <summary class="muted">Ruwe JSON</summary>
+              <pre id="responseBox" class="pre">Nog geen response</pre>
+            </details>
+          </div>
+
+          <div class="card card-inner">
+            <h3 class="section-title">Delen</h3>
+            <div id="shareBox" class="result-box">
+              <p class="muted">Klik op “Delen” om een link te genereren.</p>
+            </div>
+            <pre id="responseBox2" class="pre hidden">Nog geen response</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/assets/js/profielen.js" defer></script>
+</body>
+</html>
