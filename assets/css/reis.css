@@ -141,3 +141,12 @@ html {
 body.reis {
   background-attachment: scroll;
 }
+
+/* Zorg dat kolomnamen altijd zichtbaar zijn */
+body.reis table th,
+body.reis .table thead th {
+  color: var(--text); /* Donkere kleur uit je thema */
+  background-color: rgba(255,255,255,.92); /* optioneel voor contrast */
+}
+
+
