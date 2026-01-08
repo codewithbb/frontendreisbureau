@@ -100,9 +100,9 @@ function buildImagePrompt(destinationName, extraInfo) {
   if (!plaats) return null;
 
   if (activiteit) {
-    return `Fotorealistische afbeelding van een vakantie in ${plaats}, waar iemand ${activiteit} doet. Realistische stijl, zonder tekst.`;
+    return `Fotorealistische afbeelding van een vakantie die land op ${plaats}, waar iemand ${activiteit} doet. Realistische stijl, zonder tekst. Foto herkenbaar als een vakantie in het land of de stad waar het vliegveld licht.`;
   }
-  return `Fotorealistische afbeelding van een vakantie in ${plaats}. Realistische stijl, zonder tekst.`;
+  return `Fotorealistische afbeelding van een vakantie die land op ${plaats}. Realistische stijl, zonder tekst. Foto herkenbaar als een vakantie in het land of de stad waar het vliegveld licht.`;
 }
 
 // === Afbeelding genereren via backend ===
