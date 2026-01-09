@@ -344,7 +344,9 @@ BtnDelen.addEventListener("click", async () => {
     const fullUrl = `${API_BASE_URL}${data.share_url}`;
     shareBox.innerHTML = `
       <div class="share-row">
-        <a href="${fullUrl}" target="_blank" rel="noopener">${fullUrl}</a>
+        <div class="share-url">
+          <a href="${fullUrl}" target="_blank" rel="noopener">${fullUrl}</a>
+        </div>
         <button class="btn btn-ghost" id="copyShareLink">Kopieer</button>
       </div>
     `;

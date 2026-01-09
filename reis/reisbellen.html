@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telefoon demo (Twilio)</title>
+
+  <link rel="stylesheet" href="/assets/css/core.css" />
+  <link rel="stylesheet" href="/assets/css/reis.css" />
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+    .loader {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 5px solid rgba(0,0,0,.12);
+      border-top-color: rgba(99,102,241,.95);
+      animation: spin .9s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    textarea.transcript {
+      min-height: 180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .toolbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar .right{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.05);
+      font-size: 13px;
+    }
+
+    .muted { opacity: .75; }
+
+    .row {
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .row > * { flex: 1 1 240px; }
+
+    .help-inline { margin-top: 6px; }
+  </style>
+</head>
+
+<body class="reis">
+  <div id="nav-placeholder"></div>
+  <main class="page">
+    <header class="page-title">
+      <h1>Telefonisch boeken (Twilio)</h1>
+      <p>Vul je telefoonnummer in, ontvang een belletje, spreek een zin in, en zie de transcriptie hieronder verschijnen.</p>
+    </header>
+
+    <section class="grid">
+      <!-- LEFT: Input -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">1) Bel mij</h2>
+            <p class="card-subtitle">We bellen alleen NL-nummers (proof-of-tech).</p>
+          </div>
+        </div>
+
+        <form id="callForm" class="stack-sm">
+          <div class="row">
+            <div>
+              <label for="phoneInput">
+                Telefoonnummer
+                <span class="help-text">(bijv. 0612345678)</span>
+              </label>
+              <input
+                id="phoneInput"
+                name="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="0612345678"
+                required
+              />
+              <div class="help-text help-inline muted">
+                Tip: neem op en spreek rustig. Na een paar seconden verschijnt de tekst.
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:end; flex:0 0 auto;">
+              <button id="callBtn" type="submit" class="btn btn-primary">Bel mij</button>
+              <button id="resetBtn" type="button" class="btn btn-secondary">Reset</button>
+            </div>
+          </div>
+
+          <div id="spinner" class="hidden" style="text-align:center; margin-top:10px;">
+            <div class="loader" aria-label="Laden"></div>
+            <div class="help-text" style="margin-top:10px;">Bezig met bellen / luisteren…</div>
+          </div>
+
+          <div id="status" class="alert hidden" style="margin-top:12px;"></div>
+        </form>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-header">
+            <div class="toolbar" style="width:100%;">
+              <div>
+                <h2 class="card-title">Call info</h2>
+                <p class="card-subtitle">Handig voor debug tijdens demo.</p>
+              </div>
+              <div class="right">
+                <span class="badge"><span class="muted">Status:</span> <span id="callStatusLabel" class="mono">—</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stack-sm">
+            <div class="help-text">CallSid</div>
+            <div id="callSid" class="mono">—</div>
+
+            <div class="help-text" style="margin-top:10px;">Gebeld nummer</div>
+            <div id="callTo" class="mono">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Output -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">2) Transcript</h2>
+            <p class="card-subtitle">Wat je inspreekt verschijnt hier zodra Twilio de speech herkent.</p>
+          </div>
+        </div>
+
+        <div class="stack-sm">
+          <label for="transcriptBox">Herkenning (Speech-to-Text)</label>
+          <textarea
+            id="transcriptBox"
+            class="transcript"
+            placeholder="Nog geen transcript. Klik op “Bel mij”, neem op en spreek een zin in."
+            readonly
+          ></textarea>
+
+          <div class="button-container">
+            <button id="copyBtn" type="button" class="btn btn-ghost">Kopieer tekst</button>
+          </div>
+
+          <div class="help-text muted">
+            Let op: dit is een proof-of-tech. Herkenning kan variëren afhankelijk van achtergrondgeluid.
+          </div>
+
+          <label for="aiBox">Voorkeur: (JSON)</label>
+          <textarea
+            id="aiBox"
+            class="transcript"
+            placeholder="Nog geen uiteindelijke voorkeur."
+            readonly
+          ></textarea>
+
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/js/nav-reis.js" defer></script>
+  <script src="/assets/js/reisbellen.js" defer></script>
+</body>
+</html>
