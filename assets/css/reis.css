@@ -106,10 +106,10 @@ body.reis select option {
 }
 
 /* (optioneel maar nice) Links & badges iets vrolijker */
-body.reis a{
+body.reis a, k{
   color: var(--accent-2);
 }
-body.reis a:hover{
+body.reis a:hover, body.reis k:hover {
   color: var(--accent);
 }
 
