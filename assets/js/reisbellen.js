@@ -108,6 +108,7 @@
     $("callTo").textContent = "—";
     $("callStatusLabel").textContent = "—";
     $("transcriptBox").value = "";
+    $("aiBox").value = "";
     clearStatus();
     setBusy(false);
   }
@@ -129,13 +130,29 @@
       $("callStatusLabel").textContent = mapCallStatusLabel(state.status);
       if (state.to) $("callTo").textContent = state.to;
 
-      if (state.transcript && state.transcript.trim().length > 0) {
+      const hasTranscript = state.transcript && state.transcript.trim().length > 0;
+      const hasAi = !!state.ai_result;
+
+      if (hasTranscript) {
         $("transcriptBox").value = state.transcript;
-        setStatus("Transcript ontvangen ✅", "success");
+      }
+      if (hasAi) {
+        $("aiBox").value = JSON.stringify(state.ai_result, null, 2);
+      }
+
+      if (hasTranscript && hasAi) {
+        setStatus("Transcript + beoordeling ontvangen ✅", "success");
         setBusy(false);
         stopPolling();
         return;
       }
+
+      // Als transcript er al is maar AI nog niet:
+      if (hasTranscript && !hasAi) {
+        setStatus("Transcript ontvangen ✅ (beoordeling wordt geladen…)", "info");
+        // blijf pollen
+      }
+
 
       // Als call completed is en nog geen transcript -> stop (anders blijf je eindeloos pollen)
       if (String(state.status || "").toLowerCase() === "completed") {

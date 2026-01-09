@@ -81,7 +81,7 @@
   <div id="nav-placeholder"></div>
   <main class="page">
     <header class="page-title">
-      <h1>Telefoon demo (Twilio)</h1>
+      <h1>Telefonisch boeken (Twilio)</h1>
       <p>Vul je telefoonnummer in, ontvang een belletje, spreek een zin in, en zie de transcriptie hieronder verschijnen.</p>
     </header>
 
@@ -178,6 +178,15 @@
           <div class="help-text muted">
             Let op: dit is een proof-of-tech. Herkenning kan variëren afhankelijk van achtergrondgeluid.
           </div>
+
+          <label for="aiBox">Voorkeur: (JSON)</label>
+          <textarea
+            id="aiBox"
+            class="transcript"
+            placeholder="Nog geen uiteindelijke voorkeur."
+            readonly
+          ></textarea>
+
         </div>
       </div>
     </section>
