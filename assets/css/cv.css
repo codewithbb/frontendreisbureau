@@ -127,3 +127,121 @@ body.cv .checklist-group-title {
   margin-top: 18px;
   margin-bottom: 6px;
 }
+
+/* voor vaste breedte van de containers */
+
+/* Twee vaste (gelijke) kolommen over de beschikbare paginabreedte */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* twee gelijke kolommen */
+  gap: var(--space-lg, 24px);
+}
+
+/* Belangrijk: laat child niet de kolom oprekken */
+.grid-2 > .card {
+  min-width: 0;           /* nodig voor correcte ellipsis/clamping binnen grid */
+  width: 100%;            /* vul de kolom, niet meer */
+  box-sizing: border-box; /* padding/border in breedteberekening */
+}
+
+/* Mocht je flex gebruiken i.p.v. grid ergens: */
+.row-inline, .title-row { 
+  min-width: 0; 
+}
+
+
+/* Zorg dat de “result-box” zelf niet breder wordt dan de container */
+.result-box {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;               /* horizontale scrollbar indien nodig */
+  -webkit-overflow-scrolling: touch; /* prettiger scrollen op mobiel iOS */
+}
+
+/* Specifiek voor de <pre> die de ruwe response toont */
+.pre {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;               /* horizontale scrollbar indien nodig */
+  white-space: nowrap;            /* geen wraps: scrollen i.p.v. afbreken */
+  margin: 0;                      /* optioneel: voorkomt extra horizontale ruimte */
+  padding: 8px 12px;              /* optioneel: ruimte binnen het blok */
+}
+
+/* Als je ook in #shareBox lange links ongewrapt wil tonen: */
+#shareBox a,
+#shareBox code,
+#shareBox .long-url {
+  white-space: nowrap;            /* niet afbreken */
+}
+
+/* Veiligheidsnet: voorkom dat binnenliggende elementen de kaart forceren te “rekken” */
+.card .result-box,
+.card .pre {
+  min-width: 0;                   /* belangrijk in flex/grids om overflow te voorkomen */
+}
+
+
+
+/* --- GRID: laat kolommen echt krimpen, ook bij onbreekbare content --- */
+.grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* i.p.v. 1fr 1fr */
+  gap: var(--space-lg, 24px);
+}
+
+/* Zorg dat kaarten en inner cards binnen grid mogen krimpen */
+.grid-2 > .card,
+.card.card-inner,
+.card .card-inner {
+  min-width: 0;  /* CRUCIAAL in grid/flex */
+}
+
+/* --- PRE/response: niet wrappen, wel scrollen binnen eigen box --- */
+.pre,
+#responseBox2.pre {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: nowrap;     /* 1 regel, geen wrap */
+  overflow-x: auto;        /* horizontale scrollbar */
+  overflow-y: hidden;
+  margin: 0;
+  padding: 8px 12px;
+  font-family: monospace;
+}
+
+/* --- SHARE: jouw variant 2 (wrapper met scroll) --- */
+#shareBox .share-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#shareBox .share-url {
+  flex: 1 1 auto;
+  min-width: 0;            /* laat wrapper krimpen */
+  max-width: 100%;
+  overflow-x: auto;        /* scrollbar op wrapper */
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* zorg dat andere content binnen de card geen overflow triggert */
+.result-box {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: auto;        /* mocht daar ook lange regels staan */
+}
+
+
+/* Breedte van de Kopieer-knop in de share-row */
+#shareBox .share-row #copyShareLink {
+  width: 100px;           /* kies gewenste vaste breedte */
+  flex-shrink: 0;         /* voorkom dat hij kleiner wordt in flex */
+  text-align: center;     /* tekst netjes centreren */
+}
