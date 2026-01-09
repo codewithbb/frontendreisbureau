@@ -129,7 +129,7 @@ dropdownCVs.addEventListener("change", async () => {
         if (Object.keys(obj).length > 0) {
           const header = document.createElement("div");
           header.className = "checklist-group-title";
-          header.innerHTML = `<strong>${escapeHtml(title)}</strong>`;
+          header.textContent = title;
           profileElementsContainer.appendChild(header);
 
           for (const key in obj) {
