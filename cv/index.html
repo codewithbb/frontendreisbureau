@@ -145,6 +145,16 @@
     @media (max-width: 1100px) {
       .grid-3 { grid-template-columns: 1fr; }
     }
+
+    /* Sub-vakjes onder een CV in Profielen */
+.list-item.sub {
+  margin-left: 14px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px dashed rgba(15,23,42,.18);
+}
+
   </style>
 </head>
 
@@ -163,7 +173,7 @@
   <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
   <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
     <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
-  <a class="nav-btn" href="/cv/vacatures.html">Vacatures</a>
+  <a class="nav-btn" href="/cv/index.html">Vacatures</a>
 
 </nav>
 
@@ -273,26 +283,18 @@
       el.profilesCount.textContent = "0";
     }
 
-    function li(title, metaPairs = []) {
-      const li = document.createElement("li");
-      li.className = "list-item";
+function li(title, variant = "main") {
+  const item = document.createElement("li");
+  item.className = "list-item" + (variant === "sub" ? " sub" : "");
 
-      const t = document.createElement("div");
-      t.className = "item-title";
-      t.textContent = title;
+  const t = document.createElement("div");
+  t.className = "item-title";
+  t.textContent = String(title);
 
-      const meta = document.createElement("div");
-      meta.className = "item-meta";
-      metaPairs.forEach(([k, v]) => {
-        const span = document.createElement("span");
-        span.textContent = `${k}: ${v}`;
-        meta.appendChild(span);
-      });
+  item.appendChild(t);
+  return item;
+}
 
-      li.appendChild(t);
-      if (metaPairs.length) li.appendChild(meta);
-      return li;
-    }
 
     async function loadDashboard() {
       clearStatus();
@@ -313,12 +315,12 @@
         const cvArr = Array.isArray(cvs) ? cvs : [];
         el.cvsCount.textContent = String(cvArr.length);
         if (cvArr.length === 0) {
-          el.cvsList.appendChild(li("Geen CV’s gevonden", [["Tip", "Upload eerst een CV"]]));
+          el.cvsList.appendChild(li("Geen CV’s gevonden"));
         } else {
           cvArr.forEach(c => {
             const id = c.ID ?? c.id ?? "—";
             const name = c.FileName ?? c.filename ?? c.DisplayName ?? `CV ${id}`;
-            el.cvsList.appendChild(li(name, [["ID", id]]));
+            el.cvsList.appendChild(li(name));
           });
         }
 
@@ -326,13 +328,13 @@
         const vacArr = Array.isArray(vacancies) ? vacancies : [];
         el.vacCount.textContent = String(vacArr.length);
         if (vacArr.length === 0) {
-          el.vacList.appendChild(li("Geen vacatures gevonden", [["Tip", "Upload eerst een vacature"]]));
+          el.vacList.appendChild(li("Geen vacatures gevonden"));
         } else {
           vacArr.forEach(v => {
             const id = v.ID ?? v.id ?? "—";
             const name =
               v.DisplayName ?? v.FileName ?? v.Title ?? v.titel ?? `Vacature ${id}`;
-            el.vacList.appendChild(li(name, [["ID", id]]));
+            el.vacList.appendChild(li(name));
           });
         }
 
@@ -346,7 +348,7 @@
         let totalProfiles = 0;
 
         if (!candidates.length) {
-          el.profilesList.appendChild(li("Geen profielen gevonden", [["Tip", "Genereer en sla een profiel op"]]));
+          el.profilesList.appendChild(li("Geen profielen gevonden"));
         } else {
           // Beperk voor performance: max 30 CV calls (pas aan indien nodig)
           const subset = candidates.slice(0, 30);
@@ -374,20 +376,19 @@
               totalProfiles += profiles.length;
 
               // Toon CV header + aantal, en de profielen eronder als bullets (compact)
-              const cvName = c.FileName ? `${c.FileName}` : `CV ${cvId}`;
-              const cvItem = li(cvName, [["CV_ID", cvId], ["Profielen", profiles.length]]);
-              el.profilesList.appendChild(cvItem);
+const cvName = c.FileName ? `${c.FileName}` : `CV ${cvId}`;
+el.profilesList.appendChild(li(cvName)); // hoofdvakje
 
-              profiles.forEach(p => {
-                const pid = p.ID ?? p.id ?? "—";
-                const pname = p.naam ?? p.profile_name ?? `Profiel ${pid}`;
-                el.profilesList.appendChild(li(`↳ ${pname}`, [["ID", pid]]));
-              });
+profiles.forEach(p => {
+  const pname = p.naam ?? p.profile_name ?? `Profiel`;
+  el.profilesList.appendChild(li(`↳ ${pname}`, "sub"));
+});
+
             }
           }
 
           if (el.profilesList.children.length === 0) {
-            el.profilesList.appendChild(li("Geen profielen gevonden", [["Tip", "Genereer en sla een profiel op"]]));
+            el.profilesList.appendChild(li("Geen profielen gevonden"));
           }
         }
 
