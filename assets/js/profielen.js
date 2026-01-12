@@ -355,8 +355,6 @@ BtnDelen.addEventListener("click", async () => {
       setAlert(viewerStatusProfiles, "success", "Link gekopieerd.");
     });
 
-    responseBox2.classList.remove("hidden");
-    responseBox2.textContent = fullUrl;
 
     setAlert(viewerStatusProfiles, "success", "Deellink aangemaakt.");
   } catch (err) {
