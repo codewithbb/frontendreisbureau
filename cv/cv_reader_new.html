@@ -323,6 +323,29 @@
       margin-bottom: 4px;
       display: block;
     }
+
+/* Verklein ruimte onder CV dropdown + Ververs */
+.stack > .btn-row {
+  margin-bottom: 0;
+}
+
+/* Verklein algemene verticale spacing in profielonderdelen */
+.stack {
+  gap: 6px; /* was 12px */
+}
+
+/* Haal extra top-margin bij eerste profielgroep weg */
+#profile_elements_container > div:first-child {
+  margin-top: 0 !important;
+}
+
+/* Titel zoals "Persoonlijke gegevens" compacter maken */
+.checklist-group-title {
+  margin-top: 6px !important;
+  margin-bottom: 4px !important;
+  font-weight: 600;
+}
+
   </style>
 </head>
 
@@ -335,28 +358,24 @@
       </div>
       <div class="sidebar-title">CV Tool</div>
 
-      <button class="nav-btn">Dashboard</button>
-      <button class="nav-btn active">Upload &amp; Bekijk CV</button>
-      <button class="nav-btn">Evalueer CVs</button>
-      <button class="nav-btn">Vacatures</button>
-      <button class="nav-btn">Profielen</button>
+<nav>
+  <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+  <a class="nav-btn active" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+  <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+    <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
+  <a class="nav-btn" href="/cv/vacatures.html">Vacatures</a>
+
+</nav>
     </aside>
 
     <!-- ====== Main content ====== -->
     <main class="main">
       <header class="main-header">
-        <h1>CV Tool</h1>
+        <h1>CV Tool - Upload &amp; bekijk CV</h1>
         <div class="subheader-row">
-          <h2>Upload &amp; Bekijk CV</h2>
           <!-- tabs blijven bestaan voor JS, maar we gebruiken alleen analyse-tab op andere pagina's -->
-          <div class="tabs">
-            <button class="tab active" data-tab="analyse">Analyse</button>
-            <button class="tab" data-tab="viewer">Notities</button>
-          </div>
+
         </div>
-        <p class="muted">
-          Upload een CV, bekijk de geparste onderdelen en stel een profiel samen op basis van de gewenste velden.
-        </p>
       </header>
 
       <!-- ====== Upload CV + Profielonderdelen (wireframe) ====== -->
@@ -381,7 +400,7 @@
 
           <div id="uploadCvStatus" class="alert hidden"></div>
 
-          <div>
+          <div class = "hidden">
             <span class="label-inline">Technische response</span>
             <pre id="uploadResponse" class="code-block hidden"></pre>
           </div>
@@ -393,22 +412,21 @@
 
           <div class="stack">
             <div>
-              <label for="available_cvs" class="label-inline">Bekijk bestaande CV&apos;s</label>
-              <div class="btn-row">
-                <select id="available_cvs"></select>
-                <button id="refreshCvsBtn" class="btn btn-ghost" type="button">Ververs</button>
-              </div>
-              <p class="muted">
-                Kies eerst een geüpload CV. De velden worden hieronder als selecteerbare onderdelen getoond.
-              </p>
+                <label for="available_cvs" class="label-inline">
+                  Bekijk bestaande CV&apos;s — kies eerst een geüpload CV om onderdelen te laden
+                </label>
+                <div class="btn-row">
+                  <select id="available_cvs"></select>
+                  <button id="refreshCvsBtn" class="btn btn-ghost" type="button">Ververs</button>
+                </div>
             </div>
 
-            <div>
-              <span class="label-inline">Beschikbare velden (checkboxes)</span>
+            <div id="profile-elements-wrapper" class="hidden">
               <div id="profile_elements_container" style="max-height: 260px; overflow:auto;">
                 <!-- Wordt dynamisch gevuld door profielen.js -->
               </div>
             </div>
+
 
             <div class="two-col">
               <div>
@@ -675,5 +693,29 @@
   <script src="/assets/js/cv-vacature-analyse.js" defer></script>
   <!-- JS: Profielen genereren / bewaren / delen -->
   <script src="/assets/js/profielen.js" defer></script>
+
+<script>
+  (function () {
+    const cvDropdown = document.getElementById("available_cvs");
+    const wrapper = document.getElementById("profile-elements-wrapper");
+
+    if (!cvDropdown || !wrapper) return;
+
+    // init: verberg als er nog niets gekozen is
+    if (!cvDropdown.value) {
+      wrapper.classList.add("hidden");
+    }
+
+    cvDropdown.addEventListener("change", () => {
+      if (cvDropdown.value) {
+        wrapper.classList.remove("hidden");
+      } else {
+        wrapper.classList.add("hidden");
+      }
+    });
+  })();
+</script>
+
+
 </body>
 </html>

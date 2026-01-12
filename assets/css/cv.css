@@ -245,3 +245,15 @@ body.cv .checklist-group-title {
   flex-shrink: 0;         /* voorkom dat hij kleiner wordt in flex */
   text-align: center;     /* tekst netjes centreren */
 }
+
+.nav-btn {
+  text-decoration: none;
+  display: block;
+}
+/* Zorg dat <a> zich exact gedraagt als de oude buttons */
+.sidebar .nav-btn {
+  display: block;
+  width: auto;          /* <-- dit is de sleutel */
+  box-sizing: border-box;
+  text-decoration: none;
+}
