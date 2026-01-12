@@ -2207,3 +2207,296 @@ body.reis .checkline{
   align-items:center;
   font-weight: 750;
 }
+
+/* =========================
+   REISBELLEN / TWILIO PAGE
+   ========================= */
+
+body.reis .reis-call{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 22px 18px 44px;
+}
+
+body.reis .call-hero{
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255,255,255,.86);
+  box-shadow: var(--shadow-soft);
+  padding: 18px;
+}
+
+body.reis .call-hero-inner{
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+body.reis .call-badges{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+body.reis .call-layout{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+  align-items: start;
+}
+@media (max-width: 1000px){
+  body.reis .call-layout{ grid-template-columns: 1fr; }
+}
+
+body.reis .call-row{
+  display:flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+body.reis .call-field{
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+body.reis .call-buttons{
+  display:flex;
+  gap: 10px;
+  align-items: end;
+  flex: 0 0 auto;
+}
+
+body.reis .call-help-inline{
+  margin-top: 6px;
+}
+
+body.reis .call-spinner{
+  text-align:center;
+  margin-top: 10px;
+}
+
+/* Call info card nested */
+body.reis .call-info{
+  margin-top: 14px;
+}
+
+body.reis .call-toolbar{
+  width: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body.reis .call-toolbar-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Mono + transcript */
+body.reis .mono{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body.reis textarea.transcript{
+  min-height: 180px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* If you don't already have loader2 in reis.css, copy it once globally */
+body.reis .loader2{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 5px solid rgba(20,28,45,.12);
+  border-top-color: rgba(56,189,248,.9);
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+/* =========================
+   NAVBAR (reis)
+   ========================= */
+
+body.reis .navbar{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(12px);
+}
+
+body.reis .navbar-inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 18px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body.reis .navbar-brand{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  text-decoration: none;
+  color: rgba(20,28,45,.92);
+  font-weight: 950;
+}
+
+body.reis .brand-mark{
+  width: 34px;
+  height: 34px;
+  display:grid;
+  place-items:center;
+  border-radius: 14px;
+  background: rgba(56,189,248,.14);
+  border: 1px solid rgba(56,189,248,.22);
+}
+
+body.reis .brand-text{
+  letter-spacing: .2px;
+}
+
+/* Desktop shell */
+body.reis .navbar-shell{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+body.reis .navbar-menu{
+  list-style: none;
+  display:flex;
+  gap: 6px;
+  align-items:center;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+body.reis .navbar-menu a{
+  display:inline-flex;
+  align-items:center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(20,28,45,.86);
+  font-weight: 850;
+  border: 1px solid transparent;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+body.reis .navbar-menu a:hover{
+  background: rgba(56,189,248,.10);
+  border-color: rgba(56,189,248,.18);
+  transform: translateY(-1px);
+}
+
+/* Optional active state (set via JS by comparing location.pathname) */
+body.reis .navbar-menu a.active{
+  background: rgba(56,189,248,.16);
+  border-color: rgba(56,189,248,.28);
+}
+
+/* Actions on right */
+body.reis .navbar-actions{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex: 0 0 auto;
+}
+
+body.reis .nav-action{
+  display:inline-flex;
+  align-items:center;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.70);
+  text-decoration:none;
+  color: rgba(20,28,45,.90);
+  font-weight: 900;
+  box-shadow: var(--shadow-soft);
+}
+
+body.reis .info-icon{
+  color:#000
+}
+
+body.reis .nav-action:hover{
+  border-color: rgba(56,189,248,.35);
+}
+
+body.reis .nav-primary{
+  background: rgba(56,189,248,.14);
+  border-color: rgba(56,189,248,.25);
+}
+
+/* Mobile */
+body.reis .nav-toggle{
+  display:none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.70);
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+@media (max-width: 980px){
+  body.reis .nav-toggle{ display:inline-flex; }
+
+  body.reis .navbar-shell{
+    display:none;
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 58px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.95);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  body.reis .navbar.open .navbar-shell{
+    display:flex;
+  }
+
+  body.reis .navbar-menu{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.reis .navbar-menu a{
+    border-radius: 14px;
+    justify-content: space-between;
+  }
+
+  body.reis .navbar-actions{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.reis .nav-action{
+    justify-content: center;
+  }
+}
