@@ -318,23 +318,21 @@
       </div>
       <div class="sidebar-title">CV Tool</div>
 
-      <button class="nav-btn">Dashboard</button>
-      <button class="nav-btn">Upload &amp; Bekijk CV</button>
-      <button class="nav-btn">Evalueer CVs</button>
-      <button class="nav-btn">Vacatures</button>
-      <button class="nav-btn active">Profielen</button>
+<nav>
+  <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+  <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+  <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+    <a class="nav-btn active" href="/cv/profile_viewer_new.html">Profielen</a>
+  <a class="nav-btn" href="/cv/vacatures.html">Vacatures</a>
+
+</nav>
+
     </aside>
 
     <!-- Main content -->
     <main class="main">
       <header class="main-header">
-        <h1>CV Tool</h1>
-        <div class="subheader-row">
-          <h2>Bekijk en deel profiel</h2>
-        </div>
-        <p class="muted">
-          Kies een CV, selecteer een profiel en deel de link met opdrachtgevers of collega&apos;s.
-        </p>
+        <h1>CV Tool - Bekijk &amp; deel profiel</h1>
       </header>
 
       <!-- Hoofdcard: selecties + profielweergave -->
@@ -346,12 +344,25 @@
             <select id="viewer_cv"></select>
           </div>
 
-          <div class="field">
+          <div class="field" style="display:flex; flex-direction:column;">
             <label for="profiles" class="label-inline">Profiel</label>
-            <select id="profiles">
-              <option value="" disabled selected>Selecteer profiel…</option>
-            </select>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="profiles">
+                <option value="" disabled selected>Selecteer profiel…</option>
+              </select>
+
+              <button
+                id="BtnViewProfile"
+                type="button"
+                class="btn btn-secondary"
+                style="white-space:nowrap;"
+              >
+                Bekijk profiel
+              </button>
+            </div>
           </div>
+
         </div>
 
         <div id="viewerStatus" class="alert hidden"></div>
@@ -367,29 +378,30 @@
         </div>
 
         <!-- Acties + link-output -->
-        <div class="link-row">
-          <div class="btn-row">
-            <button id="BtnViewProfile" type="button" class="btn btn-secondary">
-              Bekijk profiel
-            </button>
-            <button id="BtnDelen" type="button" class="btn btn-primary">
-              Deel profiel
-            </button>
-          </div>
+<div class="link-row" style="align-items:flex-start;">
+  <!-- Linker kolom: knop -->
+  <div>
+    <button id="BtnDelen" type="button" class="btn btn-primary">
+      Deel profiel
+    </button>
+  </div>
 
-          <div class="stack" style="flex:1; min-width:220px;">
-            <label class="label-inline">Link output</label>
-            <div id="shareBox" class="share-row muted">
-              <p class="muted">
-                Nog geen link. Klik op &ldquo;Deel profiel&rdquo; om een deellink te genereren.
-              </p>
-            </div>
-          </div>
-        </div>
+  <!-- Rechter kolom: link output -->
+  <div style="flex:1;">
+    <label class="label-inline">Link output</label>
 
-        <!-- Technische output voor JS (verborgen) -->
-        <pre id="responseBox" class="code-block hidden">Nog geen response</pre>
-        <pre id="responseBox2" class="code-block hidden"></pre>
+    <div id="shareBox" class="muted" style="margin-top:2px;">
+      <div class="muted">
+        Nog geen link. Klik op “Deel profiel” om een deellink te genereren.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- responseBox mag blijven voor JS, maar is permanent verborgen -->
+<pre id="responseBox" class="hidden"></pre>
+<pre id="responseBox2" class="hidden"></pre>
+
       </section>
 
       <!-- Verborgen builder-elementen nodig voor profielen.js, maar niet zichtbaar op deze pagina -->
