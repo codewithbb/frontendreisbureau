@@ -12,22 +12,46 @@
 <body class="reis">
   <div id="nav-placeholder"></div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>CO₂-berekening</h1>
-      <p>Bereken een schatting van de uitstoot per passagier voor een vlucht op basis van route en (optioneel) extra details.</p>
+  <main class="reis-co2">
+    <!-- HERO -->
+    <header class="co2-hero">
+      <div class="co2-hero-inner">
+        <div>
+          <p class="booking-eyebrow">Inzicht</p>
+          <h1>CO₂-berekening</h1>
+          <p class="booking-lead">
+            Bereken een schatting van de uitstoot per passagier voor een vlucht op basis van route
+            en (optioneel) extra details.
+          </p>
+
+          <div class="co2-badges">
+            <span class="badge">🌿 Indicatieve uitstoot</span>
+            <span class="badge">🧮 Route + factoren</span>
+            <span class="badge">📍 Vertrek & aankomst</span>
+          </div>
+        </div>
+
+        <div class="co2-hero-note">
+          <div class="map-note-card">
+            <strong>Let op</strong>
+            <p class="muted" style="margin:6px 0 0;">
+              Dit is een schatting. Werkelijke uitstoot hangt af van toesteltype, bezettingsgraad en route.
+            </p>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section class="grid-2">
+    <section class="co2-layout">
       <!-- LEFT: Form -->
-      <div class="card">
-        <div class="card-header">
+      <section class="card co2-form">
+        <div class="card-header co2-form-head">
           <div>
             <h2 class="card-title">Vluchtgegevens</h2>
             <p class="card-subtitle">Velden met * zijn verplicht.</p>
           </div>
 
-          <!-- Info tooltip (CSS-based, no JS required) -->
+          <!-- Info tooltip (CSS-based) -->
           <div class="info-container" aria-label="Uitleg formule">
             <div class="info-icon">i</div>
             <div class="tooltip">
@@ -46,48 +70,68 @@
           </div>
         </div>
 
-        <p class="help-text" style="margin-top:0;">
-          Hoe meer je invult, hoe accurater de schatting. Selecteer minimaal een vertrek- en aankomstluchthaven.
-        </p>
+        <div class="stack-sm">
+          <div class="form-section">
+            <div class="form-section-head">
+              <div class="form-section-icon">🛫</div>
+              <div>
+                <h3>Route</h3>
+                <p class="muted">Selecteer minimaal vertrek- en aankomstluchthaven.</p>
+              </div>
+            </div>
 
-        <label for="fly_from">Vertrek van *</label>
-        <select name="fly_from" id="fly_from">
-          <option value="" disabled selected>Selecteer luchthaven</option>
-        </select>
+            <label for="fly_from">Vertrek van *</label>
+            <select name="fly_from" id="fly_from">
+              <option value="" disabled selected>Selecteer luchthaven</option>
+            </select>
 
-        <label for="fly_to">Aankomst op *</label>
-        <select name="fly_to" id="fly_to" disabled>
-          <option value="" disabled selected>Selecteer eerst vertrek</option>
-        </select>
-
-        <label for="airline_name">Luchtvaartmaatschappij</label>
-        <input type="text" id="airline_name" name="airline_name" placeholder="Bijv. KLM" autocomplete="off" />
-        <div id="airline_suggestions" class="suggestions" style="display:none;"></div>
-
-        <div class="flex-row">
-          <div class="field">
-            <label for="departure_date">Vertrekdatum</label>
-            <input type="date" id="departure_date" name="departure_date" />
+            <label for="fly_to">Aankomst op *</label>
+            <select name="fly_to" id="fly_to" disabled>
+              <option value="" disabled selected>Selecteer eerst vertrek</option>
+            </select>
           </div>
-          <div class="field">
-            <label for="departure_time">Vertrektijdstip</label>
-            <input type="time" id="departure_time" name="departure_time" />
+
+          <div class="form-section">
+            <div class="form-section-head">
+              <div class="form-section-icon">🧾</div>
+              <div>
+                <h3>Extra details</h3>
+                <p class="muted">Optioneel — kan helpen bij een betere context.</p>
+              </div>
+            </div>
+
+            <label for="airline_name">Luchtvaartmaatschappij</label>
+            <div class="suggest-wrap">
+              <input type="text" id="airline_name" name="airline_name" placeholder="Bijv. KLM" autocomplete="off" />
+              <div id="airline_suggestions" class="suggestions hidden"></div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label for="departure_date">Vertrekdatum</label>
+                <input type="date" id="departure_date" name="departure_date" />
+              </div>
+              <div>
+                <label for="departure_time">Vertrektijdstip</label>
+                <input type="time" id="departure_time" name="departure_time" />
+              </div>
+            </div>
+
+            <label for="flight_number">Vluchtnummer</label>
+            <input type="text" id="flight_number" name="flight_number" placeholder="Bijv. KL1234" />
           </div>
+
+          <div class="booking-actions">
+            <button id="btn-calc" class="btn btn-primary btn-wide" type="button">Bereken uitstoot</button>
+            <button id="btn-reset" class="btn btn-secondary" type="button">Reset</button>
+          </div>
+
+          <div id="form-alert" class="alert alert-danger hidden"></div>
         </div>
-
-        <label for="flight_number">Vluchtnummer</label>
-        <input type="text" id="flight_number" name="flight_number" placeholder="Bijv. KL1234" />
-
-        <div class="button-container">
-          <button id="btn-calc" class="btn btn-primary" type="button">Bereken uitstoot</button>
-          <button id="btn-reset" class="btn btn-secondary" type="button">Reset</button>
-        </div>
-
-        <div id="form-alert" class="alert alert-danger" style="display:none;"></div>
-      </div>
+      </section>
 
       <!-- RIGHT: Result -->
-      <div class="card">
+      <aside class="card co2-result">
         <div class="card-header">
           <div>
             <h2 class="card-title">Resultaat</h2>
@@ -95,49 +139,28 @@
           </div>
         </div>
 
-        <div id="result" class="result-box">
-          <div class="alert" style="margin:0;">
-            Nog geen berekening uitgevoerd.
+        <div id="result" class="co2-result-box">
+          <div class="empty-state">
+            <div class="empty-icon">🌿</div>
+            <div>
+              <strong>Nog geen berekening</strong>
+              <p class="muted">Selecteer een route en klik op “Bereken uitstoot”.</p>
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <div class="stack-sm">
-          <h3 style="margin:0;">Toelichting</h3>
-          <p style="margin:0;">
+        <div class="scan-tips" style="margin-top:12px;">
+          <strong>Toelichting</strong>
+          <p class="muted" style="margin:6px 0 0;">
             Dit is een schatting en kan afwijken van de werkelijke uitstoot, afhankelijk van toesteltype,
             bezettingsgraad, route en operationele omstandigheden.
           </p>
         </div>
-      </div>
+      </aside>
     </section>
   </main>
 
   <script src="/assets/js/nav-reis.js" defer></script>
   <script src="/assets/js/co2-calculator.js" defer></script>
-
-  <!-- Kleine page-specific styling voor suggestions (mag later naar reis.css) -->
-  <style>
-    .suggestions{
-      margin-top: 8px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      overflow: hidden;
-      box-shadow: var(--shadow-md);
-    }
-    .suggestions div{
-      padding: 10px 12px;
-      cursor: pointer;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .suggestions div:hover{
-      background: rgba(255,255,255,.07);
-    }
-    .suggestions div:last-child{
-      border-bottom: none;
-    }
-  </style>
 </body>
 </html>

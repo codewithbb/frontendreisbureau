@@ -7,124 +7,93 @@
 
   <link rel="stylesheet" href="/assets/css/core.css" />
   <link rel="stylesheet" href="/assets/css/reis.css" />
-
-  <style>
-    .split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    @media (max-width: 950px){
-      .split { grid-template-columns: 1fr; }
-    }
-
-    .loader {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 5px solid rgba(255,255,255,.18);
-      border-top-color: rgba(56,189,248,.9);
-      animation: spin 0.9s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .file-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .file-meta{
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .kv {
-      display:grid;
-      grid-template-columns: 140px 1fr;
-      gap: 8px 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      border-radius: 16px;
-    }
-    @media (max-width: 520px){
-      .kv{ grid-template-columns: 1fr; }
-    }
-    .kv .k{
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 650;
-    }
-    .kv .v{
-      color: rgba(15, 15, 15, 0.92);
-      font-weight: 650;
-    }
-
-    .route-badge{
-      display:inline-flex;
-      gap: 10px;
-      align-items:center;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      font-weight: 800;
-      letter-spacing: .2px;
-    }
-    .route-badge small{
-      font-weight: 650;
-      color: var(--muted);
-      letter-spacing: 0;
-    }
-  </style>
 </head>
 
 <body class="reis">
   <div id="nav-placeholder"></div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>Ticket scannen</h1>
-      <p>Upload een foto of screenshot van je vliegticket. We halen de belangrijkste vluchtgegevens voor je eruit.</p>
+  <main class="reis-scan">
+    <!-- HERO -->
+    <header class="scan-hero">
+      <div class="scan-hero-inner">
+        <div>
+          <p class="booking-eyebrow">Scan</p>
+          <h1>Ticket scannen</h1>
+          <p class="booking-lead">
+            Upload een foto of screenshot van je vliegticket. We halen automatisch de belangrijkste vluchtgegevens eruit.
+          </p>
+        </div>
+
+        <div class="scan-hero-right">
+          <span class="badge">PNG/JPG</span>
+          <span class="badge">Snelle extractie</span>
+          <span class="badge">Demo-ready</span>
+        </div>
+      </div>
     </header>
 
-    <section class="split">
-      <!-- Upload -->
-      <div class="card">
+    <section class="scan-layout">
+      <!-- LEFT: Upload -->
+      <section class="card scan-card">
         <div class="card-header">
           <div>
             <h2 class="card-title">Upload je ticket</h2>
-            <p class="card-subtitle">Ondersteunt PNG/JPG. Beste resultaat: duidelijke tekst, weinig schaduw.</p>
+            <p class="card-subtitle">Beste resultaat: scherpe tekst, weinig schaduw, goede belichting.</p>
           </div>
         </div>
 
         <form id="checkin-form" class="stack-sm">
-          <label for="ticket-file">Ticketafbeelding</label>
-          <input type="file" id="ticket-file" accept="image/*" required />
+          <div class="scan-drop">
+            <div class="scan-drop-inner">
+              <div class="scan-drop-icon">📷</div>
+              <div>
+                <div class="scan-drop-title">Sleep je afbeelding hierheen</div>
+                <div class="scan-drop-sub muted">of kies een bestand via de knop hieronder</div>
+              </div>
+            </div>
 
-          <div class="file-row">
-            <div id="file-name" class="file-meta">Nog geen bestand gekozen.</div>
-            <button id="btn-clear" type="button" class="btn btn-ghost">Wissen</button>
+            <label class="sr-only" for="ticket-file">Ticketafbeelding</label>
+            <input type="file" id="ticket-file" accept="image/*" required />
+          </div>
+
+          <div class="file-row2">
+            <div>
+              <div class="file-meta-title">Geselecteerd bestand</div>
+              <div id="file-name" class="file-meta">Nog geen bestand gekozen.</div>
+            </div>
+
+            <div class="file-actions">
+              <button id="btn-clear" type="button" class="btn btn-ghost">Wissen</button>
+            </div>
           </div>
 
           <div class="help-text">
-            Je afbeelding wordt verstuurd naar onze server om gegevens te herkennen. Deel geen gevoelige info die je niet wil uploaden.
+            Je afbeelding wordt naar onze server gestuurd om gegevens te herkennen. Upload geen gevoelige informatie die je niet wil delen.
           </div>
 
-          <div id="error" class="alert alert-danger" style="display:none;"></div>
+          <div id="error" class="alert alert-danger hidden"></div>
 
-          <div class="button-container">
-            <button id="btn-submit" type="submit" class="btn btn-primary">Upload &amp; bekijk vlucht</button>
+          <div class="scan-actions">
+            <button id="btn-submit" type="submit" class="btn btn-primary btn-wide">
+              Upload &amp; bekijk vlucht
+            </button>
+          </div>
+
+          <!-- Optional preview slot: je JS kan hier later een preview in zetten (niet verplicht) -->
+          <div class="scan-preview">
+            <div class="scan-preview-head">
+              <strong>Preview</strong>
+              <!-- <span class="muted">optioneel</span> -->
+            </div>
+            <div class="scan-preview-box">
+              <div class="muted">Na het kiezen van een bestand kun je hier een preview tonen.</div>
+            </div>
           </div>
         </form>
-      </div>
+      </section>
 
-      <!-- Resultaat -->
-      <div class="card">
+      <!-- RIGHT: Result -->
+      <aside class="card scan-result">
         <div class="card-header">
           <div>
             <h2 class="card-title">Resultaat</h2>
@@ -132,15 +101,33 @@
           </div>
         </div>
 
-        <div id="resultState">
-          <div class="alert" style="margin:0;">Upload links je ticket om te beginnen.</div>
+        <!-- default state -->
+        <div id="resultState" class="result-state">
+          <div class="empty-state">
+            <div class="empty-icon">🧾</div>
+            <div>
+              <strong>Nog geen ticket geüpload</strong>
+              <p class="muted">Upload links je ticket om te starten.</p>
+            </div>
+          </div>
         </div>
 
-        <div id="spinner" style="display:none; text-align:center; margin-top:14px;">
-          <div class="loader" aria-label="Laden"></div>
+        <!-- loading state -->
+        <div id="spinner" class="hidden scan-spinner" aria-live="polite">
+          <div class="loader2" aria-label="Laden"></div>
           <div class="help-text" style="margin-top:10px;">Ticket wordt verwerkt…</div>
         </div>
-      </div>
+
+        <!-- Tip box -->
+        <div class="scan-tips">
+          <strong>Tips voor betere herkenning</strong>
+          <ul>
+            <li>Gebruik een scherpe screenshot of foto zonder motion blur.</li>
+            <li>Vermijd reflecties / glans op papier.</li>
+            <li>Laat ticketinfo groot in beeld (croppen helpt).</li>
+          </ul>
+        </div>
+      </aside>
     </section>
   </main>
 

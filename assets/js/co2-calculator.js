@@ -24,7 +24,8 @@ let airlinesCache = null;
 let airlinesCacheTime = 0;
 
 function showAlert(message) {
-  alertDiv.style.display = "block";
+  // alertDiv.style.display = "block";
+  alertDiv.classList.add("hidden");
   alertDiv.textContent = message;
 }
 
@@ -149,7 +150,8 @@ async function handleAirlineSuggestions() {
       suggestionBox.appendChild(div);
     });
 
-    suggestionBox.style.display = "block";
+    // suggestionBox.style.display = "block";
+    suggestionBox.classList.add("hidden");
   } catch (err) {
     console.error(err);
     suggestionBox.style.display = "none";

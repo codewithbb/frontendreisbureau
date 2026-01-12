@@ -13,6 +13,53 @@ const errorEl = document.getElementById("error");
 const resultState = document.getElementById("resultState");
 const spinner = document.getElementById("spinner");
 
+// === Ticket preview (kleine UX-upgrade) ===
+const previewBox = document.querySelector(".scan-preview-box");
+
+if (fileInput && previewBox) {
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+
+    if (!file) {
+      previewBox.innerHTML = '<div class="muted">Geen preview beschikbaar.</div>';
+      return;
+    }
+
+    // Alleen images previewen
+    if (!file.type.startsWith("image/")) {
+      previewBox.innerHTML = '<div class="muted">Geen afbeelding om te previewen.</div>';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      previewBox.innerHTML = `
+        <img 
+          src="${reader.result}" 
+          alt="Ticket preview" 
+          style="
+            max-width:100%;
+            max-height:220px;
+            border-radius:12px;
+            border:1px solid var(--border);
+            object-fit:contain;
+          "
+        />
+      `;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// Reset preview bij wissen
+if (btnClear && previewBox) {
+  btnClear.addEventListener("click", () => {
+    previewBox.innerHTML =
+      '<div class="muted">Na het kiezen van een bestand kun je hier een preview tonen.</div>';
+  });
+}
+
 function cleanIata(str) {
   if (!str) return "";
   return String(str).replace(/\s+/g, "").toUpperCase();
