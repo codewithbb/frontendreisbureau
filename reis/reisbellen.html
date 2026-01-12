@@ -3,101 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Telefoon demo (Twilio)</title>
+  <title>Telefonisch boeken (Twilio)</title>
 
   <link rel="stylesheet" href="/assets/css/core.css" />
   <link rel="stylesheet" href="/assets/css/reis.css" />
-
-  <style>
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
-
-    .loader {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 5px solid rgba(0,0,0,.12);
-      border-top-color: rgba(99,102,241,.95);
-      animation: spin .9s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .hidden { display: none !important; }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    textarea.transcript {
-      min-height: 180px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    .toolbar {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .toolbar .right{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.05);
-      font-size: 13px;
-    }
-
-    .muted { opacity: .75; }
-
-    .row {
-      display:flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: end;
-    }
-    .row > * { flex: 1 1 240px; }
-
-    .help-inline { margin-top: 6px; }
-  </style>
 </head>
 
 <body class="reis">
   <div id="nav-placeholder"></div>
-  <main class="page">
-    <header class="page-title">
-      <h1>Telefonisch boeken (Twilio)</h1>
-      <p>Vul je telefoonnummer in, ontvang een belletje, spreek een zin in, en zie de transcriptie hieronder verschijnen.</p>
+
+  <main class="reis-call">
+    <!-- HERO -->
+    <header class="call-hero">
+      <div class="call-hero-inner">
+        <div>
+          <p class="booking-eyebrow">Service</p>
+          <h1>Telefonisch boeken</h1>
+          <p class="booking-lead">
+            Vul je telefoonnummer in, ontvang een belletje, spreek een zin in, en zie de transcriptie verschijnen.
+          </p>
+
+          <div class="call-badges">
+            <span class="badge">📞 Twilio call</span>
+            <span class="badge">🗣️ Speech-to-text</span>
+            <span class="badge">🧾 JSON intent</span>
+          </div>
+        </div>
+
+        <div class="call-hero-note">
+          <div class="map-note-card">
+            <strong>Proof-of-tech</strong>
+            <p class="muted" style="margin:6px 0 0;">
+              We bellen alleen NL-nummers. Spreek rustig en duidelijk voor betere herkenning.
+            </p>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section class="grid">
-      <!-- LEFT: Input -->
-      <div class="card">
+    <section class="call-layout">
+      <!-- LEFT -->
+      <section class="card">
         <div class="card-header">
           <div>
             <h2 class="card-title">1) Bel mij</h2>
-            <p class="card-subtitle">We bellen alleen NL-nummers (proof-of-tech).</p>
+            <p class="card-subtitle">Start de demo en volg de status hieronder.</p>
           </div>
         </div>
 
         <form id="callForm" class="stack-sm">
-          <div class="row">
-            <div>
+          <div class="call-row">
+            <div class="call-field">
               <label for="phoneInput">
                 Telefoonnummer
                 <span class="help-text">(bijv. 0612345678)</span>
@@ -111,34 +67,39 @@
                 placeholder="0612345678"
                 required
               />
-              <div class="help-text help-inline muted">
+              <div class="help-text muted call-help-inline">
                 Tip: neem op en spreek rustig. Na een paar seconden verschijnt de tekst.
               </div>
             </div>
 
-            <div style="display:flex; gap:10px; align-items:end; flex:0 0 auto;">
+            <div class="call-buttons">
               <button id="callBtn" type="submit" class="btn btn-primary">Bel mij</button>
               <button id="resetBtn" type="button" class="btn btn-secondary">Reset</button>
             </div>
           </div>
 
-          <div id="spinner" class="hidden" style="text-align:center; margin-top:10px;">
-            <div class="loader" aria-label="Laden"></div>
+          <div id="spinner" class="hidden call-spinner" aria-live="polite">
+            <div class="loader2" aria-label="Laden"></div>
             <div class="help-text" style="margin-top:10px;">Bezig met bellen / luisteren…</div>
           </div>
 
           <div id="status" class="alert hidden" style="margin-top:12px;"></div>
         </form>
 
-        <div class="card" style="margin-top:16px;">
+        <!-- Call info -->
+        <section class="card call-info">
           <div class="card-header">
-            <div class="toolbar" style="width:100%;">
+            <div class="call-toolbar">
               <div>
                 <h2 class="card-title">Call info</h2>
                 <p class="card-subtitle">Handig voor debug tijdens demo.</p>
               </div>
-              <div class="right">
-                <span class="badge"><span class="muted">Status:</span> <span id="callStatusLabel" class="mono">—</span></span>
+
+              <div class="call-toolbar-right">
+                <span class="pill">
+                  <span class="muted">Status:</span>
+                  <span id="callStatusLabel" class="mono">—</span>
+                </span>
               </div>
             </div>
           </div>
@@ -150,11 +111,11 @@
             <div class="help-text" style="margin-top:10px;">Gebeld nummer</div>
             <div id="callTo" class="mono">—</div>
           </div>
-        </div>
-      </div>
+        </section>
+      </section>
 
-      <!-- RIGHT: Output -->
-      <div class="card">
+      <!-- RIGHT -->
+      <section class="card">
         <div class="card-header">
           <div>
             <h2 class="card-title">2) Transcript</h2>
@@ -179,18 +140,18 @@
             Let op: dit is een proof-of-tech. Herkenning kan variëren afhankelijk van achtergrondgeluid.
           </div>
 
-          <label for="aiBox">Voorkeur: (JSON)</label>
+          <label for="aiBox">Voorkeur (JSON)</label>
           <textarea
             id="aiBox"
             class="transcript"
             placeholder="Nog geen uiteindelijke voorkeur."
             readonly
           ></textarea>
-
         </div>
-      </div>
+      </section>
     </section>
   </main>
+
   <script src="/assets/js/nav-reis.js" defer></script>
   <script src="/assets/js/reisbellen.js" defer></script>
 </body>

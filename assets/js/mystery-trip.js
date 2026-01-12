@@ -59,35 +59,81 @@ function setResultSuccess(data) {
   const paklijst  = escapeHtml(data.paklijst || "");
   const motivatie = escapeHtml(data.motivatie || "");
 
+  // (optioneel) Als je in je JS een read-button hebt:
+  const readBtn = document.getElementById("btn-read");
+
   resultState.innerHTML = `
     <div class="stack-sm">
-      <div class="alert" style="margin:0;">
-        <strong>Hey <span id="klantnaamText">${klantnaam}</span>,</strong>
-        jouw ideale <span id="type_reisText">${typeReis}</span> is bepaald!<br/>
-        <span class="muted">De bestemming blijft nog een verrassing…</span>
+      <!-- Result header -->
+      <div class="result-hero">
+        <div class="result-hero-left">
+          <div class="result-icon">🎁</div>
+          <div>
+            <div class="result-title">
+              Hey <span id="klantnaamText">${klantnaam}</span> 👋
+            </div>
+            <div class="result-sub">
+              Jouw ideale <span id="type_reisText">${typeReis}</span> is bepaald.
+              <span class="muted">De bestemming blijft nog een verrassing…</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-hero-right">
+          <span class="pill">Paklijst</span>
+          <span class="pill">Motivatie</span>
+        </div>
       </div>
 
-      <div>
-        <h3 style="margin:0 0 8px 0;">Paklijst</h3>
-        <div class="paklijst" id="paklijstText">${paklijst}</div>
-      </div>
+      <!-- Paklijst -->
+      <section class="result-card">
+        <div class="result-card-head">
+          <h3>Paklijst</h3>
+          <span class="muted">op maat</span>
+        </div>
+        <div class="result-box paklijst pro-scroll" id="paklijstText">${paklijst}</div>
+      </section>
 
-      <div class="accordion" id="motivatieAcc">
-        <button type="button" id="toggleMotivatie">
-          Waarom past deze trip bij jou? ▾
-        </button>
-        <div class="body" id="motivatieText">${motivatie}</div>
-      </div>
+      <!-- Motivatie (accordion) -->
+      <section class="result-card">
+        <div class="accordion2" id="motivatieAcc" aria-expanded="false">
+          <button type="button" class="accordion2-btn" id="toggleMotivatie" aria-controls="motivatieBody">
+            <div class="accordion2-left">
+              <span class="accordion2-icon">🧠</span>
+              <div>
+                <div class="accordion2-title">Waarom past deze trip bij jou?</div>
+                <div class="accordion2-sub muted">Uitleg & tips voor jouw voorkeuren</div>
+              </div>
+            </div>
+            <span class="accordion2-chevron" aria-hidden="true">▾</span>
+          </button>
+
+          <div class="accordion2-body" id="motivatieBody">
+            <div class="result-box" id="motivatieText">${motivatie}</div>
+          </div>
+        </div>
+      </section>
     </div>
   `;
 
-  // accordion toggle
+  // Accordion toggle
   const acc = document.getElementById("motivatieAcc");
   const btn = document.getElementById("toggleMotivatie");
-  btn.addEventListener("click", () => {
-    acc.classList.toggle("open");
-  });
+  const body = document.getElementById("motivatieBody");
+
+  if (btn && acc && body) {
+    btn.addEventListener("click", () => {
+      const isOpen = acc.classList.toggle("open");
+      acc.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+
+  // (optioneel) Enable "Lees voor" als er motivatie/paklijst is
+  if (readBtn) {
+    readBtn.disabled = !(paklijst.trim() || motivatie.trim());
+  }
 }
+
 
 function normalizePayload(formData) {
   const payload = Object.fromEntries(formData.entries());

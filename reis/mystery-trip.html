@@ -10,186 +10,212 @@
 
   <!-- Azure Speech SDK -->
   <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
-
-  <style>
-    /* Page-specific polish (mag later naar reis.css) */
-    .split {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 16px;
-      align-items: start;
-    }
-    @media (max-width: 1000px) {
-      .split { grid-template-columns: 1fr; }
-    }
-
-    .loader {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 5px solid rgba(255,255,255,.18);
-      border-top-color: rgba(56,189,248,.9);
-      animation: spin 0.9s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .paklijst {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      border-radius: 16px;
-      padding: 12px 12px;
-      overflow: auto;
-      max-height: 240px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .accordion {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    .accordion button {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: 0;
-      padding: 12px 12px;
-      cursor: pointer;
-      color: rgba(255,255,255,.92);
-      font-weight: 700;
-    }
-    .accordion .body {
-      padding: 0 12px 12px;
-      color: rgba(255,255,255,.86);
-      display: none;
-    }
-    .accordion.open .body { display: block; }
-    .muted { color: var(--muted); }
-  </style>
 </head>
 
 <body class="reis">
   <div id="nav-placeholder"></div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>Mystery Trip</h1>
-      <p>Vul je voorkeuren in en ontvang een persoonlijke reisaanbeveling — de bestemming blijft nog even geheim.</p>
+  <main class="reis-mystery">
+    <!-- HERO -->
+    <header class="myst-hero">
+      <div class="myst-hero-inner">
+        <div>
+          <p class="booking-eyebrow">Inspiratie</p>
+          <h1>Mystery Trip</h1>
+          <p class="booking-lead">
+            Vul je voorkeuren in en ontvang een persoonlijke reisaanbeveling — de bestemming blijft nog even geheim.
+          </p>
+
+          <div class="myst-steps-mini">
+            <div class="myst-chip"><span>1</span> Voorkeuren</div>
+            <div class="myst-chip"><span>2</span> Match</div>
+            <div class="myst-chip"><span>3</span> Paklijst + motivatie</div>
+          </div>
+        </div>
+
+        <div class="myst-hero-media">
+          <img class="myst-hero-img" src="/assets/reis/mystery-hero.png" alt="Reisinspiratie achtergrond" />
+          <div class="myst-hero-badges">
+            <span class="badge">AI advies</span>
+            <span class="badge">Paklijst</span>
+            <span class="badge">🔊 Voorlezen</span>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section class="split">
+    <section class="myst-layout">
       <!-- FORM -->
-      <div class="card">
+      <section class="card myst-form">
         <div class="card-header">
           <div>
             <h2 class="card-title">Jouw voorkeuren</h2>
             <p class="card-subtitle">Hoe meer je invult, hoe beter de match.</p>
           </div>
+          <div class="myst-sidehint">
+            <span class="hint-pill">Tip: wees specifiek</span>
+          </div>
         </div>
 
         <form id="tripForm" class="stack-sm">
-          <div class="grid-2">
-            <div>
-              <label for="naam">Je naam</label>
-              <input id="naam" type="text" name="naam" placeholder="Bijv. Julian" required />
+          <!-- Section: Basics -->
+          <div class="form-section">
+            <div class="form-section-head">
+              <div class="form-section-icon">🧭</div>
+              <div>
+                <h3>Basis</h3>
+                <p class="muted">Wie gaat er mee en wat voor type trip zoek je?</p>
+              </div>
             </div>
 
-            <div>
-              <label for="soort_reis">Soort reis</label>
-              <select id="soort_reis" name="soort_reis" required>
-                <option value="" selected>Kies een type</option>
-                <option value="zonvakantie">Zonvakantie</option>
-                <option value="citytrip">Citytrip</option>
-                <option value="rondreis">Rondreis</option>
-              </select>
+            <div class="grid-2">
+              <div>
+                <label for="naam">Je naam</label>
+                <input id="naam" type="text" name="naam" placeholder="Bijv. Julian" required />
+              </div>
+
+              <div>
+                <label for="soort_reis">Soort reis</label>
+                <select id="soort_reis" name="soort_reis" required>
+                  <option value="" selected>Kies een type</option>
+                  <option value="zonvakantie">Zonvakantie</option>
+                  <option value="citytrip">Citytrip</option>
+                  <option value="rondreis">Rondreis</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label for="wanneer">Vertrekdatum</label>
+                <input id="wanneer" type="date" name="wanneer" required min="2026-01-01" max="2030-12-31" />
+                <div class="help-text">Selecteer een datum tussen 2026 en 2030.</div>
+              </div>
+
+              <div>
+                <label for="aantal_personen">Aantal personen</label>
+                <input id="aantal_personen" name="aantal_personen" type="number" min="1" placeholder="Bijv. 2" required />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label for="vervoer">Vervoer</label>
+                <select id="vervoer" name="vervoer" required>
+                  <option value="" selected>Kies vervoer</option>
+                  <option value="vliegtuig">Vliegtuig</option>
+                  <option value="auto">Auto</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="regio">Regio</label>
+                <select id="regio" name="regio" required>
+                  <option value="" selected>Kies regio</option>
+                  <option value="binnen europa">Binnen Europa</option>
+                  <option value="buiten europa">Buiten Europa</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="grid-2">
-            <div>
-              <label for="wanneer">Vertrekdatum</label>
-              <input id="wanneer" type="date" name="wanneer" required min="2026-01-01" max="2030-12-31" />
-              <div class="help-text">Selecteer een datum tussen 2026 en 2030.</div>
+          <!-- Section: Budget -->
+          <div class="form-section">
+            <div class="form-section-head">
+              <div class="form-section-icon">💶</div>
+              <div>
+                <h3>Budget & duur</h3>
+                <p class="muted">Wat past binnen je planning?</p>
+              </div>
             </div>
 
-            <div>
-              <label for="aantal_personen">Aantal personen</label>
-              <input id="aantal_personen" name="aantal_personen" type="number" min="1" placeholder="Bijv. 2" required />
-            </div>
-          </div>
+            <div class="grid-2">
+              <div>
+                <label for="budget_pp_eur">Budget per persoon (€)</label>
+                <input id="budget_pp_eur" name="budget_pp_eur" type="number" min="0" placeholder="Bijv. 800" required />
+              </div>
 
-          <div class="grid-2">
-            <div>
-              <label for="vervoer">Vervoer</label>
-              <select id="vervoer" name="vervoer" required>
-                <option value="" selected>Kies vervoer</option>
-                <option value="vliegtuig">Vliegtuig</option>
-                <option value="auto">Auto</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="regio">Regio</label>
-              <select id="regio" name="regio" required>
-                <option value="" selected>Kies regio</option>
-                <option value="binnen europa">Binnen Europa</option>
-                <option value="buiten europa">Buiten Europa</option>
-              </select>
+              <div>
+                <label for="aantal_dagen">Aantal dagen</label>
+                <input id="aantal_dagen" name="aantal_dagen" type="number" min="1" placeholder="Bijv. 7" required />
+              </div>
             </div>
           </div>
 
-          <div class="grid-2">
-            <div>
-              <label for="budget_pp_eur">Budget per persoon (€)</label>
-              <input id="budget_pp_eur" name="budget_pp_eur" type="number" min="0" placeholder="Bijv. 800" required />
+          <!-- Section: Extras -->
+          <div class="form-section">
+            <div class="form-section-head">
+              <div class="form-section-icon">✨</div>
+              <div>
+                <h3>Extra wensen</h3>
+                <p class="muted">Optioneel, maar helpt bij een betere match.</p>
+              </div>
             </div>
 
-            <div>
-              <label for="aantal_dagen">Aantal dagen</label>
-              <input id="aantal_dagen" name="aantal_dagen" type="number" min="1" placeholder="Bijv. 7" required />
-            </div>
+            <label for="uitgesloten_landen">Landen die je wilt uitsluiten (optioneel)</label>
+            <input id="uitgesloten_landen" name="uitgesloten_landen" type="text" placeholder="Bijv. Frankrijk, Spanje" />
+
+            <label for="voorkeuren">Voorkeuren (optioneel)</label>
+            <input id="voorkeuren" name="voorkeuren" type="text" placeholder="Bijv. strand, cultuur, natuur, avontuur" />
+
+            <label for="opmerkingen">Vrije opmerkingen (optioneel)</label>
+            <textarea id="opmerkingen" name="opmerkingen" placeholder="Bijv. ik wil vooral rust, niet te warm, graag hiken…"></textarea>
           </div>
 
-          <label for="uitgesloten_landen">Landen die je wilt uitsluiten (optioneel)</label>
-          <input id="uitgesloten_landen" name="uitgesloten_landen" type="text" placeholder="Bijv. Frankrijk, Spanje" />
+          <div id="form-error" class="alert alert-danger hidden"></div>
 
-          <label for="voorkeuren">Voorkeuren (optioneel)</label>
-          <input id="voorkeuren" name="voorkeuren" type="text" placeholder="Bijv. strand, cultuur, natuur, avontuur" />
-
-          <label for="opmerkingen">Vrije opmerkingen (optioneel)</label>
-          <textarea id="opmerkingen" name="opmerkingen" placeholder="Bijv. ik wil vooral rust, niet te warm, graag hiken…"></textarea>
-
-          <div id="form-error" class="alert alert-danger" style="display:none;"></div>
-
-          <div class="button-container">
-            <button id="btn-submit" type="submit" class="btn btn-primary">Advies genereren</button>
+          <div class="booking-actions">
+            <button id="btn-submit" type="submit" class="btn btn-primary btn-wide">Advies genereren</button>
             <button id="btn-reset" type="button" class="btn btn-secondary">Reset</button>
           </div>
+
+          <div class="trust-mini">
+            <div class="trust-mini-item"><span>🧳</span> Paklijst op maat</div>
+            <div class="trust-mini-item"><span>🧠</span> Motivatie & tips</div>
+            <div class="trust-mini-item"><span>🔊</span> Voorleesmodus</div>
+          </div>
         </form>
-      </div>
+      </section>
 
       <!-- RESULT -->
-      <div class="card">
-        <div class="card-header">
+      <aside class="card myst-result">
+        <div class="card-header myst-result-head">
           <div>
             <h2 class="card-title">Jouw mystery trip</h2>
             <p class="card-subtitle">Hier verschijnt je paklijst en motivatie.</p>
           </div>
+
+          <div class="myst-toolbar">
+            <button id="btn-read" type="button" class="btn btn-secondary" disabled>🔊 Lees voor</button>
+          </div>
         </div>
 
-        <div id="resultState">
-          <div class="alert" style="margin:0;">Vul links je gegevens in en klik op “Advies genereren”.</div>
+        <!-- State container (JS vult dit) -->
+        <div id="resultState" class="myst-result-body">
+          <div class="empty-state">
+            <div class="empty-icon">🎁</div>
+            <div>
+              <strong>Klaar voor een verrassing?</strong>
+              <p class="muted">Vul links je gegevens in en klik op “Advies genereren”.</p>
+            </div>
+          </div>
         </div>
 
-        <div class="button-container" style="margin-top:12px;">
-          <button id="btn-read" type="button" class="btn btn-secondary" disabled>🔊 Lees voor</button>
+        <!-- Optional: loading placeholder (als je JS dit kan togglen) -->
+        <div id="myst-loading" class="hidden myst-loading">
+          <div class="loader2" aria-label="Laden"></div>
+          <div class="help-text" style="margin-top:10px;">Mystery trip wordt samengesteld…</div>
         </div>
 
-        <div id="speech-status" class="help-text"></div>
-      </div>
+        <div id="speech-status" class="help-text" style="margin-top:10px;"></div>
+
+        <div class="scan-tips" style="margin-top:12px;">
+          <strong>Pro tip</strong>
+          <p class="muted" style="margin:6px 0 0;">
+            Voor demo’s: geef een duidelijke voorkeur zoals “hiken + natuur + niet te heet” — dan krijg je een leuker verhaal.
+          </p>
+        </div>
+      </aside>
     </section>
   </main>
 
