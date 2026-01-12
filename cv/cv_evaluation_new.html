@@ -2,122 +2,146 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CV Tool – CVs evalueren met vacature</title>
 
   <!-- Jullie bestaande styling -->
   <link rel="stylesheet" href="/assets/css/cv.css" />
 
   <style>
-    /* ====== Consistente basis (zelfde look & feel als je andere pagina’s) ====== */
     body.cv { margin:0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     .layout { display:flex; min-height:100vh; }
-    .sidebar {
-      width:220px; background:#111827; color:#e5e7eb; padding:24px 16px; box-sizing:border-box;
+
+    /* Sidebar (consistent met je andere pagina’s) */
+    .sidebar{
+      width:220px; background:#111827; color:#e5e7eb;
+      padding:24px 16px; box-sizing:border-box;
       display:flex; flex-direction:column; align-items:stretch; gap:16px;
     }
-    .sidebar-logo { width:40px; height:40px; border-radius:12px; margin-bottom:4px; align-self:center; }
-    .sidebar-logo img { width:100%; height:100%; object-fit:contain; display:block; }
-    .sidebar-title { font-size:20px; font-weight:600; text-align:center; margin-bottom:16px; }
-    .nav-btn {
-      display:block; width:100%; margin-bottom:6px; padding:8px 12px; border-radius:999px;
-      border:1px solid transparent; background:#1f2937; color:#e5e7eb; text-align:left; cursor:pointer; font-size:14px;
+    .sidebar-logo{ width:40px; height:40px; border-radius:12px; margin-bottom:4px; align-self:center; }
+    .sidebar-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+    .sidebar-title{ font-size:20px; font-weight:600; text-align:center; margin-bottom:16px; }
+    .nav-btn{
+      display:block; width:auto; box-sizing:border-box;
+      margin-bottom:6px; padding:8px 12px;
+      border-radius:999px; border:1px solid transparent;
+      background:#1f2937; color:#e5e7eb; text-align:left;
+      cursor:pointer; font-size:14px; text-decoration:none;
     }
-    .nav-btn.active { background:#0f62fe; border-color:#60a5fa; }
-    .nav-btn:not(.active):hover { background:#111827; }
+    .nav-btn.active{ background:#0f62fe; border-color:#60a5fa; }
+    .nav-btn:not(.active):hover{ background:#111827; }
 
-    .main { flex:1; padding:24px 32px; box-sizing:border-box; }
-    .main-header h1 { margin:0 0 4px 0; font-size:28px; }
-    .card {
-      background:#fff; border-radius:16px; padding:16px 18px; box-shadow:0 10px 22px rgba(2,6,23,.08);
+    /* Main */
+    .main{ flex:1; padding:24px 32px; box-sizing:border-box; }
+    .main-header h1{ margin:0 0 4px 0; font-size:28px; }
+    .muted{ color:#6b7280; font-size:13px; }
+    .hidden{ display:none !important; }
+
+    /* Card */
+    .card{
+      background:#fff; border-radius:16px;
+      padding:16px 18px; box-shadow:0 10px 22px rgba(2,6,23,.08);
       box-sizing:border-box;
     }
-    .stack { display:flex; flex-direction:column; gap:12px; }
-    .muted { color:#6b7280; font-size:13px; }
-    .hidden { display:none !important; }
+    .stack{ display:flex; flex-direction:column; gap:12px; }
 
-    label { font-size:14px; color:#0f172a; }
-    select, textarea, input[type="text"], input[type="file"] {
-      width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px;
-      border:1px solid rgba(15,23,42,.14); font-size:14px; font-family:inherit;
+    /* Controls */
+    label{ font-size:14px; color:#0f172a; }
+    .label-inline{ font-size:13px; color:#64748b; margin-bottom:4px; display:block; }
+    select, textarea, input[type="text"], input[type="file"]{
+      width:100%; box-sizing:border-box; padding:8px 10px;
+      border-radius:8px; border:1px solid rgba(15,23,42,.14);
+      font-size:14px; font-family:inherit; background:#fff;
     }
-    textarea { resize:vertical; min-height:70px; }
+    textarea{ resize:vertical; min-height:70px; }
 
-    .btn {
+    .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:6px;
-      border-radius:999px; border:1px solid transparent; padding:6px 14px;
-      font-size:14px; cursor:pointer; font-family:inherit;
+      border-radius:999px; border:1px solid transparent;
+      padding:6px 14px; font-size:14px; cursor:pointer; font-family:inherit;
     }
-    .btn-primary { background:#0f62fe; color:#fff; box-shadow:0 12px 24px rgba(15,98,254,.20); }
-    .btn-secondary { background:#e5e7eb; color:#111827; }
-    .btn-ghost { background:transparent; color:#111827; border-color:rgba(15,23,42,.14); }
+    .btn-primary{ background:#0f62fe; color:#fff; box-shadow:0 12px 24px rgba(15,98,254,.20); }
+    .btn-ghost{ background:transparent; color:#111827; border-color:rgba(15,23,42,.14); }
+    .btn-ghost:hover{ background: rgba(148,163,184,.10); }
 
-    .btn-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-
-    .alert { border-radius:8px; padding:6px 10px; font-size:13px; margin-top:8px; }
-    .alert-info { background:#eff6ff; color:#1d4ed8; }
-    .alert-success { background:#ecfdf5; color:#15803d; }
-    .alert-warning { background:#fffbeb; color:#92400e; }
-    .alert-danger { background:#fef2f2; color:#b91c1c; }
-
-    .label-inline { font-size:13px; color:#64748b; margin-bottom:4px; display:block; }
-
-    /* ====== Wireframe layout: boven filters, onder results 2-koloms ====== */
-    .filters-row {
+    .filters-row{
       display:grid;
       grid-template-columns: minmax(220px, 260px) minmax(220px, 260px) 1fr;
-      gap:16px;
-      align-items:end;
+      gap:16px; align-items:end;
     }
-    .filters-row .field { min-width: 0; }
-    .filters-row .actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .filters-row .actions{ display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
 
-    .results-grid {
-      display:grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap:18px;
-      align-items:start;
-    }
+    .alert{ border-radius:8px; padding:6px 10px; font-size:13px; margin-top:8px; }
+    .alert-info{ background:#eff6ff; color:#1d4ed8; }
+    .alert-success{ background:#ecfdf5; color:#15803d; }
+    .alert-warning{ background:#fffbeb; color:#92400e; }
+    .alert-danger{ background:#fef2f2; color:#b91c1c; }
 
-    /* ====== Score bar ====== */
-    .score-row { display:flex; align-items:center; gap:12px; }
-    .score-label { font-weight:600; }
-    .score-bar {
-      flex:1;
-      height:14px;
-      border-radius:999px;
-      background: rgba(15,23,42,.10);
-      overflow:hidden;
-      border:1px solid rgba(15,23,42,.12);
-    }
-    .score-bar-fill {
-      height:100%;
-      width:0%;
-      background:#111827; /* neutraal; je kunt eventueel per score class kleuren als je wilt */
+    /* Score row (altijd boven de boxen) */
+    .score-row{ display:flex; align-items:center; gap:12px; margin-top:6px; margin-bottom:8px; }
+    .score-label{ font-weight:600; }
+.score-bar{
+  width: 50%;          /* ← dit is de sleutel */
+  max-width: 520px;   /* optioneel, voorkomt te brede balk op grote schermen */
+  height:14px;
+  border-radius:999px;
+  background: rgba(15,23,42,.10);
+  overflow:hidden;
+  border:1px solid rgba(15,23,42,.12);
+}
+
+    .score-bar-fill{
+      height:100%; width:0%;
+      background:#111827;
       transition: width .25s ease;
     }
-    .score-value { min-width:70px; text-align:right; font-variant-numeric: tabular-nums; }
+    .score-value{ min-width:48px; text-align:left; font-variant-numeric: tabular-nums; }
 
-    /* ====== Sterktes / Aandachtspunten boxes ====== */
-    .box {
+    /* Results grid: 2 kolommen, 2 rijen (4 vakken). Alles even hoog. */
+    .results-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    .col-grid{
+      display:grid;
+      grid-template-rows: 1fr 1fr;  /* 2 vakken per kolom even hoog */
+      gap:12px;
+      align-items:stretch;
+    }
+
+    .box{
       border-radius:12px;
       border:1px solid rgba(15,23,42,.14);
       padding:12px 12px;
+      height:100%;                /* vult de grid-cel */
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-    .box h3 { margin:0 0 8px 0; font-size:14px; }
-    .box ul { margin:0; padding-left:18px; font-size:13px; }
-    .box li { margin: 2px 0; }
+    .box h3{ margin:0; font-size:14px; }
+    .box ul{ margin:0; padding-left:18px; font-size:13px; }
+    .box li{ margin:2px 0; }
+    .box p{ margin:0; font-size:13px; }
 
-    .box-green { background: #e9f7e9; border-color: rgba(22,163,74,.25); }
-    .box-orange { background: #fff3df; border-color: rgba(249,115,22,.30); }
+    .box-green{ background:#e9f7e9; border-color: rgba(22,163,74,.25); }
+    .box-orange{ background:#fff3df; border-color: rgba(249,115,22,.30); }
+    .box-gray{ background:#f3f4f6; border-color: rgba(15,23,42,.20); }
+    .box-blue{ background:#eff6ff; border-color: rgba(59,130,246,.30); }
 
-    /* ====== Rechterkolom ====== */
-    .right-block h3 { margin:0 0 8px 0; font-size:14px; }
-    .right-block p, .right-block ul { margin:0; font-size:13px; }
-    .right-block ul { padding-left:18px; }
+    /* JS output containers: bestaan voor scripts, maar niet zichtbaar */
+    #ai-eval-card{ display:none !important; }
+    #evalResponse{ display:none !important; }
 
-    /* Laat "ai-eval-card" bestaan voor JS, maar we tonen onze eigen weergave */
-    #ai-eval-card { display:none !important; }
-    #evalResponse { display:none !important; } /* technische JSON niet tonen op deze pagina */
+    @media (max-width: 1100px){
+      .filters-row{ grid-template-columns: 1fr; }
+      .filters-row .actions{ justify-content:flex-start; }
+      .results-grid{ grid-template-columns: 1fr; }
+      .col-grid{ grid-template-rows: auto; }
+      .box{ height:auto; }
+    }
   </style>
 </head>
 
@@ -130,21 +154,21 @@
       </div>
       <div class="sidebar-title">CV Tool</div>
 
-<nav>
-  <a class="nav-btn" href="/cv/index.html">Dashboard</a>
-  <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
-  <a class="nav-btn active" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
-    <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
-  <a class="nav-btn" href="/cv/vacatures.html">Vacatures</a>
-
-</nav>
+      <!-- Pas href’s aan naar jouw routes (bij Flask bijv. /dashboard, /cv-reader, /evaluatie, ...) -->
+      <nav>
+        <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+        <a class="nav-btn" href="/cv/cv-reader.html">Upload &amp; Bekijk CV</a>
+        <a class="nav-btn active" href="/cv/evaluatie.html">Evalueer CVs</a>
+        <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
+        <a class="nav-btn" href="/cv/index.html">Vacatures</a>
+      </nav>
     </aside>
 
     <!-- Main -->
     <main class="main">
       <header class="main-header">
         <h1>CV Tool - CVs evalueren met vacature</h1>
-        <p class="muted">Selecteer een CV en vacature en laat AI een fit-score en feedback genereren <br><u>Hulpmiddel</u>, geen automatische beslissing.</p>
+        <p class="muted">Selecteer een CV en vacature en laat AI een fit-score en feedback genereren.</p>
       </header>
 
       <section class="card stack">
@@ -173,20 +197,19 @@
 
         <div id="evalStatus" class="alert hidden"></div>
 
-        <!-- Resultaat -->
-        <div class="results-grid" aria-label="Evaluatie resultaat">
-          <!-- Links -->
-          <div class="stack">
-            <div class="stack" style="gap:10px;">
-              <div class="score-row">
-                <div class="score-label">Score:</div>
-                <div class="score-bar" aria-label="score balk">
-                  <div id="scoreBarFill" class="score-bar-fill"></div>
-                </div>
-                <div id="scoreValue" class="score-value muted">0/100</div>
-              </div>
-            </div>
+        <!-- Score bovenaan -->
+        <div class="score-row" aria-label="score">
+          <div class="score-label">Score:</div>
+          <div class="score-bar">
+            <div id="scoreFill" class="score-bar-fill"></div>
+          </div>
+          <div id="scoreText" class="score-value muted">0/100</div>
+        </div>
 
+        <!-- 4 vakken in 2x2 grid, even hoog -->
+        <div class="results-grid" aria-label="Evaluatie resultaat">
+          <!-- Linker kolom: Sterke + Aandacht -->
+          <div class="col-grid">
             <div class="box box-green">
               <h3>Sterke punten:</h3>
               <ul id="strengthsList">
@@ -196,20 +219,20 @@
 
             <div class="box box-orange">
               <h3>Aandachtspunten:</h3>
-              <ul id="gapsList">
+              <ul id="weaknessesList">
                 <li class="muted">Nog geen evaluatie.</li>
               </ul>
             </div>
           </div>
 
-          <!-- Rechts -->
-          <div class="stack right-block">
-            <div>
+          <!-- Rechter kolom: Samenvatting + Vervolgstappen -->
+          <div class="col-grid">
+            <div class="box box-gray">
               <h3>Samenvatting:</h3>
               <p id="summaryText" class="muted">Nog geen evaluatie.</p>
             </div>
 
-            <div>
+            <div class="box box-blue">
               <h3>Aanbevolen vervolgstappen:</h3>
               <ul id="stepsList">
                 <li class="muted">Nog geen evaluatie.</li>
@@ -218,7 +241,7 @@
           </div>
         </div>
 
-        <!-- Nodig voor cv-vacature-analyse.js (wordt door JS gevuld, maar wij verbergen het via CSS) -->
+        <!-- Nodig voor cv-vacature-analyse.js (maar verborgen) -->
         <div id="ai-eval-card" class="card hidden"></div>
         <pre id="evalResponse" class="hidden"></pre>
       </section>
@@ -273,21 +296,21 @@
     </main>
   </div>
 
-  <!-- Laad alleen deze JS om identifier-conflicten te vermijden -->
+  <!-- Laad alleen deze JS op deze pagina om identifier-conflicten te vermijden -->
   <script src="/assets/js/cv-vacature-analyse.js" defer></script>
 
-  <!-- UI-mapper: leest de JSON output van /cv/evaluate en zet het in wireframe layout -->
+  <!-- UI-mapper: leest JSON uit #evalResponse en zet het in de 4 vakken + scorebalk -->
   <script>
     (function () {
       const evalPre = document.getElementById("evalResponse");
-      const scoreFill = document.getElementById("scoreBarFill");
-      const scoreValue = document.getElementById("scoreValue");
+      const scoreFill = document.getElementById("scoreFill");
+      const scoreText = document.getElementById("scoreText");
       const strengthsList = document.getElementById("strengthsList");
-      const gapsList = document.getElementById("gapsList");
+      const weaknessesList = document.getElementById("weaknessesList");
       const summaryText = document.getElementById("summaryText");
       const stepsList = document.getElementById("stepsList");
 
-      if (!evalPre || !scoreFill || !scoreValue || !strengthsList || !gapsList || !summaryText || !stepsList) return;
+      if (!evalPre || !scoreFill || !scoreText || !strengthsList || !weaknessesList || !summaryText || !stepsList) return;
 
       function setList(ul, items, emptyText) {
         ul.innerHTML = "";
@@ -310,17 +333,16 @@
         if (!r) return;
 
         const score = Number(r.fit_score ?? 0);
-        scoreFill.style.width = Math.max(0, Math.min(100, score)) + "%";
-        scoreValue.textContent = `${score}/100`;
+        const clamped = Math.max(0, Math.min(100, score));
+        scoreFill.style.width = clamped + "%";
+        scoreText.textContent = `${clamped}/100`;
 
         summaryText.textContent = r.fit_summary ? String(r.fit_summary) : "—";
-
         setList(strengthsList, r.strengths, "Geen sterke punten gedetecteerd.");
-        setList(gapsList, r.gaps, "Geen aandachtspunten genoemd.");
+        setList(weaknessesList, r.gaps, "Geen aandachtspunten genoemd.");
         setList(stepsList, r.recommended_next_steps, "Geen vervolgstappen voorgesteld.");
       }
 
-      // Observeer wijzigingen (cv-vacature-analyse.js schrijft JSON in evalResponse)
       const obs = new MutationObserver(() => {
         try {
           const txt = (evalPre.textContent || "").trim();
