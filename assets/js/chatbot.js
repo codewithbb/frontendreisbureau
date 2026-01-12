@@ -122,7 +122,7 @@ async function sendMessage() {
   setStreamingUI(true);
 
   try {
-    const response = await fetch(`${API_BASE_CB}/chatbot/query`, {
+    const response = await fetch(`${API_BASE_CB}/chatbot/chat`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
