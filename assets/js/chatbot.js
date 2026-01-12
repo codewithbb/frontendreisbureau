@@ -1,13 +1,17 @@
 // /assets/js/chatbot.js
 // Streaming chatbot + speech-to-text + pending booking knop
-// Updated for new endpoints in chatbot_revised.py:
+// Updated for revised backend endpoints:
 // - POST /chatbot/chat
 // - GET  /chatbot/pending_booking
-// - POST /chatbot/confirm_booking  (recommended)
-// - POST /chatbot/book_trip        (fallback)
+// - POST /chatbot/confirm_booking
+//
+// Fixes included:
+// 1) If backend returns JSON (application/json) instead of a streaming text body,
+//    we now render data.reply instead of showing the raw JSON blob.
+// 2) Pending booking reading uses { pending: {...} } shape.
 
-//const API_BASE_CB = "http://127.0.0.1:5001";
 const API_BASE_CB = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net"; // no trailing slash
+// const API_BASE_CB = "http://127.0.0.1:5001";
 
 let speechRecognizer = null;
 let isStreaming = false;
@@ -24,7 +28,7 @@ const micBtn = document.getElementById("chatbot-mic");
 const langSelect = document.getElementById("chatbot-lang");
 const statusText = document.getElementById("chatbot-status");
 
-// Marked: kleine safety/format tweaks (geen header ids, geen email mangle)
+// Marked config
 if (window.marked) {
   marked.setOptions({ headerIds: false, mangle: false });
 }
@@ -102,7 +106,7 @@ function createStreamingBotMessage() {
 }
 
 function finalizeBotMarkdown(streamingDiv, fullText) {
-  streamingDiv.innerHTML = marked ? marked.parse(fullText) : escapeHTML(fullText);
+  streamingDiv.innerHTML = window.marked ? marked.parse(fullText) : escapeHTML(fullText);
   scrollToBottom();
 }
 
@@ -113,7 +117,7 @@ function appendBotError(text) {
 }
 
 // ===============================
-// 3) Streaming chat (NEW endpoint)
+// 3) Streaming chat (POST /chatbot/chat)
 // ===============================
 async function sendMessage() {
   const message = userMsgBox.value.trim();
@@ -125,29 +129,29 @@ async function sendMessage() {
   setStreamingUI(true);
 
   try {
-    // NEW: /chatbot/chat
     const response = await fetch(`${API_BASE_CB}/chatbot/chat`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      // stream:true makes sure we get a streaming text/plain response
       body: JSON.stringify({ message, stream: true })
     });
 
-    if (!response.ok || !response.body) {
-      // In some setups you might get JSON {"reply": "..."} (non-stream).
-      // Try JSON fallback:
-      let json = null;
-      try { json = await response.json(); } catch (_) {}
-      if (json && json.reply) {
-        const { streamingDiv, wrapper } = createStreamingBotMessage();
-        finalizeBotMarkdown(streamingDiv, json.reply);
-        setStatus("");
-        setStreamingUI(false);
-        await checkPendingBookingAndRenderButton(wrapper);
-        return;
-      }
+    // IMPORTANT FIX:
+    // Some backend paths return JSON (application/json) immediately (e.g. "Welke flight_id wil je?")
+    // If we treat that as a stream, you'll see the raw JSON text. So we detect content-type.
+    const contentType = (response.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => null);
+      const reply = data && data.reply ? data.reply : (data && data.error ? data.error : "Onbekend antwoord.");
+      const { streamingDiv, wrapper } = createStreamingBotMessage();
+      finalizeBotMarkdown(streamingDiv, reply);
+      setStatus("");
+      setStreamingUI(false);
+      await checkPendingBookingAndRenderButton(wrapper);
+      return;
+    }
 
+    if (!response.ok || !response.body) {
       appendBotError("Er ging iets mis tijdens het antwoorden.");
       setStatus("");
       setStreamingUI(false);
@@ -168,7 +172,7 @@ async function sendMessage() {
       const chunk = decoder.decode(value, { stream: true });
       fullText += chunk;
 
-      // show plain text while streaming
+      // show plain while streaming
       streamingDiv.textContent = fullText;
       scrollToBottom();
     }
@@ -177,7 +181,6 @@ async function sendMessage() {
     setStatus("");
     setStreamingUI(false);
 
-    // After message, check if chatbot prepared a booking
     await checkPendingBookingAndRenderButton(wrapper);
 
   } catch (err) {
@@ -189,7 +192,7 @@ async function sendMessage() {
 }
 
 // ======================================
-// 4) Pending booking (NEW response shape)
+// 4) Pending booking (GET /chatbot/pending_booking)
 // ======================================
 async function checkPendingBookingAndRenderButton(parentWrapper) {
   try {
@@ -202,7 +205,6 @@ async function checkPendingBookingAndRenderButton(parentWrapper) {
     const data = await resp.json();
     if (!data || !data.pending) return;
 
-    // NEW: pending is nested object
     const pending = data.pending;
     const flight_id = pending.flight_id;
     const travel_date = pending.travel_date;
@@ -220,13 +222,11 @@ async function checkPendingBookingAndRenderButton(parentWrapper) {
     const btnRow = document.createElement("div");
     btnRow.className = "row";
 
-    // Confirm button
     const btnYes = document.createElement("button");
     btnYes.className = "btn btn-primary";
     btnYes.type = "button";
     btnYes.textContent = "✅ Bevestigen";
 
-    // Cancel button
     const btnNo = document.createElement("button");
     btnNo.className = "btn btn-secondary";
     btnNo.type = "button";
@@ -259,7 +259,6 @@ async function confirmPendingBooking({ flight_id, confirm, btn }) {
   setStatus(confirm ? "Boeking wordt verwerkt…" : "Boeking wordt geannuleerd…");
 
   try {
-    // Recommended NEW endpoint:
     const resp = await fetch(`${API_BASE_CB}/chatbot/confirm_booking`, {
       method: "POST",
       credentials: "include",
@@ -276,14 +275,13 @@ async function confirmPendingBooking({ flight_id, confirm, btn }) {
       return;
     }
 
-    // If confirm true: backend returns booking result JSON
+    const { bubble } = createMessage({ kind: "bot" });
     if (confirm) {
-      const { bubble } = createMessage({ kind: "bot" });
       bubble.innerHTML = `<p style="margin:0;">Je vlucht is succesvol geboekt! 🎉 (flight_id: ${escapeHTML(flight_id)})</p>`;
     } else {
-      const { bubble } = createMessage({ kind: "bot" });
       bubble.innerHTML = `<p style="margin:0;">Oké — boeking geannuleerd.</p>`;
     }
+    scrollToBottom();
 
   } catch (err) {
     console.error(err);
@@ -403,7 +401,7 @@ clearBtn.addEventListener("click", () => {
     <div class="chat-msg bot">
       <div class="who">🤖 Chatbot <span>•</span> <span>klaar</span></div>
       <div class="bubble">
-        <p style="margin:0;">Waar kan ik je mee helpen? Bijvoorbeeld: “Zoek een vlucht naar Barcelona”, “Welke reizen heb ik binnenkort?” of “Boek die vlucht.”</p>
+        <p style="margin:0;">Waar kan ik je mee helpen? Bijvoorbeeld: “Zoek een vlucht naar Barcelona”, “Welke reizen heb ik gedaan?” of “Boek flight 1234.”</p>
       </div>
     </div>
   `;
