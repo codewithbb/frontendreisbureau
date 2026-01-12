@@ -136,6 +136,79 @@ let globalData = [];
   }
 })();
 
+function escapeHtml(str = "") {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderDeals(data) {
+  const tableContainer = document.getElementById("tableContainer");
+
+  if (!data || data.length === 0) {
+    tableContainer.innerHTML =
+      '<div class="alert" style="margin:0;">Geen resultaten voor de gekozen filters.</div>';
+    return;
+  }
+
+  // Cards
+  tableContainer.innerHTML = `
+    <div class="deals-grid">
+      ${data.map((row) => {
+        const land   = escapeHtml(row.bestemmingsland ?? "Onbekend");
+        const stad   = escapeHtml(row.bestemming ?? row.bestemmingsstad ?? "");
+        const datum  = escapeHtml(row.vertrekdatum ?? "");
+        const plekken= Number(row.aantal_beschikbare_plekken ?? 0);
+
+        // Probeer ook "prijs" te vinden als die bestaat, anders verberg
+        const prijsRaw = row.prijs_pp ?? row.prijs ?? row.price ?? null;
+        const prijs = (prijsRaw !== null && prijsRaw !== undefined && prijsRaw !== "")
+          ? `€ ${escapeHtml(prijsRaw)} p.p.`
+          : null;
+
+        const subtitle = stad ? `${stad}, ${land}` : land;
+
+        // Badge op basis van plekken
+        const badge =
+          plekken >= 6 ? { t: "Veel plekken", cls: "good" } :
+          plekken >= 3 ? { t: "Beperkt", cls: "warn" } :
+                        { t: "Laatste plekken", cls: "hot" };
+
+        return `
+          <article class="deal-card">
+            <div class="deal-top">
+              <div class="deal-route">
+                <div class="deal-title">${subtitle}</div>
+                <div class="deal-meta">
+                  <span class="deal-dot">📅</span> ${datum || "—"}
+                  <span class="deal-sep">•</span>
+                  <span class="deal-dot">👥</span> ${plekken} plek(ken)
+                </div>
+              </div>
+
+              <span class="deal-badge ${badge.cls}">${badge.t}</span>
+            </div>
+
+            <div class="deal-bottom">
+              <div class="deal-price">
+                ${prijs ? `<div class="price">${prijs}</div>` : `<div class="price muted">Prijs n.v.t.</div>`}
+                <div class="muted small">Mock data • last-minute</div>
+              </div>
+
+              <div class="deal-actions">
+                <a class="btn btn-primary" href="/reis/vlucht-boeken.html">Boek</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
 // ==== (BB) Tabel/filters utilities blijven zoals je ze had ====
 function renderTable(data, columns) {
   const tableContainer = document.getElementById("tableContainer");
@@ -193,7 +266,9 @@ function applyFilter(columns) {
   filtered = filterByBestemming(filtered, bestemming);
   filtered = filterByVertrekdatum(filtered, vertrekdatum);
   filtered = filterByPersonen(filtered, personen);
-  renderTable(filtered, columns);
+  const meta = document.getElementById("filters-meta");
+  if (meta) meta.textContent = `${filtered.length} resultaat/resultaten`;
+  renderDeals(filtered);
 }
 async function fetchData(url) {
   const response = await fetch(url);
@@ -229,7 +304,7 @@ async function init() {
     populateDropdown('bestemmingFilter', getUniqueSortedValues(globalData, 'bestemmingsland'), 'Alle bestemmingen');
     populateDropdown('vertrekdatumFilter', getUniqueSortedValues(globalData, 'vertrekdatum'), 'Alle datums');
 
-    renderTable(globalData, columns);
+    renderDeals(globalData);
     addFilterListeners(columns);
   } catch (err) {
     console.error(err);

@@ -31,13 +31,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { loggedIn } = await getCurrentSession();
 
   if (!loggedIn) {
-    loggedOutBox.style.display = "block";
-    chatbotUI.style.display = "none";
+    // loggedOutBox.style.display = "block";
+    // chatbotUI.style.display = "none";
+    loggedOutBox.classList.remove("hidden");
+    chatbotUI.classList.add("hidden");
     return;
   }
 
-  chatbotUI.style.display = "block";
-  loggedOutBox.style.display = "none";
+  // chatbotUI.style.display = "block";
+  // loggedOutBox.style.display = "none";
+  chatbotUI.classList.remove("hidden");
+  loggedOutBox.classList.add("hidden");
 });
 
 // ==============
