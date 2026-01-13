@@ -1,13 +1,8 @@
 // /assets/js/chatbot.js
 // Streaming chatbot + speech-to-text + pending booking knop
-// Updated for new endpoints in chatbot_revised.py:
-// - POST /chatbot/chat
-// - GET  /chatbot/pending_booking
-// - POST /chatbot/confirm_booking  (recommended)
-// - POST /chatbot/book_trip        (fallback)
 
 //const API_BASE_CB = "http://127.0.0.1:5001";
-const API_BASE_CB = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net"; // no trailing slash
+const API_BASE_CB = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net/";
 
 let speechRecognizer = null;
 let isStreaming = false;
@@ -36,11 +31,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { loggedIn } = await getCurrentSession();
 
   if (!loggedIn) {
+    // loggedOutBox.style.display = "block";
+    // chatbotUI.style.display = "none";
     loggedOutBox.classList.remove("hidden");
     chatbotUI.classList.add("hidden");
     return;
   }
 
+  // chatbotUI.style.display = "block";
+  // loggedOutBox.style.display = "none";
   chatbotUI.classList.remove("hidden");
   loggedOutBox.classList.add("hidden");
 });
@@ -56,6 +55,7 @@ function setStreamingUI(streaming) {
   isStreaming = streaming;
   sendBtn.disabled = streaming;
   micBtn.disabled = streaming || micBtn.classList.contains("listening");
+  if (!streaming) return;
 }
 
 function setStatus(text) {
@@ -63,12 +63,14 @@ function setStatus(text) {
 }
 
 function escapeHTML(str) {
-  return String(str || "").replace(/[&<>"']/g, (m) => ({
+  // For user plain-text bubble (no markdown)
+  return str.replace(/[&<>"']/g, (m) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[m]));
 }
 
-function createMessage({ kind }) {
+function createMessage({ sender, kind }) {
+  // kind: "user" | "bot"
   const wrapper = document.createElement("div");
   wrapper.className = `chat-msg ${kind}`;
 
@@ -89,12 +91,13 @@ function createMessage({ kind }) {
 }
 
 function appendUserMessage(text) {
-  const { bubble } = createMessage({ kind: "user" });
+  const { bubble } = createMessage({ sender: "Jij", kind: "user" });
   bubble.innerHTML = `<p style="margin:0;">${escapeHTML(text)}</p>`;
 }
 
 function createStreamingBotMessage() {
-  const { wrapper, bubble } = createMessage({ kind: "bot" });
+  const { wrapper, bubble } = createMessage({ sender: "Chatbot", kind: "bot" });
+  // streaming placeholder
   const streamingDiv = document.createElement("div");
   streamingDiv.className = "streaming-text";
   bubble.appendChild(streamingDiv);
@@ -106,14 +109,8 @@ function finalizeBotMarkdown(streamingDiv, fullText) {
   scrollToBottom();
 }
 
-function appendBotError(text) {
-  const { bubble } = createMessage({ kind: "bot" });
-  bubble.innerHTML = `<p style="margin:0;"><strong>Fout:</strong> ${escapeHTML(text)}</p>`;
-  scrollToBottom();
-}
-
 // ===============================
-// 3) Streaming chat (NEW endpoint)
+// 3) Streaming chat
 // ===============================
 async function sendMessage() {
   const message = userMsgBox.value.trim();
@@ -125,29 +122,14 @@ async function sendMessage() {
   setStreamingUI(true);
 
   try {
-    // NEW: /chatbot/chat
     const response = await fetch(`${API_BASE_CB}/chatbot/chat`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      // stream:true makes sure we get a streaming text/plain response
-      body: JSON.stringify({ message, stream: true })
+      body: JSON.stringify({ message })
     });
 
     if (!response.ok || !response.body) {
-      // In some setups you might get JSON {"reply": "..."} (non-stream).
-      // Try JSON fallback:
-      let json = null;
-      try { json = await response.json(); } catch (_) {}
-      if (json && json.reply) {
-        const { streamingDiv, wrapper } = createStreamingBotMessage();
-        finalizeBotMarkdown(streamingDiv, json.reply);
-        setStatus("");
-        setStreamingUI(false);
-        await checkPendingBookingAndRenderButton(wrapper);
-        return;
-      }
-
       appendBotError("Er ging iets mis tijdens het antwoorden.");
       setStatus("");
       setStreamingUI(false);
@@ -188,8 +170,14 @@ async function sendMessage() {
   }
 }
 
+function appendBotError(text) {
+  const { bubble } = createMessage({ sender: "Chatbot", kind: "bot" });
+  bubble.innerHTML = `<p style="margin:0;"><strong>Fout:</strong> ${escapeHTML(text)}</p>`;
+  scrollToBottom();
+}
+
 // ======================================
-// 4) Pending booking (NEW response shape)
+// 4) Pending booking: fix API_BASE bug
 // ======================================
 async function checkPendingBookingAndRenderButton(parentWrapper) {
   try {
@@ -202,12 +190,7 @@ async function checkPendingBookingAndRenderButton(parentWrapper) {
     const data = await resp.json();
     if (!data || !data.pending) return;
 
-    // NEW: pending is nested object
-    const pending = data.pending;
-    const flight_id = pending.flight_id;
-    const travel_date = pending.travel_date;
-
-    if (!flight_id) return;
+    const { flight_id, travel_date } = data;
 
     const box = document.createElement("div");
     box.style.marginTop = "10px";
@@ -215,33 +198,50 @@ async function checkPendingBookingAndRenderButton(parentWrapper) {
 
     const info = document.createElement("div");
     info.style.marginBottom = "10px";
-    info.textContent = `De chatbot staat klaar om vlucht ${flight_id} te boeken${travel_date ? ` op ${travel_date}` : ""}. Bevestigen?`;
+    info.textContent = `De chatbot stelt voor om vlucht ${flight_id} te boeken op ${travel_date || "(datum uit schema)"} .`;
 
     const btnRow = document.createElement("div");
     btnRow.className = "row";
 
-    // Confirm button
-    const btnYes = document.createElement("button");
-    btnYes.className = "btn btn-primary";
-    btnYes.type = "button";
-    btnYes.textContent = "✅ Bevestigen";
+    const btn = document.createElement("button");
+    btn.className = "btn btn-primary";
+    btn.type = "button";
+    btn.textContent = "Boek deze vlucht";
 
-    // Cancel button
-    const btnNo = document.createElement("button");
-    btnNo.className = "btn btn-secondary";
-    btnNo.type = "button";
-    btnNo.textContent = "❌ Annuleren";
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Bezig met boeken…";
+      setStatus("Boeking wordt verwerkt…");
 
-    btnYes.addEventListener("click", async () => {
-      await confirmPendingBooking({ flight_id, confirm: true, btn: btnYes });
+      try {
+        const resp2 = await fetch(`${API_BASE_CB}/chatbot/book_trip`, {
+          method: "POST",
+          credentials: "include"
+        });
+
+        const data2 = await resp2.json().catch(() => ({}));
+
+        if (!resp2.ok || !data2.success) {
+          appendBotError("Het boeken is niet gelukt. Controleer je gegevens en probeer het opnieuw.");
+          btn.disabled = false;
+          btn.textContent = "Opnieuw proberen";
+        } else {
+          const { bubble } = createMessage({ sender: "Chatbot", kind: "bot" });
+          bubble.innerHTML = `<p style="margin:0;">Je vlucht is succesvol geboekt! 🎉</p>`;
+          btn.textContent = "Geboekt";
+          btn.disabled = true;
+        }
+      } catch (err) {
+        console.error(err);
+        appendBotError("Netwerkfout tijdens het boeken.");
+        btn.disabled = false;
+        btn.textContent = "Opnieuw proberen";
+      } finally {
+        setStatus("");
+      }
     });
 
-    btnNo.addEventListener("click", async () => {
-      await confirmPendingBooking({ flight_id, confirm: false, btn: btnNo });
-    });
-
-    btnRow.appendChild(btnYes);
-    btnRow.appendChild(btnNo);
+    btnRow.appendChild(btn);
 
     box.appendChild(info);
     box.appendChild(btnRow);
@@ -251,46 +251,6 @@ async function checkPendingBookingAndRenderButton(parentWrapper) {
 
   } catch (err) {
     console.error("Error checking pending booking:", err);
-  }
-}
-
-async function confirmPendingBooking({ flight_id, confirm, btn }) {
-  btn.disabled = true;
-  setStatus(confirm ? "Boeking wordt verwerkt…" : "Boeking wordt geannuleerd…");
-
-  try {
-    // Recommended NEW endpoint:
-    const resp = await fetch(`${API_BASE_CB}/chatbot/confirm_booking`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flight_id, confirm })
-    });
-
-    const data = await resp.json().catch(() => ({}));
-
-    if (!resp.ok || data.success === false) {
-      appendBotError(data.error || "Actie niet gelukt. Probeer het opnieuw.");
-      btn.disabled = false;
-      setStatus("");
-      return;
-    }
-
-    // If confirm true: backend returns booking result JSON
-    if (confirm) {
-      const { bubble } = createMessage({ kind: "bot" });
-      bubble.innerHTML = `<p style="margin:0;">Je vlucht is succesvol geboekt! 🎉 (flight_id: ${escapeHTML(flight_id)})</p>`;
-    } else {
-      const { bubble } = createMessage({ kind: "bot" });
-      bubble.innerHTML = `<p style="margin:0;">Oké — boeking geannuleerd.</p>`;
-    }
-
-  } catch (err) {
-    console.error(err);
-    appendBotError("Netwerkfout tijdens bevestigen/annuleren.");
-    btn.disabled = false;
-  } finally {
-    setStatus("");
   }
 }
 
