@@ -1,5 +1,5 @@
 // /assets/js/cv/profielen.js
-const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+// const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
 // const API_BASE_URL = "http://127.0.0.1:5001"
 
 const dropdownCVs = document.getElementById("available_cvs");
@@ -23,7 +23,7 @@ const responseBox = document.getElementById("responseBox");
 const responseBox2 = document.getElementById("responseBox2");
 const profileView = document.getElementById("profileView");
 const shareBox = document.getElementById("shareBox");
-const viewerStatus = document.getElementById("viewerStatus");
+const viewerStatusProfiles = document.getElementById("viewerStatus");
 
 let lastGeneratedProfile = null;
 
@@ -295,7 +295,7 @@ async function createDropDownProfiles() {
 }
 
 viewerCv.addEventListener("change", async () => {
-  clearAlert(viewerStatus);
+  clearAlert(viewerStatusProfiles);
   profileView.innerHTML = `<p class="muted">Selecteer een profiel.</p>`;
   setPre(responseBox, "Nog geen response");
   shareBox.innerHTML = `<p class="muted">Klik op “Delen” om een link te genereren.</p>`;
@@ -303,17 +303,17 @@ viewerCv.addEventListener("change", async () => {
   try {
     await createDropDownProfiles();
   } catch (err) {
-    setAlert(viewerStatus, "danger", err.message || "Fout bij laden profielen.");
+    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profielen.");
   }
 });
 
 BtnViewProfile.addEventListener("click", async () => {
-  clearAlert(viewerStatus);
+  clearAlert(viewerStatusProfiles);
   const profileId = profilesDropdown.value;
-  if (!profileId) { setAlert(viewerStatus, "warning", "Selecteer eerst een profiel."); return; }
+  if (!profileId) { setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); return; }
 
   try {
-    setAlert(viewerStatus, "info", "Laden…");
+    setAlert(viewerStatusProfiles, "info", "Laden…");
     const data = await fetchJson(`${API_BASE_URL}/profile_viewer/view_profile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -322,19 +322,19 @@ BtnViewProfile.addEventListener("click", async () => {
 
     profileView.innerHTML = formatProfileOutput(data);
     setPre(responseBox, data);
-    setAlert(viewerStatus, "success", "Profiel geladen.");
+    setAlert(viewerStatusProfiles, "success", "Profiel geladen.");
   } catch (err) {
-    setAlert(viewerStatus, "danger", err.message || "Fout bij laden profiel.");
+    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profiel.");
   }
 });
 
 BtnDelen.addEventListener("click", async () => {
-  clearAlert(viewerStatus);
+  clearAlert(viewerStatusProfiles);
   const profileId = profilesDropdown.value;
-  if (!profileId) { setAlert(viewerStatus, "warning", "Selecteer eerst een profiel."); return; }
+  if (!profileId) { setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); return; }
 
   try {
-    setAlert(viewerStatus, "info", "Link genereren…");
+    setAlert(viewerStatusProfiles, "info", "Link genereren…");
     const data = await fetchJson(`${API_BASE_URL}/profile_viewer/share_profile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -352,15 +352,13 @@ BtnDelen.addEventListener("click", async () => {
     `;
     document.getElementById("copyShareLink").addEventListener("click", async () => {
       await navigator.clipboard.writeText(fullUrl);
-      setAlert(viewerStatus, "success", "Link gekopieerd.");
+      setAlert(viewerStatusProfiles, "success", "Link gekopieerd.");
     });
 
-    responseBox2.classList.remove("hidden");
-    responseBox2.textContent = fullUrl;
 
-    setAlert(viewerStatus, "success", "Deellink aangemaakt.");
+    setAlert(viewerStatusProfiles, "success", "Deellink aangemaakt.");
   } catch (err) {
-    setAlert(viewerStatus, "danger", err.message || "Fout bij delen.");
+    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij delen.");
   }
 });
 

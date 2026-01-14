@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl" class=reis>
+<html lang="nl" class="reis">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,95 +12,211 @@
 <body class="reis">
   <div id="nav-placeholder"></div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>Reisbureau</h1>
-      <p>Alles voor het boeken, bekijken en plannen van reizen — in één omgeving.</p>
-    </header>
+  <main class="reis-home">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">Reisbureau portal</p>
+          <h1>Boek slimmer. Reis makkelijker.</h1>
+          <p class="hero-lead">
+            Alles voor het boeken, bekijken en plannen van reizen — in één omgeving.
+            Van vlucht boeken tot ticket scan en last-minutes.
+          </p>
 
-    <section class="grid-2">
-      <a class="card" href="/reis/vlucht-boeken.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Vlucht boeken</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Start</span>
-        </div>
-        <p>Vul je gegevens in en boek een vlucht uit onze database.</p>
-      </a>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="/reis/vlucht-boeken.html">Vlucht boeken</a>
+            <a class="btn btn-secondary" href="/reis/last-minutes.html">Bekijk last-minutes</a>
+          </div>
 
-      <a class="card" href="/reis/ticket-scan.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Ticket scannen</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Upload</span>
-        </div>
-        <p>Upload een foto van je ticket om vluchtgegevens automatisch te herkennen.</p>
-      </a>
-
-      <a class="card" href="/reis/mystery-trip.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Mystery Trip</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Verras me</span>
-        </div>
-        <p>Vul je voorkeuren in en ontvang een verrassingsbestemming.</p>
-      </a>
-
-      <a class="card" href="/reis/last-minutes.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Last-minutes</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Bekijk</span>
-        </div>
-        <p>Bekijk aankomende vluchten met last-minute beschikbare plaatsen.</p>
-      </a>
-
-      <a class="card" href="/reis/vliegvelden-kaart.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Vliegveldenkaart</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Open kaart</span>
-        </div>
-        <p>Zie vliegvelden op de kaart en vergelijk prijzen per route.</p>
-      </a>
-
-      <a class="card" href="/reis/co2-calculator.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">CO₂-berekening</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Bereken</span>
-        </div>
-        <p>Bereken de geschatte uitstoot van jouw vlucht.</p>
-      </a>
-
-      <a class="card" href="/reis/chatbot.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Chatbot</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Chat</span>
-        </div>
-        <p>Stel reisvragen, bekijk komende reizen en boek via chat.</p>
-      </a>
-
-      <a class="card" href="/reis/reisbellen.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Telefonisch boeken</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Bel</span>
-        </div>
-        <p>Bel onze telefonische boekingsdienst en bespreek locatie en dieetwensen.</p>
-      </a>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Welkom terug</h2>
+          <div class="trust-row">
+            <div class="trust-item">
+              <span class="trust-icon">🛡️</span>
+              <div>
+                <strong>Veilig & duidelijk</strong>
+                <p>Overzichtelijke stappen, heldere info.</p>
+              </div>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">⚡</span>
+              <div>
+                <strong>Snel zoeken</strong>
+                <p>Vliegvelden, routes en prijzen.</p>
+              </div>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">🤖</span>
+              <div>
+                <strong>AI-assistent</strong>
+                <p>Vraag & boek via de chatbot.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- optioneel: meme afbeelding -->
-        <img
-          src="/assets/travel-meme.jpg"
-          alt="Reis-meme"
-          style="width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.14);"
-        />
-
-        <div class="button-container">
-          <a class="btn btn-primary" href="/reis/mijn-reizen.html">Mijn reizen</a>
-          <a class="btn btn-secondary" href="/index.html">Naar portaal</a>
+        <div class="hero-media">
+          <!-- Vervang deze door een AI image, of laat als placeholder -->
+          <img
+            class="hero-image"
+            src="/assets/reis/hero-beach-city.png"
+            alt="Zonnige bestemming met stad en kust"
+          />
+          <div class="hero-badges">
+            <span class="badge">Ticket scan</span>
+            <span class="badge">Mystery trip</span>
+            <span class="badge">CO₂ inzicht</span>
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- MAIN LAYOUT -->
+    <section class="home-layout">
+      <!-- PRIMARY: modules -->
+      <div class="home-main">
+        <header class="section-title">
+          <h2>Waar wil je mee starten?</h2>
+          <p>Kies een module. Alles blijft binnen hetzelfde portal.</p>
+        </header>
+
+        <div class="module-grid">
+          <a class="module-card menu-tile tile-flight" href="/reis/vlucht-boeken.html">
+            <div class="module-top">
+              <div class="module-icon">✈️</div>
+              <span class="module-tag">Boeken</span>
+            </div>
+            <h3>Vlucht boeken</h3>
+            <p>Vul je gegevens in en boek een vlucht uit onze database.</p>
+            <span class="module-link">Start →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-lastminute" href="/reis/last-minutes.html">
+            <div class="module-top">
+              <div class="module-icon">⏱️</div>
+              <span class="module-tag">Deals</span>
+            </div>
+            <h3>Last-minutes</h3>
+            <p>Bekijk aankomende vluchten met last-minute beschikbare plaatsen.</p>
+            <span class="module-link">Bekijk →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-mystery" href="/reis/mystery-trip.html">
+            <div class="module-top">
+              <div class="module-icon">🎲</div>
+              <span class="module-tag">Inspiratie</span>
+            </div>
+            <h3>Mystery Trip</h3>
+            <p>Vul je voorkeuren in en ontvang een verrassingsbestemming.</p>
+            <span class="module-link">Verras me →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-scan" href="/reis/ticket-scan.html">
+            <div class="module-top">
+              <div class="module-icon">📷</div>
+              <span class="module-tag">Scan</span>
+            </div>
+            <h3>Ticket scannen</h3>
+            <p>Upload een foto van je ticket en herken vluchtgegevens automatisch.</p>
+            <span class="module-link">Upload →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-map" href="/reis/vliegvelden-kaart.html">
+            <div class="module-top">
+              <div class="module-icon">🗺️</div>
+              <span class="module-tag">Kaart</span>
+            </div>
+            <h3>Vliegveldenkaart</h3>
+            <p>Zie vliegvelden op de kaart en vergelijk prijzen per route.</p>
+            <span class="module-link">Open kaart →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-co2" href="/reis/co2-calculator.html">
+            <div class="module-top">
+              <div class="module-icon">🌿</div>
+              <span class="module-tag">Inzicht</span>
+            </div>
+            <h3>CO₂-berekening</h3>
+            <p>Bereken de geschatte uitstoot van jouw vlucht.</p>
+            <span class="module-link">Bereken →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-chatbot" href="/reis/chatbot.html">
+            <div class="module-top">
+              <div class="module-icon">💬</div>
+              <span class="module-tag">Assistent</span>
+            </div>
+            <h3>Chatbot</h3>
+            <p>Stel reisvragen, bekijk komende reizen en boek via chat.</p>
+            <span class="module-link">Chat →</span>
+          </a>
+
+          <a class="module-card menu-tile tile-call" href="/reis/reisbellen.html">
+            <div class="module-top">
+              <div class="module-icon">📞</div>
+              <span class="module-tag">Service</span>
+            </div>
+            <h3>Telefonisch boeken</h3>
+            <p>Bel onze boekingsdienst en bespreek locatie en dieetwensen.</p>
+            <span class="module-link">Bel →</span>
+          </a>
+        </div>
+
+        <section class="promo-strip">
+          <div class="promo-card">
+            <div class="promo-copy">
+              <h3>Plan je volgende reis in minuten</h3>
+              <p>
+                Ga direct naar je overzicht, of start een nieuwe boeking.
+              </p>
+              <div class="promo-actions">
+                <a class="btn btn-primary" href="/reis/mijn-reizen.html">Mijn reizen</a>
+                <a class="btn btn-secondary" href="/index.html">Naar portaal</a>
+              </div>
+            </div>
+
+            <img
+              class="promo-image"
+              src="/assets/reis/promo-suitcase.png"
+              alt="Koffer en paspoort op tafel"
+            />
+          </div>
+        </section>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="home-aside">
+        <div class="aside-card">
+          <h3>Welkom terug</h3>
+          <p class="muted">Snel naar je reisoverzicht of terug naar het hoofdportaal.</p>
+
+          <div class="aside-actions">
+            <a class="btn btn-primary" href="/reis/mijn-reizen.html">Mijn reizen</a>
+            <a class="btn btn-secondary" href="/index.html">Naar portaal</a>
+          </div>
+        </div>
+
+        <div class="aside-card">
+          <h3>Tip</h3>
+          <p class="muted">
+            Probeer de <strong>Chatbot</strong> voor routes, prijzen en het boeken van een vlucht — handig voor demo’s.
+          </p>
+          <a class="btn btn-secondary" href="/reis/chatbot.html">Open chatbot</a>
+        </div>
+
+        <!-- optioneel: meme blijft, maar in “light” container -->
+        <div class="aside-card aside-media">
+          <img
+            src="/assets/reis/travel-meme.jpg"
+            alt="Reis-meme"
+            class="aside-image"
+          />
+        </div>
+      </aside>
+    </section>
+
+    <footer class="home-footer">
+      <p class="muted">© Reisbureau • Demo omgeving (Traineeship Data & AI)</p>
+    </footer>
   </main>
 
   <script src="/assets/js/nav-reis.js"></script>

@@ -1,54 +1,417 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CV-tool</title>
+  <meta charset="utf-8" />
+  <title>CV Tool – Dashboard</title>
 
-  <link rel="stylesheet" href="/assets/css/core.css" />
+  <!-- Jullie bestaande styling -->
   <link rel="stylesheet" href="/assets/css/cv.css" />
+
+  <style>
+
+.sidebar {
+  width: 220px;
+  background: #111827;
+  color: #e5e7eb;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  align-self: center;
+}
+
+.sidebar-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16px; /* <- deze was anders */
+}
+
+.nav-btn {
+  display: block;
+  width: auto;              /* <- belangrijk */
+  box-sizing: border-box;
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: #1f2937;
+  color: #e5e7eb;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.nav-btn.active {
+  background: #0f62fe;
+  border-color: #60a5fa;
+}
+
+.nav-btn:not(.active):hover {
+  background: #111827;
+}
+
+
+    body.cv { margin:0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .layout { display:flex; min-height:100vh; }
+    .nav-btn.active { background:#0f62fe; border-color:#60a5fa; }
+    .nav-btn:not(.active):hover { background:#111827; }
+
+    .main { flex:1; padding:24px 32px; box-sizing:border-box; }
+    .main-header h1 { margin:0 0 4px 0; font-size:28px; }
+    .muted { color:#6b7280; font-size:13px; }
+
+    .grid-3 {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:18px;
+      align-items:start;
+      margin-top:14px;
+    }
+
+    .card {
+      background:#fff; border-radius:16px; padding:16px 18px; box-shadow:0 10px 22px rgba(2,6,23,.08);
+      box-sizing:border-box;
+    }
+    .card-header {
+      display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .card-title { font-size:15px; font-weight:700; margin:0; }
+    .pill {
+      font-size:12px; padding:2px 8px; border-radius:999px;
+      border:1px solid rgba(15,23,42,.14); color:#111827; background:#f3f4f6;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .list {
+      margin:0; padding:0; list-style:none;
+      display:flex; flex-direction:column; gap:8px;
+      max-height:340px; overflow:auto;
+    }
+    .list-item {
+      border:1px solid rgba(15,23,42,.12);
+      background:#f9fafb;
+      border-radius:12px;
+      padding:10px 10px;
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .item-title { font-size:13px; font-weight:600; color:#0f172a; }
+    .item-meta { font-size:12px; color:#64748b; display:flex; gap:10px; flex-wrap:wrap; }
+
+    .toolbar {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-top:12px;
+    }
+
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      border-radius:999px; border:1px solid transparent; padding:6px 14px;
+      font-size:14px; cursor:pointer; font-family:inherit;
+    }
+    .btn-primary { background:#0f62fe; color:#fff; box-shadow:0 12px 24px rgba(15,98,254,.20); }
+    .btn-ghost { background:transparent; color:#111827; border-color:rgba(15,23,42,.14); }
+    .btn-ghost:hover { background: rgba(148,163,184,.10); }
+
+    .alert {
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:13px;
+      border:1px solid rgba(15,23,42,.12);
+      background:#f9fafb;
+      color:#0f172a;
+      margin-top:12px;
+    }
+    .alert.error { border-color: rgba(185,28,28,.25); background:#fef2f2; color:#b91c1c; }
+    .hidden { display:none !important; }
+
+    @media (max-width: 1100px) {
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Sub-vakjes onder een CV in Profielen */
+.list-item.sub {
+  margin-left: 14px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px dashed rgba(15,23,42,.18);
+}
+
+  </style>
 </head>
 
 <body class="cv">
-  <div id="nav-placeholder"></div>
+  <div class="layout">
+    <!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/assets/img/logo.png" alt="logo" style="width:100%; height:100%; object-fit:contain;">
+  </div>
+  <div class="sidebar-title">CV Tool</div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>CV-tool</h1>
-      <p>Beheer CV’s en vacatures, genereer profielen en match kandidaten op kernwoorden.</p>
-    </header>
 
-    <section class="grid-2">
-      <a class="card" href="/cv/cv-vacature-analyse.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">CV’s & vacatures</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Open</span>
+<nav>
+  <a class="nav-btn active" href="/cv/index.html">Dashboard</a>
+  <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+  <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+    <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
+  <a class="nav-btn" href="/cv/index.html">Vacatures</a>
+
+</nav>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="main-header">
+        <h1>Dashboard</h1>
+        <p class="muted">Overzicht van geüploade CV’s, beschikbare profielen en geüploade vacatures.</p>
+
+        <div class="toolbar">
+          <div class="muted" id="lastUpdated">Laatst bijgewerkt: —</div>
+          <div>
+            <button id="refreshBtn" class="btn btn-primary" type="button">Ververs</button>
+            <button id="clearBtn" class="btn btn-ghost" type="button">Leeg</button>
+          </div>
         </div>
-        <p>Upload documenten, genereer profielen en laat AI beoordelen.</p>
-      </a>
 
-      <a class="card" href="/cv/profielen.html" style="text-decoration:none;">
-        <div class="card-header">
-          <h2 class="card-title">Profielen</h2>
-          <span class="btn btn-secondary" style="pointer-events:none;">Open</span>
-        </div>
-        <p>Bekijk profielen, deel ze via tijdelijke links en beheer toegang.</p>
-      </a>
+        <div id="status" class="alert hidden"></div>
+      </header>
 
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Korte uitleg</h2>
-        </div>
-        <p>
-          Deze omgeving is los van het reisbureau. Deel je een CV-tool link, dan ziet de ontvanger alleen CV-tool pagina’s en navigatie.
-        </p>
-        <div class="button-container">
-          <a class="btn btn-secondary" href="/index.html">Naar portaal</a>
-        </div>
-      </div>
-    </section>
-  </main>
+      <section class="grid-3" aria-label="Dashboard overzicht">
+        <!-- CVs -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">CV’s</h2>
+            <span id="cvsCount" class="pill">0</span>
+          </div>
+          <ul id="cvsList" class="list"></ul>
+        </section>
 
-  <script src="/assets/js/nav-cv.js"></script>
+        <!-- Profielen -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Profielen</h2>
+            <span id="profilesCount" class="pill">0</span>
+          </div>
+          <ul id="profilesList" class="list"></ul>
+        </section>
+
+        <!-- Vacatures -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Vacatures</h2>
+            <span id="vacCount" class="pill">0</span>
+          </div>
+          <ul id="vacList" class="list"></ul>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Pas dit aan als je lokaal draait
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+    // const API_BASE_URL = "http://127.0.0.1:5001";
+
+    const el = {
+      status: document.getElementById("status"),
+      lastUpdated: document.getElementById("lastUpdated"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+
+      cvsCount: document.getElementById("cvsCount"),
+      profilesCount: document.getElementById("profilesCount"),
+      vacCount: document.getElementById("vacCount"),
+
+      cvsList: document.getElementById("cvsList"),
+      profilesList: document.getElementById("profilesList"),
+      vacList: document.getElementById("vacList"),
+    };
+
+    function setStatus(type, msg) {
+      el.status.className = "alert" + (type === "error" ? " error" : "");
+      el.status.textContent = msg;
+      el.status.classList.remove("hidden");
+    }
+    function clearStatus() {
+      el.status.className = "alert hidden";
+      el.status.textContent = "";
+    }
+
+    async function fetchJson(url, options = {}) {
+      const resp = await fetch(url, options);
+      const text = await resp.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch {}
+      if (!resp.ok) {
+        const msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+        throw new Error(msg || `HTTP ${resp.status}`);
+      }
+      return data;
+    }
+
+    function formatUpdated() {
+      const d = new Date();
+      el.lastUpdated.textContent = "Laatst bijgewerkt: " + d.toLocaleString();
+    }
+
+    function clearLists() {
+      el.cvsList.innerHTML = "";
+      el.vacList.innerHTML = "";
+      el.profilesList.innerHTML = "";
+      el.cvsCount.textContent = "0";
+      el.vacCount.textContent = "0";
+      el.profilesCount.textContent = "0";
+    }
+
+function li(title, variant = "main") {
+  const item = document.createElement("li");
+  item.className = "list-item" + (variant === "sub" ? " sub" : "");
+
+  const t = document.createElement("div");
+  t.className = "item-title";
+  t.textContent = String(title);
+
+  item.appendChild(t);
+  return item;
+}
+
+
+    async function loadDashboard() {
+      clearStatus();
+      clearLists();
+      setStatus("info", "Laden…");
+
+      try {
+        // 1) CVs (upload-side lijst)
+        const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`, { method: "GET" });
+
+        // 2) Vacatures
+        const vacancies = await fetchJson(`${API_BASE_URL}/vacancy/get_available_vacancies`, { method: "GET" });
+
+        // 3) CVs met profiel-indicatie (profile_viewer get_cvs)
+        const profileCvs = await fetchJson(`${API_BASE_URL}/profile_viewer/get_cvs`, { method: "GET" });
+
+        // Render CVs
+        const cvArr = Array.isArray(cvs) ? cvs : [];
+        el.cvsCount.textContent = String(cvArr.length);
+        if (cvArr.length === 0) {
+          el.cvsList.appendChild(li("Geen CV’s gevonden"));
+        } else {
+          cvArr.forEach(c => {
+            const id = c.ID ?? c.id ?? "—";
+            const name = c.FileName ?? c.filename ?? c.DisplayName ?? `CV ${id}`;
+            el.cvsList.appendChild(li(name));
+          });
+        }
+
+        // Render Vacatures
+        const vacArr = Array.isArray(vacancies) ? vacancies : [];
+        el.vacCount.textContent = String(vacArr.length);
+        if (vacArr.length === 0) {
+          el.vacList.appendChild(li("Geen vacatures gevonden"));
+        } else {
+          vacArr.forEach(v => {
+            const id = v.ID ?? v.id ?? "—";
+            const name =
+              v.DisplayName ?? v.FileName ?? v.Title ?? v.titel ?? `Vacature ${id}`;
+            el.vacList.appendChild(li(name));
+          });
+        }
+
+        // Render Profielen
+        // We bouwen een overzicht op basis van profile_viewer/get_cvs en per CV get_profiles
+        const pcvArr = Array.isArray(profileCvs) ? profileCvs : [];
+
+        // Alleen CVs met profiel-indicatie prioriteren, maar als HasProfile ontbreekt: gewoon proberen
+        const candidates = pcvArr.length ? pcvArr : cvArr.map(x => ({ ID: x.ID, FileName: x.FileName, HasProfile: true }));
+
+        let totalProfiles = 0;
+
+        if (!candidates.length) {
+          el.profilesList.appendChild(li("Geen profielen gevonden"));
+        } else {
+          // Beperk voor performance: max 30 CV calls (pas aan indien nodig)
+          const subset = candidates.slice(0, 30);
+
+          for (const c of subset) {
+            const cvId = c.ID ?? c.id;
+            if (!cvId) continue;
+
+            // Alleen vragen als HasProfile True, maar fallback: probeer toch
+            if (c.HasProfile === false) continue;
+
+            let profiles = [];
+            try {
+              profiles = await fetchJson(`${API_BASE_URL}/profile_viewer/get_profiles`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ CV_ID: cvId })
+              });
+            } catch {
+              // geen profielen voor deze CV of endpoint gaf 404 -> skip
+              profiles = [];
+            }
+
+            if (Array.isArray(profiles) && profiles.length) {
+              totalProfiles += profiles.length;
+
+              // Toon CV header + aantal, en de profielen eronder als bullets (compact)
+const cvName = c.FileName ? `${c.FileName}` : `CV ${cvId}`;
+el.profilesList.appendChild(li(cvName)); // hoofdvakje
+
+profiles.forEach(p => {
+  const pname = p.naam ?? p.profile_name ?? `Profiel`;
+  el.profilesList.appendChild(li(`↳ ${pname}`, "sub"));
+});
+
+            }
+          }
+
+          if (el.profilesList.children.length === 0) {
+            el.profilesList.appendChild(li("Geen profielen gevonden"));
+          }
+        }
+
+        el.profilesCount.textContent = String(totalProfiles);
+
+        formatUpdated();
+        setStatus("success", "Dashboard geladen.");
+        // maak status na 2s weer subtiel weg (optioneel)
+        setTimeout(() => { clearStatus(); }, 1500);
+      } catch (err) {
+        setStatus("error", err.message || "Fout bij laden dashboard.");
+      }
+    }
+
+    el.refreshBtn.addEventListener("click", loadDashboard);
+    el.clearBtn.addEventListener("click", () => {
+      clearStatus();
+      clearLists();
+      el.lastUpdated.textContent = "Laatst bijgewerkt: —";
+    });
+
+    // init
+    loadDashboard();
+  </script>
 </body>
 </html>

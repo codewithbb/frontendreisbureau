@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title>CV Tool – Bekijk en deel profiel</title>
+
+  <!-- Thema voor de CV-tool -->
+  <link rel="stylesheet" href="/assets/css/cv.css" />
+
+  <style>
+    body.cv {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 24px 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .sidebar-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+      align-self: center;
+    }
+
+    .sidebar-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sidebar-title {
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .nav-btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: #1f2937;
+      color: #e5e7eb;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-btn.active {
+      background: #0f62fe;
+      border-color: #60a5fa;
+    }
+
+    .nav-btn:not(.active):hover {
+      background: #111827;
+    }
+
+    .main {
+      flex: 1;
+      padding: 24px 32px;
+      box-sizing: border-box;
+    }
+
+    .main-header {
+      margin-bottom: 16px;
+    }
+
+    .main-header h1 {
+      margin: 0 0 4px 0;
+      font-size: 28px;
+    }
+
+    .main-header p {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .subheader-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      gap: 16px;
+    }
+
+    .subheader-row h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 10px 22px rgba(2, 6, 23, .08);
+      box-sizing: border-box;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #0f172a;
+    }
+
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(15, 23, 42, .14);
+      font-size: 14px;
+      font-family: inherit;
+      background: #ffffff;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #0f62fe;
+      color: #ffffff;
+      box-shadow: 0 12px 24px rgba(15, 98, 254, .20);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 16px 34px rgba(15, 98, 254, .26);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #111827;
+      border-color: rgba(15, 23, 42, .14);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(148, 163, 184, .1);
+    }
+
+    .alert {
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .alert-info {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .alert-success {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .alert-warning {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .alert-danger {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-panel {
+      border: 1px solid rgba(15, 23, 42, .16);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-height: 260px;
+    }
+
+    .profile-panel-header {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .profile-block {
+      border-radius: 10px;
+      padding: 6px 0;
+      background: transparent;
+      margin-bottom: 6px;
+    }
+
+    .profile-block h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+    }
+
+    .profile-block ul {
+      padding-left: 18px;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .profile-block p {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 16px;
+      max-width: 540px;
+      align-items: center;
+    }
+
+    .filters-row .field {
+      flex: 1;
+    }
+
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .share-row a {
+      color: #0f62fe;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .share-row a:hover {
+      text-decoration: underline;
+    }
+
+    .label-inline {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .code-block {
+      background: #0b1120;
+      color: #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body class="cv">
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <!-- eventueel eigen logo-path aanpassen -->
+        <img src="/assets/img/logo.png" alt="Bedrijfslogo">
+      </div>
+      <div class="sidebar-title">CV Tool</div>
+
+<nav>
+  <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+  <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+  <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+    <a class="nav-btn active" href="/cv/profile_viewer_new.html">Profielen</a>
+  <a class="nav-btn" href="/cv/index.html">Vacatures</a>
+
+</nav>
+
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <header class="main-header">
+        <h1>CV Tool - Bekijk &amp; deel profiel</h1>
+      </header>
+
+      <!-- Hoofdcard: selecties + profielweergave -->
+      <section class="card stack">
+        <!-- CV + profiel select -->
+        <div class="filters-row">
+          <div class="field">
+            <label for="viewer_cv" class="label-inline">CV</label>
+            <select id="viewer_cv"></select>
+          </div>
+
+          <div class="field" style="display:flex; flex-direction:column;">
+            <label for="profiles" class="label-inline">Profiel</label>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="profiles">
+                <option value="" disabled selected>Selecteer profiel…</option>
+              </select>
+
+              <button
+                id="BtnViewProfile"
+                type="button"
+                class="btn btn-secondary"
+                style="white-space:nowrap;"
+              >
+                Bekijk profiel
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="viewerStatus" class="alert hidden"></div>
+
+        <!-- Profielonderdelen -->
+        <div class="profile-panel">
+          <div class="profile-panel-header">Profielonderdelen:</div>
+          <div id="profileView" class="muted">
+            <p class="muted">
+              Selecteer een CV en een profiel en klik op &ldquo;Bekijk profiel&rdquo; om de inhoud te zien.
+            </p>
+          </div>
+        </div>
+
+        <!-- Acties + link-output -->
+<div class="link-row" style="align-items:flex-start;">
+  <!-- Linker kolom: knop -->
+  <div>
+    <button id="BtnDelen" type="button" class="btn btn-primary">
+      Deel profiel
+    </button>
+  </div>
+
+  <!-- Rechter kolom: link output -->
+  <div style="flex:1;">
+    <label class="label-inline">Link output</label>
+
+    <div id="shareBox" class="muted" style="margin-top:2px;">
+      <div class="muted">
+        Nog geen link. Klik op “Deel profiel” om een deellink te genereren.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- responseBox mag blijven voor JS, maar is permanent verborgen -->
+<pre id="responseBox" class="hidden"></pre>
+<pre id="responseBox2" class="hidden"></pre>
+
+      </section>
+
+      <!-- Verborgen builder-elementen nodig voor profielen.js, maar niet zichtbaar op deze pagina -->
+      <section style="display:none;">
+        <select id="available_cvs"></select>
+        <button id="refreshCvsBtn" type="button"></button>
+        <div id="profile_elements_container"></div>
+        <button id="generateProfile" type="button"></button>
+        <button id="saveProfile" type="button"></button>
+        <input type="text" id="profile_name" />
+        <div id="profilePreview"></div>
+        <pre id="profileResponse"></pre>
+        <div id="profileStatus"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- API base URL voor profielen.js -->
+  <script>
+    const API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+  </script>
+
+  <!-- Alleen profielen.js laden, geen cv-vacature-analyse.js om conflicts te vermijden -->
+  <script src="/assets/js/profielen.js" defer></script>
+</body>
+</html>

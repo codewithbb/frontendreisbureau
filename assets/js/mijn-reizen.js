@@ -47,22 +47,26 @@ if (window.marked) {
 }
 
 function showLoginError(message) {
-  loginError.style.display = "block";
+  // loginError.style.display = "block";
+  loginError.classList.remove("hidden");
   loginError.textContent = message;
 }
 
 function hideLoginError() {
-  loginError.style.display = "none";
+  // loginError.style.display = "none";
+  loginError.classList.add("hidden");
   loginError.textContent = "";
 }
 
 function showAiError(message) {
-  aiError.style.display = "block";
+  // aiError.style.display = "block";
+  aiError.classList.remove("hidden");
   aiError.textContent = message;
 }
 
 function hideAiError() {
-  aiError.style.display = "none";
+  // aiError.style.display = "none";
+  aiError.classList.add("hidden");
   aiError.textContent = "";
 }
 

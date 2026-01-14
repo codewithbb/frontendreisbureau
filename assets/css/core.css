@@ -420,3 +420,7 @@ pre, .pre{
   overflow-x: auto;
   white-space: pre;          /* behoud formatting */
 }
+
+.hidden { 
+  display: none !important; 
+}

@@ -7,73 +7,42 @@
 
   <link rel="stylesheet" href="/assets/css/core.css" />
   <link rel="stylesheet" href="/assets/css/reis.css" />
-
-  <!-- Page-specific styling (mag later naar reis.css) -->
-  <style>
-    .filters-grid{
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 10px;
-    }
-    @media (max-width: 900px){
-      .filters-grid{ grid-template-columns: 1fr; }
-    }
-    .table-wrap{
-      overflow: auto;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-    }
-    /* Make table look nice in reis theme */
-    .table-wrap table{
-      min-width: 720px;
-      background: transparent;
-    }
-    .table-wrap th{
-      position: sticky;
-      top: 0;
-      background: rgba(255,255,255,.08);
-      backdrop-filter: blur(10px);
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      color: rgb(0, 0, 0);
-      font-size: 13px;
-      font-weight: 650;
-    }
-  </style>
 </head>
 
 <body class="reis">
   <div id="nav-placeholder"></div>
 
-  <main class="page">
-    <header class="page-title">
-      <h1>Last-minutes</h1>
-      <p>
-        Binnen 4 weken naar de zon? Filter op bestemming, vertrekdatum en aantal personen en bekijk direct welke vluchten nog plekken over hebben.
-      </p>
+  <main class="reis-lastminutes">
+    <!-- HERO -->
+    <header class="lm-hero">
+      <div class="lm-hero-inner">
+        <div>
+          <p class="booking-eyebrow">Deals</p>
+          <h1>Last-minutes</h1>
+          <p class="booking-lead">
+            Binnen 4 weken weg? Filter op bestemming, vertrekdatum en aantal personen
+            en bekijk direct welke vluchten nog plekken over hebben.
+          </p>
 
-      <div class="row" style="margin-top:10px;">
-        <span class="badge">☀️ Vertrek vanaf Schiphol</span>
-        <span class="badge">⚡ Last-minute deals</span>
-        <span class="badge">👥 Filter op personen</span>
+          <div class="lm-badges">
+            <span class="badge">☀️ Vertrek vanaf Schiphol</span>
+            <span class="badge">⚡ Last-minute deals</span>
+            <span class="badge">👥 Filter op personen</span>
+          </div>
+        </div>
+
+        <div class="lm-hero-media">
+          <img class="lm-hero-img" src="/assets/reis/lastminute-hero.png" alt="Last-minute reis sfeerbeeld" />
+        </div>
       </div>
     </header>
 
-    <!-- Filters -->
-    <section class="card">
-      <div class="card-header">
+    <!-- FILTERS -->
+    <section class="card lm-filters">
+      <div class="card-header lm-filters-head">
         <div>
           <h2 class="card-title">Filters</h2>
-          <p class="card-subtitle">Pas de filters aan om de resultaten te verfijnen.</p>
+          <p class="card-subtitle">Pas aan om de resultaten te verfijnen.</p>
         </div>
         <button id="btn-reset-filters" class="btn btn-secondary" type="button">Filters wissen</button>
       </div>
@@ -111,13 +80,13 @@
         </div>
       </div>
 
-      <div id="filters-meta" class="help-text" style="margin-top:10px;">
-        Laden van resultaten…
+      <div id="filters-meta" class="help-text lm-meta">
+        190 resultaat/resultaten
       </div>
     </section>
 
-    <!-- Results -->
-    <section class="card">
+    <!-- RESULTS -->
+    <section class="card lm-results">
       <div class="card-header">
         <div>
           <h2 class="card-title">Beschikbare last-minutes</h2>
@@ -125,22 +94,21 @@
         </div>
       </div>
 
-      <div id="tableContainer" class="table-container">
+      <!-- JS blijft hier in renderen -->
+      <div id="tableContainer" class="table-wrap">
         <div class="alert" style="margin:0;">Bezig met laden…</div>
       </div>
 
-      <div class="help-text" style="margin-top:10px;">
-        Tip: Sorteer via je browser door te selecteren en kopiëren naar Excel, of voeg later sorteerknoppen toe per kolom.
-      </div>
+      <!-- <div class="help-text" style="margin-top:10px;">
+        Tip: Wil je dit nog “meer echt”? Dan kunnen we de JS resultaten ombouwen naar deal-cards (mobile-first).
+      </div> -->
     </section>
   </main>
 
   <script src="/assets/js/nav-reis.js" defer></script>
-
-  <!-- Dit is jullie bestaande script (hernoemd). -->
   <script src="/assets/js/last-minutes.js" defer></script>
 
-  <!-- Page glue: reset-knop voor filters -->
+  <!-- Page glue: reset-knop voor filters (jouw bestaande gedrag) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const btn = document.getElementById("btn-reset-filters");
@@ -155,12 +123,8 @@
         if (vertrek) vertrek.value = "all";
         if (personen) personen.value = "all";
 
-        // trigger applyFilter if available
-        if (typeof applyFilter === "function") {
-          // columns live in init scope; applyFilter expects columns param in your code.
-          // We'll just dispatch change events to reuse existing listeners:
-          [bestemming, vertrek, personen].forEach(el => el && el.dispatchEvent(new Event("change")));
-        }
+        // Hergebruik bestaande listeners
+        [bestemming, vertrek, personen].forEach(el => el && el.dispatchEvent(new Event("change")));
       });
     });
   </script>
