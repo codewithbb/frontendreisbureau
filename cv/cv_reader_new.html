@@ -2,16 +2,15 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <title>CV Tool – Upload & Profielen</title>
+  <title>CV Tool – Upload & Bekijk CV</title>
 
-  <!-- Thema voor de CV-tool -->
   <link rel="stylesheet" href="/assets/css/cv.css" />
 
   <style>
-    /* ====== Basis layout ====== */
     body.cv {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
     }
 
     .layout {
@@ -37,7 +36,6 @@
       border-radius: 12px;
       margin-bottom: 4px;
       align-self: center;
-      
     }
 
     .sidebar-title {
@@ -59,6 +57,8 @@
       text-align: left;
       cursor: pointer;
       font-size: 14px;
+      text-decoration: none;
+      box-sizing: border-box;
     }
 
     .nav-btn.active {
@@ -99,12 +99,7 @@
       gap: 16px;
     }
 
-    .subheader-row h2 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    /* ====== Cards & layout helpers ====== */
+    /* Cards */
     .card {
       background: #ffffff;
       border-radius: 16px;
@@ -117,23 +112,41 @@
       display: grid;
       grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
       gap: 20px;
-      align-items: flex-start;
+      align-items: stretch;
+    }
+
+    .grid-2 > .card {
+      height: 100%;
     }
 
     .stack {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
       gap: 8px;
-      margin-top: 8px;
+      min-height: 0;
     }
 
-    /* ====== Form elementen ====== */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    /* Consistente witruimte onder kop + tekst */
+    .section-title { margin: 0 0 8px 0; }
+    .muted { margin: 0 0 10px 0; }
+
+    /* Notities-tab: linker kaart compacter */
+    #leftCard.notes-compact #cv_notes {
+      min-height: 110px;
+      resize: vertical;
+    }
+
     label {
       font-size: 14px;
       color: #0f172a;
@@ -150,11 +163,19 @@
       border: 1px solid rgba(15, 23, 42, .14);
       font-size: 14px;
       font-family: inherit;
+      background: #fff;
     }
 
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 120px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
     }
 
     .btn {
@@ -176,10 +197,6 @@
       box-shadow: 0 12px 24px rgba(15, 98, 254, .20);
     }
 
-    .btn-primary:hover {
-      box-shadow: 0 16px 34px rgba(15, 98, 254, .26);
-    }
-
     .btn-secondary {
       background: #e5e7eb;
       color: #111827;
@@ -195,7 +212,6 @@
       background: rgba(148, 163, 184, .1);
     }
 
-    /* ====== Alerts & helpers ====== */
     .alert {
       border-radius: 8px;
       padding: 6px 10px;
@@ -203,37 +219,14 @@
       margin-top: 8px;
     }
 
-    .alert-info {
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
+    .alert-info { background: #eff6ff; color: #1d4ed8; }
+    .alert-success { background: #ecfdf5; color: #15803d; }
+    .alert-warning { background: #fffbeb; color: #92400e; }
+    .alert-danger { background: #fef2f2; color: #b91c1c; }
 
-    .alert-success {
-      background: #ecfdf5;
-      color: #15803d;
-    }
+    .hidden { display: none !important; }
 
-    .alert-warning {
-      background: #fffbeb;
-      color: #92400e;
-    }
-
-    .alert-danger {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .muted {
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .code-block,
-    pre {
+    .code-block, pre {
       background: #0b1120;
       color: #e5e7eb;
       border-radius: 10px;
@@ -242,53 +235,7 @@
       overflow: auto;
     }
 
-    .section-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .profile-block {
-      border-radius: 10px;
-      padding: 10px 12px;
-      background: #f9fafb;
-      margin-bottom: 10px;
-    }
-
-    .profile-block h4 {
-      margin: 0 0 4px;
-      font-size: 14px;
-    }
-
-    .profile-block ul {
-      padding-left: 18px;
-      margin: 0;
-      font-size: 13px;
-    }
-
-    .profile-block p {
-      margin: 0;
-      font-size: 13px;
-    }
-
-    .share-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      word-break: break-all;
-    }
-
-    .share-row a {
-      color: #0f62fe;
-      text-decoration: none;
-    }
-
-    .share-row a:hover {
-      text-decoration: underline;
-    }
-
-    /* Tabs voor analyse/viewer (cv-vacature-analyse.js) */
+    /* Tabs (Viewer / Notities) rechtsboven */
     .tabs {
       display: inline-flex;
       border-radius: 999px;
@@ -301,7 +248,7 @@
       border-radius: 999px;
       border: none;
       background: transparent;
-      padding: 4px 12px;
+      padding: 6px 12px;
       font-size: 13px;
       cursor: pointer;
     }
@@ -324,101 +271,118 @@
       display: block;
     }
 
-/* Verklein ruimte onder CV dropdown + Ververs */
-.stack > .btn-row {
-  margin-bottom: 0;
-}
+    /* Profielonderdelen: compacte spacing zoals je had */
+    .stack { gap: 6px; }
+    #profile_elements_container > div:first-child { margin-top: 0 !important; }
+    .checklist-group-title {
+      margin-top: 6px !important;
+      margin-bottom: 4px !important;
+      font-weight: 600;
+    }
 
-/* Verklein algemene verticale spacing in profielonderdelen */
-.stack {
-  gap: 6px; /* was 12px */
-}
+    /* Notities: textarea bewust compact houden */
+    #cv_notes {
+      min-height: 110px;
+    }
 
-/* Haal extra top-margin bij eerste profielgroep weg */
-#profile_elements_container > div:first-child {
-  margin-top: 0 !important;
-}
-
-/* Titel zoals "Persoonlijke gegevens" compacter maken */
-.checklist-group-title {
-  margin-top: 6px !important;
-  margin-bottom: 4px !important;
-  font-weight: 600;
-}
-
+    /* Notities output: geen zwarte balk, zelfde 'preview-tekst' look */
+    #notesPreviewText {
+      white-space: pre-wrap;
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
 <body class="cv">
   <div class="layout">
-    <!-- ====== Sidebar ====== -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <img src="/assets/img/logo.png" alt="logo" style="width:100%; height:100%; object-fit:contain;">
       </div>
       <div class="sidebar-title">CV Tool</div>
 
-<nav>
-  <a class="nav-btn" href="/cv/index.html">Dashboard</a>
-  <a class="nav-btn active" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
-  <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
-    <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
-  <a class="nav-btn" href="/cv/index.html">Vacatures</a>
-
-</nav>
+      <nav>
+        <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+        <a class="nav-btn active" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+        <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+        <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
+        <a class="nav-btn" href="/cv/vacature_reader_new.html">Vacatures</a>
+      </nav>
     </aside>
 
-    <!-- ====== Main content ====== -->
     <main class="main">
       <header class="main-header">
         <h1>CV Tool - Upload &amp; bekijk CV</h1>
-        <div class="subheader-row">
-          <!-- tabs blijven bestaan voor JS, maar we gebruiken alleen analyse-tab op andere pagina's -->
 
+        <div class="subheader-row">
+          <div></div>
+          <div class="tabs" aria-label="Viewer of Notities">
+            <button type="button" class="tab active" data-mode="viewer">Viewer</button>
+            <button type="button" class="tab" data-mode="notes">Notities</button>
+          </div>
         </div>
       </header>
 
-      <!-- ====== Upload CV + Profielonderdelen (wireframe) ====== -->
-      <section class="grid-2" aria-label="Upload en profielonderdelen">
-        <!-- Upload kaart -->
-        <section class="card stack">
-          <div class="section-title">Upload &amp; bekijk CV</div>
-          <p class="muted">
-            Kies een CV-bestand (pdf/docx/txt). De tekst wordt via Azure Document Intelligence gelezen en daarna
-            door de LLM in onderdelen gesplitst.
-          </p>
+      <!-- Top grid -->
+      <section class="grid-2" aria-label="Upload/notities en profielonderdelen">
+        <!-- LINKER KAART: viewer of notities (switcht) -->
+        <section class="card stack" id="leftCard">
+          <!-- VIEWER CONTENT -->
+          <div id="left-viewer">
+            <div class="section-title">Upload &amp; bekijk CV</div>
+            <p class="muted">
+              Kies een CV-bestand (pdf/docx/txt). De tekst wordt via Azure Document Intelligence gelezen en daarna
+              door de LLM in onderdelen gesplitst.
+            </p>
 
-          <div>
-            <label for="cvFile" class="label-inline">Bestand kiezen</label>
-            <input type="file" id="cvFile" accept=".pdf,.doc,.docx,.txt" />
+            <div>
+              <label for="cvFile" class="label-inline">Bestand kiezen</label>
+              <input type="file" id="cvFile" accept=".pdf,.doc,.docx,.txt" />
+            </div>
+
+            <div class="btn-row">
+              <button id="uploadBtn" class="btn btn-primary" type="button">Upload cv</button>
+              <button id="uploadCvClear" class="btn btn-ghost" type="button">Wissen</button>
+            </div>
+
+            <div id="uploadCvStatus" class="alert hidden"></div>
+
+            <div class="hidden">
+              <span class="label-inline">Technische response</span>
+              <pre id="uploadResponse" class="code-block hidden"></pre>
+            </div>
           </div>
 
-          <div class="btn-row">
-            <button id="uploadBtn" class="btn btn-primary">Upload cv</button>
-            <button id="uploadCvClear" class="btn btn-ghost">Wissen</button>
-          </div>
+          <!-- NOTES CONTENT (links: compact invulveld) -->
+          <div id="left-notes" class="hidden" style="height:100%; display:flex; flex-direction:column;">
+            <div class="section-title">Notities</div>
+            <p class="muted">Vul notities in voor het geselecteerde CV.</p>
 
-          <div id="uploadCvStatus" class="alert hidden"></div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <textarea id="cv_notes" placeholder="Schrijf hier je notities…"></textarea>
+            </div>
 
-          <div class = "hidden">
-            <span class="label-inline">Technische response</span>
-            <pre id="uploadResponse" class="code-block hidden"></pre>
+            <div class="btn-row" style="justify-content:flex-end;">
+              <button id="saveNotesBtn" type="button" class="btn btn-primary">Sla notities op</button>
+            </div>
           </div>
         </section>
 
-        <!-- Profielonderdelen kaart -->
-        <section class="card stack">
+        <!-- RECHTER KAART: profielonderdelen (blijft altijd hetzelfde) -->
+        <section class="card stack" id="profileCard">
           <div class="section-title">Profielonderdelen</div>
 
           <div class="stack">
             <div>
-                <label for="available_cvs" class="label-inline">
-                  Bekijk bestaande CV&apos;s — kies eerst een geüpload CV om onderdelen te laden
-                </label>
-                <div class="btn-row">
-                  <select id="available_cvs"></select>
-                  <button id="refreshCvsBtn" class="btn btn-ghost" type="button">Ververs</button>
-                </div>
+              <label for="available_cvs" class="label-inline">
+                Bekijk bestaande CV&apos;s — kies eerst een geüpload CV om onderdelen te laden
+              </label>
+              <div class="btn-row">
+                <select id="available_cvs"></select>
+                <button id="refreshCvsBtn" class="btn btn-ghost" type="button">Ververs</button>
+              </div>
             </div>
 
             <div id="profile-elements-wrapper" class="hidden">
@@ -427,19 +391,14 @@
               </div>
             </div>
 
-
             <div class="two-col">
               <div>
                 <label for="profile_name" class="label-inline">Profielnaam</label>
                 <input type="text" id="profile_name" placeholder="Bijv. Data &amp; AI Trainee profiel" />
               </div>
               <div class="btn-row" style="margin-top: 20px; justify-content: flex-end;">
-                <button id="generateProfile" type="button" class="btn btn-secondary">
-                  Genereer profiel
-                </button>
-                <button id="saveProfile" type="button" class="btn btn-primary">
-                  Sla profiel op
-                </button>
+                <button id="generateProfile" type="button" class="btn btn-secondary">Genereer profiel</button>
+                <button id="saveProfile" type="button" class="btn btn-primary">Sla profiel op</button>
               </div>
             </div>
 
@@ -448,274 +407,247 @@
         </section>
       </section>
 
-      <!-- Preview onder de twee kolommen -->
-      <section class="card stack" style="margin-top: 18px;">
-        <div class="section-title">Preview</div>
-        <div id="profilePreview">
-          <p class="muted">
-            Nog geen profiel gegenereerd. Selecteer velden en klik op &ldquo;Genereer profiel&rdquo;.
-          </p>
+      <!-- ONDERSTE KAART: Preview (viewer) / Notities (notes) -->
+      <section class="card stack" id="bottomCard" style="margin-top: 18px;">
+        <!-- Viewer-content -->
+        <div id="bottom-viewer">
+          <div class="section-title">Preview</div>
+          <div id="profilePreview">
+            <p class="muted">
+              Nog geen profiel gegenereerd. Selecteer velden en klik op &ldquo;Genereer profiel&rdquo;.
+            </p>
+          </div>
+
+          <pre id="profileResponse" class="code-block hidden"></pre>
         </div>
 
-        <!-- profielResponse blijft bestaan voor JS maar is verborgen -->
-        <pre id="profileResponse" class="code-block hidden"></pre>
+        <!-- Notes-content -->
+        <div id="bottom-notes" class="hidden">
+          <div class="section-title">Notities</div>
+
+          <!-- Statusmeldingen horen hier (onderin) -->
+          <div id="notesStatus" class="alert hidden"></div>
+
+          <!-- Output: alleen woorden, geen zwarte balk -->
+          <div id="notesPreview">
+            <p class="muted">Nog geen notities te zien. Selecteer eerst een CV.</p>
+          </div>
+        </div>
       </section>
 
-      <!-- ===================== VERDER ONDERDEEL VERBORGEN ===================== -->
-      <!-- We verbergen de rest van de functionaliteit op deze pagina,
-           maar laten de elementen wel bestaan zodat de JS zonder fouten blijft werken. -->
-      <section id="hidden-functional-sections" style="display:none;">
-        <!-- ====== Profielen bekijken & delen (viewer kant van profielen.js) ====== -->
-        <section class="card stack" style="margin-top: 24px;">
-          <div class="section-title">Profielen bekijken &amp; delen</div>
-
-          <div class="two-col">
-            <div class="stack">
-              <div>
-                <label for="viewer_cv" class="label-inline">CV met opgeslagen profielen</label>
-                <select id="viewer_cv"></select>
-                <p class="muted">
-                  Kies een CV om beschikbare profielen te laden.
-                </p>
-              </div>
-
-              <div>
-                <label for="profiles" class="label-inline">Profiel</label>
-                <select id="profiles">
-                  <option value="" disabled selected>Selecteer profiel…</option>
-                </select>
-              </div>
-
-              <div class="btn-row">
-                <button id="BtnViewProfile" type="button" class="btn btn-secondary">Bekijk profiel</button>
-                <button id="BtnDelen" type="button" class="btn btn-ghost">Delen</button>
-              </div>
-
-              <div id="viewerStatus" class="alert hidden"></div>
-            </div>
-
-            <div class="stack">
-              <div>
-                <span class="label-inline">Geselecteerd profiel</span>
-                <div id="profileView" class="muted">
-                  <p class="muted">Selecteer een profiel om de inhoud te bekijken.</p>
-                </div>
-              </div>
-
-              <div>
-                <span class="label-inline">Deellink</span>
-                <div id="shareBox" class="muted">
-                  <p class="muted">Klik op &ldquo;Delen&rdquo; om een link te genereren.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <details style="margin-top: 10px;">
-            <summary class="muted" style="cursor:pointer;">Technische details (JSON)</summary>
-            <div class="two-col" style="margin-top: 8px;">
-              <pre id="responseBox" class="code-block">Nog geen response</pre>
-              <pre id="responseBox2" class="code-block hidden"></pre>
-            </div>
-          </details>
-        </section>
-
-        <!-- ====== Analyse + viewer/notities (cv-vacature-analyse.js) ====== -->
-        <section class="card stack" style="margin-top: 24px;">
-          <!-- Tabs worden bovenaan al getoond; hier de inhoud -->
-          <div id="tab-analyse">
-            <div class="section-title">CV &amp; vacature analyse</div>
-            <div class="two-col">
-              <!-- Vacature upload -->
-              <div class="stack">
-                <div>
-                  <label for="vacTitle" class="label-inline">Vacaturetitel (optioneel)</label>
-                  <input type="text" id="vacTitle" placeholder="Bijv. Data &amp; AI Trainee" />
-                </div>
-
-                <div>
-                  <label for="vacFile" class="label-inline">Vacaturebestand (pdf/docx/txt)</label>
-                  <input type="file" id="vacFile" accept=".pdf,.doc,.docx,.txt" />
-                </div>
-
-                <div>
-                  <label for="vacText" class="label-inline">Of plak de vacaturetekst</label>
-                  <textarea id="vacText" placeholder="Volledige vacaturetekst…"></textarea>
-                </div>
-
-                <div class="btn-row">
-                  <button id="uploadVacBtn" type="button" class="btn btn-secondary">Upload vacaturebestand</button>
-                  <button id="uploadVacTextBtn" type="button" class="btn btn-secondary">Upload tekst</button>
-                  <button id="uploadVacClear" type="button" class="btn btn-ghost">Wissen</button>
-                </div>
-
-                <div id="uploadVacStatus" class="alert hidden"></div>
-
-                <div>
-                  <span class="label-inline">Technische response</span>
-                  <pre id="vacUploadResponse" class="code-block hidden"></pre>
-                </div>
-              </div>
-
-              <!-- Analyse CV vs vacature -->
-              <div class="stack">
-                <div>
-                  <label for="eval_cv_id" class="label-inline">Te beoordelen CV</label>
-                  <select id="eval_cv_id"></select>
-                </div>
-
-                <div>
-                  <label for="eval_vacancy_id" class="label-inline">Tegen vacature</label>
-                  <select id="eval_vacancy_id"></select>
-                </div>
-
-                <div>
-                  <label for="eval_notes" class="label-inline">Opmerkingen / context (optioneel)</label>
-                  <textarea id="eval_notes" placeholder="Bijvoorbeeld: junior profiel, focus op data engineering…"></textarea>
-                </div>
-
-                <div class="btn-row">
-                  <button id="evaluateBtn" type="button" class="btn btn-primary">Beoordeel CV</button>
-                  <button id="evaluateClearBtn" type="button" class="btn btn-ghost">Wissen</button>
-                </div>
-
-                <div id="evalStatus" class="alert hidden"></div>
-
-                <!-- AI evaluatiekaart -->
-                <div id="ai-eval-card" class="card hidden" style="padding: 12px; margin-top: 8px;">
-                  <!-- Wordt gevuld door cv-vacature-analyse.js -->
-                </div>
-
-                <details>
-                  <summary class="muted" style="cursor:pointer;">Technische JSON (AI-evaluatie)</summary>
-                  <pre id="evalResponse" class="code-block hidden"></pre>
-                </details>
-              </div>
-            </div>
-
-            <hr style="margin: 18px 0; border:none; border-top:1px solid rgba(148,163,184,.4);" />
-
-            <!-- Vacature evaluatie en matching -->
-            <div class="two-col">
-              <div class="stack">
-                <div class="section-title">Alleen vacature analyseren</div>
-                <div>
-                  <label for="vac_eval_id" class="label-inline">Vacature</label>
-                  <select id="vac_eval_id"></select>
-                </div>
-                <div>
-                  <label for="vac_eval_notes" class="label-inline">Opmerkingen</label>
-                  <textarea id="vac_eval_notes" placeholder="Bijvoorbeeld: doelgroep, senioriteitsniveau…"></textarea>
-                </div>
-                <div class="btn-row">
-                  <button id="vac_eval_btn" type="button" class="btn btn-secondary">Beoordeel vacature</button>
-                </div>
-                <div id="vacEvalStatus" class="alert hidden"></div>
-                <pre id="vac_eval_response" class="code-block hidden"></pre>
-              </div>
-
-              <div class="stack">
-                <div class="section-title">Matching</div>
-                <div>
-                  <label for="match_vacancy_id" class="label-inline">Zoek geschikte CV&apos;s voor vacature</label>
-                  <div class="btn-row">
-                    <select id="match_vacancy_id"></select>
-                    <button id="match_vacancy_btn" type="button" class="btn btn-secondary">Match CV&apos;s</button>
-                  </div>
-                  <pre id="match_vacancy_results" class="code-block"></pre>
-                </div>
-
-                <div>
-                  <label for="match_cv_id" class="label-inline">Zoek passende vacatures voor CV</label>
-                  <div class="btn-row">
-                    <select id="match_cv_id"></select>
-                    <button id="match_cv_btn" type="button" class="btn btn-secondary">Match vacatures</button>
-                  </div>
-                  <pre id="match_cv_results" class="code-block"></pre>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Viewer / notities tab (cv-vacature-analyse.js) -->
-          <div id="tab-viewer" class="hidden stack">
-            <div class="section-title">CV / vacature details &amp; notities</div>
-
-            <div class="two-col">
-              <div class="stack">
-                <div>
-                  <label for="viewer_type" class="label-inline">Type</label>
-                  <select id="viewer_type">
-                    <option value="cv" selected>CV</option>
-                    <option value="vacancy">Vacature</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="viewer_id" class="label-inline">Item</label>
-                  <select id="viewer_id"></select>
-                </div>
-
-                <div>
-                  <label for="viewer_notes" class="label-inline">Notities</label>
-                  <textarea id="viewer_notes" placeholder="Interne notities bij dit CV / deze vacature…"></textarea>
-                </div>
-
-                <div class="btn-row">
-                  <button id="viewer_save_notes" type="button" class="btn btn-primary">Sla notities op</button>
-                </div>
-
-                <div id="viewerStatus" class="alert hidden"></div>
-                <pre id="viewer_save_response" class="code-block hidden"></pre>
-              </div>
-
-              <div class="stack">
-                <div>
-                  <span class="label-inline">Meta-data (technisch)</span>
-                  <pre id="viewer_details" class="code-block">Nog niets geselecteerd.</pre>
-                </div>
-                <div>
-                  <span class="label-inline">Leesbare weergave</span>
-                  <div id="viewer_details_pretty" class="muted">
-                    <p class="muted">Kies links een item om de details te zien.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </section>
-      <!-- ===================== EINDE VERBORGEN FUNCTIONALITEIT ===================== -->
     </main>
   </div>
 
-  <!-- JS: CV/vacature analyse + upload -->
-  <script src="/assets/js/cv-vacature-analyse.js" defer></script>
-  <!-- JS: Profielen genereren / bewaren / delen -->
+  <!-- 1) Zet API_BASE_URL globaal zodat profielen.js dit kan gebruiken -->
+  <script>
+    window.API_BASE_URL = "https://ack2511-reisbureau-fdghe5emesfrbza5.swedencentral-01.azurewebsites.net";
+    // window.API_BASE_URL = "http://127.0.0.1:5001";
+  </script>
+
+  <!-- 2) Profielen functionaliteit -->
   <script src="/assets/js/profielen.js" defer></script>
 
-<script>
-  (function () {
-    const cvDropdown = document.getElementById("available_cvs");
-    const wrapper = document.getElementById("profile-elements-wrapper");
-
-    if (!cvDropdown || !wrapper) return;
-
-    // init: verberg als er nog niets gekozen is
-    if (!cvDropdown.value) {
-      wrapper.classList.add("hidden");
-    }
-
-    cvDropdown.addEventListener("change", () => {
-      if (cvDropdown.value) {
-        wrapper.classList.remove("hidden");
-      } else {
-        wrapper.classList.add("hidden");
+  <!-- 3) Pagina-specifieke logic: tabs + upload + notities -->
+  <script>
+    (function () {
+      function setAlert(el, type, msg) {
+        el.className = `alert alert-${type}`;
+        el.textContent = msg;
+        el.classList.remove("hidden");
       }
-    });
-  })();
-</script>
+      function clearAlert(el) {
+        el.className = "alert hidden";
+        el.textContent = "";
+      }
+      async function fetchJson(url, options = {}) {
+        const resp = await fetch(url, options);
+        const text = await resp.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch {}
+        if (!resp.ok) {
+          const msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+          throw new Error(msg || `HTTP ${resp.status}`);
+        }
+        return data;
+      }
 
+      const tabs = Array.from(document.querySelectorAll(".tab"));
 
+      const leftCard = document.getElementById("leftCard");
+      const leftViewer = document.getElementById("left-viewer");
+      const leftNotes = document.getElementById("left-notes");
+
+      const bottomViewer = document.getElementById("bottom-viewer");
+      const bottomNotes = document.getElementById("bottom-notes");
+
+      const notesStatus = document.getElementById("notesStatus");
+      const notesPreview = document.getElementById("notesPreview");
+
+      // --- Upload logic ---
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadCvClear = document.getElementById("uploadCvClear");
+      const uploadCvStatus = document.getElementById("uploadCvStatus");
+      const cvFile = document.getElementById("cvFile");
+
+      // --- Notities logic gekoppeld aan available_cvs ---
+      const availableCvs = document.getElementById("available_cvs");
+      const notesTextarea = document.getElementById("cv_notes");
+      const saveNotesBtn = document.getElementById("saveNotesBtn");
+
+      function isNotesMode() {
+        return document.querySelector(".tab.active")?.dataset.mode === "notes";
+      }
+
+      function getSelectedCvId() {
+        return (availableCvs && availableCvs.value) ? availableCvs.value : "";
+      }
+
+      function setNotesPreviewText(text) {
+        const t = (text || "").trim();
+
+        if (!t) {
+          notesPreview.innerHTML = '<p class="muted">Nog geen notities te zien. Selecteer eerst een CV.</p>';
+          return;
+        }
+
+        // Escapen zodat notities veilig als tekst worden weergegeven
+        const escaped = t
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        // Alleen woorden/tekst output, geen zwarte balk
+        notesPreview.innerHTML = `<div id="notesPreviewText">${escaped}</div>`;
+      }
+
+      async function loadNotesForSelectedCv() {
+        clearAlert(notesStatus);
+
+        const cvId = getSelectedCvId();
+
+        if (!cvId) {
+          if (notesTextarea) notesTextarea.value = "";
+          setNotesPreviewText(null);
+          return;
+        }
+
+        try {
+          setAlert(notesStatus, "info", "Notities laden…");
+          const data = await fetchJson(`${window.API_BASE_URL}/cv/get_meta?id=${encodeURIComponent(cvId)}`);
+          const meta = (data && data.result) ? data.result : {};
+          const current = meta.Notities || "";
+
+          if (notesTextarea) notesTextarea.value = current;
+          setNotesPreviewText(current);
+
+          setAlert(notesStatus, "success", "Notities geladen.");
+        } catch (err) {
+          setAlert(notesStatus, "danger", err.message || "Notities laden mislukt.");
+        }
+      }
+
+      function setMode(mode) {
+        tabs.forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
+        const notes = mode === "notes";
+
+        // links wisselt
+        leftViewer.classList.toggle("hidden", notes);
+        leftNotes.classList.toggle("hidden", !notes);
+
+        // onder wisselt (preview <-> notities)
+        bottomViewer.classList.toggle("hidden", notes);
+        bottomNotes.classList.toggle("hidden", !notes);
+
+        // notities-tab: linker card compacter maken
+        leftCard.classList.toggle("notes-compact", notes);
+
+        // bij naar notities gaan: meteen laden
+        if (notes) loadNotesForSelectedCv().catch(() => {});
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => setMode(btn.dataset.mode));
+      });
+
+      uploadBtn.addEventListener("click", async () => {
+        clearAlert(uploadCvStatus);
+
+        if (!cvFile.files.length) {
+          setAlert(uploadCvStatus, "warning", "Selecteer eerst een CV-bestand.");
+          return;
+        }
+
+        try {
+          setAlert(uploadCvStatus, "info", "Bezig met uploaden…");
+          const formData = new FormData();
+          formData.append("file", cvFile.files[0]);
+
+          await fetchJson(`${window.API_BASE_URL}/cv/upload`, { method: "POST", body: formData });
+          setAlert(uploadCvStatus, "success", "CV geüpload. Lijst wordt bijgewerkt.");
+
+          if (window.CVTool && typeof window.CVTool.loadCvs === "function") {
+            await window.CVTool.loadCvs();
+          }
+        } catch (err) {
+          setAlert(uploadCvStatus, "danger", err.message || "Upload mislukt.");
+        }
+      });
+
+      uploadCvClear.addEventListener("click", () => {
+        cvFile.value = "";
+        clearAlert(uploadCvStatus);
+      });
+
+      if (availableCvs) {
+        availableCvs.addEventListener("change", () => {
+          if (isNotesMode()) loadNotesForSelectedCv();
+        });
+      }
+
+      saveNotesBtn.addEventListener("click", async () => {
+        clearAlert(notesStatus);
+
+        const cvId = getSelectedCvId();
+        if (!cvId) {
+          setAlert(notesStatus, "warning", "Selecteer eerst een CV rechts.");
+          return;
+        }
+
+        try {
+          setAlert(notesStatus, "info", "Opslaan…");
+          const notities = (notesTextarea && notesTextarea.value) ? notesTextarea.value : "";
+
+          const resp = await fetchJson(`${window.API_BASE_URL}/cv/update_notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cv_id: cvId, notities })
+          });
+
+          if (resp && resp.success === false) throw new Error(resp.error || "Opslaan mislukt");
+
+          // na opslaan: herladen zodat output zeker DB-waarde toont
+          await loadNotesForSelectedCv();
+          setAlert(notesStatus, "success", "Notities opgeslagen.");
+        } catch (err) {
+          setAlert(notesStatus, "danger", err.message || "Opslaan mislukt.");
+        }
+      });
+
+      // Profielonderdelen wrapper (pas zichtbaar na selectie)
+      (function initProfileWrapperToggle() {
+        const wrapper = document.getElementById("profile-elements-wrapper");
+        if (!availableCvs || !wrapper) return;
+
+        if (!availableCvs.value) wrapper.classList.add("hidden");
+
+        availableCvs.addEventListener("change", () => {
+          wrapper.classList.toggle("hidden", !availableCvs.value);
+        });
+      })();
+
+      // default mode
+      setMode("viewer");
+    })();
+  </script>
 </body>
 </html>

@@ -3,16 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CV Tool – CVs evalueren met vacature</title>
+  <title>CV Tool – CVs evalueren & matchen</title>
 
-  <!-- Jullie bestaande styling -->
   <link rel="stylesheet" href="/assets/css/cv.css" />
 
   <style>
-    body.cv { margin:0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body.cv { margin:0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#f8fafc; }
     .layout { display:flex; min-height:100vh; }
 
-    /* Sidebar (consistent met je andere pagina’s) */
     .sidebar{
       width:220px; background:#111827; color:#e5e7eb;
       padding:24px 16px; box-sizing:border-box;
@@ -31,13 +29,18 @@
     .nav-btn.active{ background:#0f62fe; border-color:#60a5fa; }
     .nav-btn:not(.active):hover{ background:#111827; }
 
-    /* Main */
     .main{ flex:1; padding:24px 32px; box-sizing:border-box; }
+    .main-header{ margin-bottom:16px; }
     .main-header h1{ margin:0 0 4px 0; font-size:28px; }
     .muted{ color:#6b7280; font-size:13px; }
     .hidden{ display:none !important; }
 
-    /* Card */
+    /* Header row with tabs on the right */
+    .subheader-row{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:16px; margin-top:10px;
+    }
+
     .card{
       background:#fff; border-radius:16px;
       padding:16px 18px; box-shadow:0 10px 22px rgba(2,6,23,.08);
@@ -45,10 +48,8 @@
     }
     .stack{ display:flex; flex-direction:column; gap:12px; }
 
-    /* Controls */
-    label{ font-size:14px; color:#0f172a; }
     .label-inline{ font-size:13px; color:#64748b; margin-bottom:4px; display:block; }
-    select, textarea, input[type="text"], input[type="file"]{
+    select, textarea{
       width:100%; box-sizing:border-box; padding:8px 10px;
       border-radius:8px; border:1px solid rgba(15,23,42,.14);
       font-size:14px; font-family:inherit; background:#fff;
@@ -64,32 +65,51 @@
     .btn-ghost{ background:transparent; color:#111827; border-color:rgba(15,23,42,.14); }
     .btn-ghost:hover{ background: rgba(148,163,184,.10); }
 
-    .filters-row{
-      display:grid;
-      grid-template-columns: minmax(220px, 260px) minmax(220px, 260px) 1fr;
-      gap:16px; align-items:end;
-    }
-    .filters-row .actions{ display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
-
     .alert{ border-radius:8px; padding:6px 10px; font-size:13px; margin-top:8px; }
     .alert-info{ background:#eff6ff; color:#1d4ed8; }
     .alert-success{ background:#ecfdf5; color:#15803d; }
     .alert-warning{ background:#fffbeb; color:#92400e; }
     .alert-danger{ background:#fef2f2; color:#b91c1c; }
 
-    /* Score row (altijd boven de boxen) */
+    /* Tabs in header */
+    .tabs{
+      display:inline-flex; border-radius:999px; background:#e5e7eb;
+      padding:2px; gap:2px;
+    }
+    .tab{
+      border-radius:999px; border:none; background:transparent;
+      padding:6px 12px; font-size:13px; cursor:pointer;
+    }
+    .tab.active{ background:#fff; box-shadow:0 1px 3px rgba(15,23,42,.15); }
+
+    /* Evaluate: dropdowns + buttons in same row */
+    .eval-top{
+      display:grid;
+      grid-template-columns: minmax(240px, 320px) minmax(240px, 320px) auto;
+      gap:16px;
+      align-items:end;
+    }
+    .eval-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-start; /* buttons sit next to dropdowns, not pushed far right */
+      flex-wrap:wrap;
+      align-items:end;
+      padding-bottom: 2px;
+    }
+
+    /* Score row */
     .score-row{ display:flex; align-items:center; gap:12px; margin-top:6px; margin-bottom:8px; }
     .score-label{ font-weight:600; }
-.score-bar{
-  width: 50%;          /* ← dit is de sleutel */
-  max-width: 520px;   /* optioneel, voorkomt te brede balk op grote schermen */
-  height:14px;
-  border-radius:999px;
-  background: rgba(15,23,42,.10);
-  overflow:hidden;
-  border:1px solid rgba(15,23,42,.12);
-}
-
+    .score-bar{
+      width: 50%;
+      max-width: 520px;
+      height:14px;
+      border-radius:999px;
+      background: rgba(15,23,42,.10);
+      overflow:hidden;
+      border:1px solid rgba(15,23,42,.12);
+    }
     .score-bar-fill{
       height:100%; width:0%;
       background:#111827;
@@ -97,16 +117,17 @@
     }
     .score-value{ min-width:48px; text-align:left; font-variant-numeric: tabular-nums; }
 
-    /* Results grid: 2 kolommen, 2 rijen (4 vakken). Alles even hoog. */
+    /* Results layout (evalueren) */
     .results-grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:18px;
       align-items:stretch;
+      margin-top:6px;
     }
     .col-grid{
       display:grid;
-      grid-template-rows: 1fr 1fr;  /* 2 vakken per kolom even hoog */
+      grid-template-rows: 1fr 1fr;
       gap:12px;
       align-items:stretch;
     }
@@ -115,7 +136,7 @@
       border-radius:12px;
       border:1px solid rgba(15,23,42,.14);
       padding:12px 12px;
-      height:100%;                /* vult de grid-cel */
+      height:100%;
       box-sizing:border-box;
       display:flex;
       flex-direction:column;
@@ -124,80 +145,125 @@
     .box h3{ margin:0; font-size:14px; }
     .box ul{ margin:0; padding-left:18px; font-size:13px; }
     .box li{ margin:2px 0; }
-    .box p{ margin:0; font-size:13px; }
+    .box p{ margin:0; font-size:13px; white-space: pre-wrap; }
 
     .box-green{ background:#e9f7e9; border-color: rgba(22,163,74,.25); }
     .box-orange{ background:#fff3df; border-color: rgba(249,115,22,.30); }
     .box-gray{ background:#f3f4f6; border-color: rgba(15,23,42,.20); }
     .box-blue{ background:#eff6ff; border-color: rgba(59,130,246,.30); }
 
-    /* JS output containers: bestaan voor scripts, maar niet zichtbaar */
+    /* Match: constrain width so boxes don't become huge vs dropdowns */
+    .match-container{
+      max-width: 720px; /* keeps columns visually structured */
+    }
+/* Match layout: exact dezelfde breedte als dropdowns */
+.match-top{
+  display:grid;
+  grid-template-columns: 320px 320px auto;
+  gap:16px;
+  align-items:end;
+}
+
+.match-columns{
+  display:grid;
+  grid-template-columns: 320px 320px;
+  gap:18px;
+  margin-top:10px;
+}
+.match-columns .box{
+  width: 320px;        /* exact gelijk aan dropdown */
+  box-sizing: border-box;
+}
+
+
+    /* Hide raw JS outputs */
     #ai-eval-card{ display:none !important; }
     #evalResponse{ display:none !important; }
+    #match_vacancy_results, #match_cv_results{ display:none !important; }
 
     @media (max-width: 1100px){
-      .filters-row{ grid-template-columns: 1fr; }
-      .filters-row .actions{ justify-content:flex-start; }
       .results-grid{ grid-template-columns: 1fr; }
       .col-grid{ grid-template-rows: auto; }
       .box{ height:auto; }
+      .score-bar{ width:100%; }
+
+      .eval-top{ grid-template-columns: 1fr; }
+      .eval-actions{ justify-content:flex-start; }
+
+      .match-container{ max-width: none; }
+      .match-top{ grid-template-columns: 1fr; }
+      .match-columns{ grid-template-columns: 1fr; }
     }
+    /* Zorg dat "Check matches" altijd op één regel blijft */
+#ui_check_matches_btn{
+  white-space: nowrap;
+}
+
   </style>
 </head>
 
 <body class="cv">
   <div class="layout">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <img src="/assets/img/logo.png" alt="Bedrijfslogo">
       </div>
       <div class="sidebar-title">CV Tool</div>
 
-      <!-- Pas href’s aan naar jouw routes (bij Flask bijv. /dashboard, /cv-reader, /evaluatie, ...) -->
       <nav>
         <a class="nav-btn" href="/cv/index.html">Dashboard</a>
         <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
         <a class="nav-btn active" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
         <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
-        <a class="nav-btn" href="/cv/index.html">Vacatures</a>
+        <a class="nav-btn" href="/cv/vacature_reader_new.html">Vacatures</a>
       </nav>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <header class="main-header">
         <h1>CV Tool - CVs evalueren met vacature</h1>
-        <p class="muted">Selecteer een CV en vacature en laat AI een fit-score en feedback genereren.</p>
+
+        <div class="subheader-row">
+          <div></div>
+
+          <!-- Tabswitcher rechtsboven -->
+          <div class="tabs" aria-label="Evalueren of Matchen">
+            <button type="button" class="tab active" data-tab="evaluate">Evalueren</button>
+            <button type="button" class="tab" data-tab="match">Matchen</button>
+          </div>
+        </div>
       </header>
 
-      <section class="card stack">
-        <!-- Filters -->
-        <div class="filters-row" aria-label="Selecties">
-          <div class="field">
+      <!-- ========================= -->
+      <!-- TAB: EVALUEREN -->
+      <!-- ========================= -->
+      <section id="tab-evaluate" class="card stack">
+        <!-- Dropdowns + buttons in same row -->
+        <div class="eval-top" aria-label="Selecties evalueren">
+          <div>
             <label for="eval_cv_id" class="label-inline">Selecteer CV</label>
             <select id="eval_cv_id"></select>
           </div>
 
-          <div class="field">
+          <div>
             <label for="eval_vacancy_id" class="label-inline">Selecteer Vacature</label>
             <select id="eval_vacancy_id"></select>
           </div>
 
-          <div class="actions">
+          <div class="eval-actions" aria-label="Acties evalueren">
             <button id="evaluateBtn" type="button" class="btn btn-primary">Evalueer CV</button>
             <button id="evaluateClearBtn" type="button" class="btn btn-ghost">Wissen</button>
           </div>
         </div>
 
-        <div class="field">
+        <div>
           <label for="eval_notes" class="label-inline">Extra context (optioneel)</label>
           <textarea id="eval_notes" placeholder="Bijv. focus op junior profiel, data engineering, leiderschap, …"></textarea>
         </div>
 
         <div id="evalStatus" class="alert hidden"></div>
 
-        <!-- Score bovenaan -->
+        <!-- Score -->
         <div class="score-row" aria-label="score">
           <div class="score-label">Score:</div>
           <div class="score-bar">
@@ -206,9 +272,8 @@
           <div id="scoreText" class="score-value muted">0/100</div>
         </div>
 
-        <!-- 4 vakken in 2x2 grid, even hoog -->
+        <!-- Boxes -->
         <div class="results-grid" aria-label="Evaluatie resultaat">
-          <!-- Linker kolom: Sterke + Aandacht -->
           <div class="col-grid">
             <div class="box box-green">
               <h3>Sterke punten:</h3>
@@ -225,7 +290,6 @@
             </div>
           </div>
 
-          <!-- Rechter kolom: Samenvatting + Vervolgstappen -->
           <div class="col-grid">
             <div class="box box-gray">
               <h3>Samenvatting:</h3>
@@ -241,9 +305,54 @@
           </div>
         </div>
 
-        <!-- Nodig voor cv-vacature-analyse.js (maar verborgen) -->
-        <div id="ai-eval-card" class="card hidden"></div>
+        <!-- nodig voor cv-vacature-analyse.js (maar verborgen) -->
+        <div id="ai-eval-card" class="hidden"></div>
         <pre id="evalResponse" class="hidden"></pre>
+      </section>
+
+      <!-- ========================= -->
+      <!-- TAB: MATCHEN -->
+      <!-- ========================= -->
+      <section id="tab-match" class="card stack hidden">
+        <div class="match-container">
+          <!-- Dropdowns + 1 button ernaast -->
+          <div class="match-top" aria-label="Selecties matchen">
+            <div>
+              <label class="label-inline">Selecteer CV</label>
+              <select id="match_ui_cv_select"></select>
+            </div>
+
+            <div>
+              <label class="label-inline">Selecteer Vacature</label>
+              <select id="match_ui_vac_select"></select>
+            </div>
+
+            <div style="display:flex; align-items:end;">
+              <button id="ui_check_matches_btn" type="button" class="btn btn-primary">Check matches</button>
+            </div>
+          </div>
+
+          <div id="matchStatus" class="alert hidden"></div>
+
+          <!-- Boxes direct onder de bijbehorende dropdown (zelfde kolombreedte) -->
+          <div class="match-columns" aria-label="Match resultaten (onder dropdowns)">
+            <!-- Onder CV dropdown: vacatures -->
+            <div class="box">
+              <h3>Vacatures die matchen met de gekozen CV</h3>
+              <ul id="ui_match_vacancies_list">
+                <li class="muted">Nog geen resultaten.</li>
+              </ul>
+            </div>
+
+            <!-- Onder Vacature dropdown: CVs -->
+            <div class="box">
+              <h3>CV's die matchen met de gekozen vacature</h3>
+              <ul id="ui_match_cvs_list">
+                <li class="muted">Nog geen resultaten.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ========================= -->
@@ -267,14 +376,14 @@
         <div id="uploadVacStatus"></div>
         <pre id="vacUploadResponse"></pre>
 
-        <!-- Vacancy evaluation -->
+        <!-- Vacancy evaluation (andere pagina) -->
         <select id="vac_eval_id"></select>
         <textarea id="vac_eval_notes"></textarea>
         <button id="vac_eval_btn" type="button"></button>
         <div id="vacEvalStatus"></div>
         <pre id="vac_eval_response"></pre>
 
-        <!-- Matching -->
+        <!-- Matching (JS verwacht deze IDs) -->
         <select id="match_vacancy_id"></select>
         <button id="match_vacancy_btn" type="button"></button>
         <pre id="match_vacancy_results"></pre>
@@ -283,7 +392,7 @@
         <button id="match_cv_btn" type="button"></button>
         <pre id="match_cv_results"></pre>
 
-        <!-- Viewer / notes -->
+        <!-- Viewer / notes (andere pagina) -->
         <select id="viewer_type"></select>
         <select id="viewer_id"></select>
         <pre id="viewer_details"></pre>
@@ -292,14 +401,43 @@
         <button id="viewer_save_notes" type="button"></button>
         <pre id="viewer_save_response"></pre>
         <div id="viewerStatus"></div>
+
+        <!-- Vacature reader upload stuff (andere pagina) -->
+        <button id="uploadVacTextBtn" type="button"></button>
+        <button id="uploadVacBtn" type="button"></button>
+        <button id="uploadVacClear" type="button"></button>
       </section>
     </main>
   </div>
 
-  <!-- Laad alleen deze JS op deze pagina om identifier-conflicten te vermijden -->
   <script src="/assets/js/cv-vacature-analyse.js" defer></script>
 
-  <!-- UI-mapper: leest JSON uit #evalResponse en zet het in de 4 vakken + scorebalk -->
+  <!-- Tabs: evaluate/match -->
+  <script>
+    (function () {
+      const tabs = Array.from(document.querySelectorAll(".tab"));
+      const tabEvaluate = document.getElementById("tab-evaluate");
+      const tabMatch = document.getElementById("tab-match");
+
+      function setActive(name) {
+        tabs.forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+        tabEvaluate.classList.toggle("hidden", name !== "evaluate");
+        tabMatch.classList.toggle("hidden", name !== "match");
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          // voorkom dat cv-vacature-analyse.js eigen tab toggles probeert te doen
+          e.stopImmediatePropagation();
+          setActive(btn.dataset.tab);
+        }, true);
+      });
+
+      setActive("evaluate");
+    })();
+  </script>
+
+  <!-- Map eval JSON (#evalResponse) -> UI -->
   <script>
     (function () {
       const evalPre = document.getElementById("evalResponse");
@@ -310,7 +448,7 @@
       const summaryText = document.getElementById("summaryText");
       const stepsList = document.getElementById("stepsList");
 
-      if (!evalPre || !scoreFill || !scoreText || !strengthsList || !weaknessesList || !summaryText || !stepsList) return;
+      if (!evalPre) return;
 
       function setList(ul, items, emptyText) {
         ul.innerHTML = "";
@@ -329,18 +467,22 @@
       }
 
       function applyResult(payload) {
-        const r = payload?.result || payload?.Result || payload?.data?.result || null;
+        const r = payload?.result || null;
         if (!r) return;
 
         const score = Number(r.fit_score ?? 0);
         const clamped = Math.max(0, Math.min(100, score));
-        scoreFill.style.width = clamped + "%";
-        scoreText.textContent = `${clamped}/100`;
+        if (scoreFill) scoreFill.style.width = clamped + "%";
+        if (scoreText) scoreText.textContent = `${clamped}/100`;
 
-        summaryText.textContent = r.fit_summary ? String(r.fit_summary) : "—";
-        setList(strengthsList, r.strengths, "Geen sterke punten gedetecteerd.");
-        setList(weaknessesList, r.gaps, "Geen aandachtspunten genoemd.");
-        setList(stepsList, r.recommended_next_steps, "Geen vervolgstappen voorgesteld.");
+        if (summaryText) {
+          summaryText.textContent = r.fit_summary ? String(r.fit_summary) : "—";
+          summaryText.classList.toggle("muted", !r.fit_summary);
+        }
+
+        if (strengthsList) setList(strengthsList, r.strengths, "Geen sterke punten gedetecteerd.");
+        if (weaknessesList) setList(weaknessesList, r.gaps, "Geen aandachtspunten genoemd.");
+        if (stepsList) setList(stepsList, r.recommended_next_steps, "Geen vervolgstappen voorgesteld.");
       }
 
       const obs = new MutationObserver(() => {
@@ -349,12 +491,158 @@
           if (!txt) return;
           const data = JSON.parse(txt);
           applyResult(data);
-        } catch {
-          /* ignore parse issues */
-        }
+        } catch { /* ignore */ }
       });
 
       obs.observe(evalPre, { childList: true, subtree: true, characterData: true });
+    })();
+  </script>
+
+  <!-- Match UI: reuse eval dropdowns, sync -> match_* and render results; single button "Check matches" -->
+  <script>
+    (function () {
+      const evalCv = document.getElementById("eval_cv_id");
+      const evalVac = document.getElementById("eval_vacancy_id");
+
+      const uiCv = document.getElementById("match_ui_cv_select");
+      const uiVac = document.getElementById("match_ui_vac_select");
+
+      const matchCv = document.getElementById("match_cv_id");
+      const matchVac = document.getElementById("match_vacancy_id");
+
+      const matchCvBtn = document.getElementById("match_cv_btn");           // vacancies_for_cv
+      const matchVacBtn = document.getElementById("match_vacancy_btn");     // cvs_for_vacancy
+
+      const matchCvPre = document.getElementById("match_cv_results");
+      const matchVacPre = document.getElementById("match_vacancy_results");
+
+      const listVacancies = document.getElementById("ui_match_vacancies_list"); // onder CV dropdown
+      const listCvs = document.getElementById("ui_match_cvs_list");             // onder Vacature dropdown
+      const matchStatus = document.getElementById("matchStatus");
+
+      const checkBtn = document.getElementById("ui_check_matches_btn");
+
+      function setAlert(type, msg) {
+        matchStatus.className = `alert alert-${type}`;
+        matchStatus.textContent = msg;
+        matchStatus.classList.remove("hidden");
+      }
+      function clearAlert() {
+        matchStatus.className = "alert hidden";
+        matchStatus.textContent = "";
+      }
+
+      function copyOptions(fromSel, toSel) {
+        if (!fromSel || !toSel) return;
+        toSel.innerHTML = fromSel.innerHTML;
+        toSel.value = fromSel.value || "";
+      }
+
+      function syncAll() {
+        // UI selects mirror eval selects
+        copyOptions(evalCv, uiCv);
+        copyOptions(evalVac, uiVac);
+
+        // hidden selects for JS matching
+        if (matchCv) matchCv.value = evalCv.value || "";
+        if (matchVac) matchVac.value = evalVac.value || "";
+      }
+
+      function setListFromLines(ul, lines, emptyText) {
+        ul.innerHTML = "";
+        const items = (lines || []).filter(Boolean);
+        if (!items.length) {
+          const li = document.createElement("li");
+          li.className = "muted";
+          li.textContent = emptyText;
+          ul.appendChild(li);
+          return;
+        }
+        items.forEach(t => {
+          const li = document.createElement("li");
+          li.textContent = t;
+          ul.appendChild(li);
+        });
+      }
+
+      function parseMatchPre(preText) {
+        const lines = (preText || "").split("\n").map(x => x.trim()).filter(x => x);
+        return lines.filter(x => /^\d+\.\s/.test(x));
+      }
+
+      function attachPreObserver(preEl, targetUl, emptyText) {
+        if (!preEl) return;
+        const obs = new MutationObserver(() => {
+          const txt = (preEl.textContent || "").trim();
+          if (!txt) return;
+          const items = parseMatchPre(txt);
+          setListFromLines(targetUl, items, emptyText);
+          clearAlert();
+        });
+        obs.observe(preEl, { childList: true, subtree: true, characterData: true });
+      }
+
+      function onUiCvChange() {
+        evalCv.value = uiCv.value;
+        evalCv.dispatchEvent(new Event("change", { bubbles: true }));
+        syncAll();
+      }
+
+      function onUiVacChange() {
+        evalVac.value = uiVac.value;
+        evalVac.dispatchEvent(new Event("change", { bubbles: true }));
+        syncAll();
+      }
+
+      function init() {
+        if (!evalCv || !evalVac || !uiCv || !uiVac || !matchCv || !matchVac || !matchCvBtn || !matchVacBtn || !checkBtn) return;
+
+        syncAll();
+
+        // eval dropdowns can be async-filled by cv-vacature-analyse.js
+        new MutationObserver(syncAll).observe(evalCv, { childList: true });
+        new MutationObserver(syncAll).observe(evalVac, { childList: true });
+
+        evalCv.addEventListener("change", syncAll);
+        evalVac.addEventListener("change", syncAll);
+
+        uiCv.addEventListener("change", onUiCvChange);
+        uiVac.addEventListener("change", onUiVacChange);
+
+        // Renderers
+        attachPreObserver(matchCvPre, listVacancies, "Nog geen resultaten.");
+        attachPreObserver(matchVacPre, listCvs, "Nog geen resultaten.");
+
+        setListFromLines(listVacancies, [], "Nog geen resultaten.");
+        setListFromLines(listCvs, [], "Nog geen resultaten.");
+
+        // Single button: run one or both matches depending on what's selected
+        checkBtn.addEventListener("click", () => {
+          syncAll();
+
+          const hasCv = !!(evalCv.value && evalCv.value.trim());
+          const hasVac = !!(evalVac.value && evalVac.value.trim());
+
+          if (!hasCv && !hasVac) {
+            setAlert("warning", "Selecteer een CV en/of een vacature om matches te checken.");
+            return;
+          }
+
+          setAlert("info", "Matches controleren…");
+
+          // If CV selected -> match vacatures_for_cv
+          if (hasCv) {
+            matchCvBtn.click();
+          }
+
+          // If vacature selected -> match cvs_for_vacancy
+          if (hasVac) {
+            setTimeout(() => matchVacBtn.click(), hasCv ? 150 : 0);
+          }
+        });
+      }
+
+      window.addEventListener("load", () => setTimeout(init, 0));
     })();
   </script>
 </body>
