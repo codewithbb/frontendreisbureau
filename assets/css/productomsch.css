@@ -736,3 +736,134 @@ html, body{
   .tools body::after{ animation: none; }
 }
 
+/* =========================
+   DATA STREAM BACKGROUND (TOOLS)
+   ========================= */
+.tools body{
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* moving dots pattern */
+.tools body .fx-datastream{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .55;
+}
+
+.tools body .fx-datastream::before,
+.tools body .fx-datastream::after{
+  content:"";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 10px 10px, rgba(59,130,246,.30) 2px, transparent 3px) 0 0 / 44px 44px,
+    radial-gradient(circle at 30px 26px, rgba(96,165,250,.22) 1.5px, transparent 3px) 0 0 / 56px 56px;
+  filter: blur(.2px);
+  transform: translateY(0);
+}
+
+/* laag 1: langzaam naar beneden */
+.tools body .fx-datastream::before{
+  animation: fx-dots-down 22s linear infinite;
+  opacity: .65;
+}
+
+/* laag 2: iets andere snelheid / richting */
+.tools body .fx-datastream::after{
+  animation: fx-dots-up 32s linear infinite;
+  opacity: .35;
+}
+
+@keyframes fx-dots-down{
+  from { transform: translateY(-6%); }
+  to   { transform: translateY(6%); }
+}
+@keyframes fx-dots-up{
+  from { transform: translateY(6%); }
+  to   { transform: translateY(-6%); }
+}
+
+/* zorg dat content boven background blijft */
+.tools .page{ position: relative; z-index: 1; }
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .tools body .fx-datastream::before,
+  .tools body .fx-datastream::after{ animation: none !important; }
+}
+
+/* =========================
+   AURORA BACKGROUND (TOOLS)
+   ========================= */
+
+.tools body .fx-aurora{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* basis blobs */
+.tools body .fx-aurora::before,
+.tools body .fx-aurora::after{
+  content:"";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: .45;
+}
+
+/* blob 1 */
+.tools body .fx-aurora::before{
+  background: radial-gradient(circle,
+    rgba(59,130,246,.65),
+    rgba(59,130,246,0) 70%
+  );
+  top: -120px;
+  left: -120px;
+  animation: auroraMove1 28s ease-in-out infinite alternate;
+}
+
+/* blob 2 */
+.tools body .fx-aurora::after{
+  background: radial-gradient(circle,
+    rgba(96,165,250,.55),
+    rgba(96,165,250,0) 70%
+  );
+  bottom: -140px;
+  right: -140px;
+  animation: auroraMove2 34s ease-in-out infinite alternate;
+}
+
+/* animaties */
+@keyframes auroraMove1{
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(220px,140px) scale(1.15); }
+  100% { transform: translate(80px,260px) scale(0.95); }
+}
+
+@keyframes auroraMove2{
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(-240px,-160px) scale(1.12); }
+  100% { transform: translate(-120px,-280px) scale(0.95); }
+}
+
+/* content boven de achtergrond */
+.tools .page{
+  position: relative;
+  z-index: 2;
+}
+
+/* reduced motion support */
+@media (prefers-reduced-motion: reduce){
+  .tools body .fx-aurora::before,
+  .tools body .fx-aurora::after{
+    animation: none !important;
+  }
+}
