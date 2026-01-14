@@ -23,6 +23,7 @@ const downloadBtn = document.getElementById("downloadJsonBtn");
 // State
 let versions = [];     // { label, data }
 let productJson = null;
+let lastRenderedJson = null; // voor diff-highlighting
 
 function setStatus(type, message) {
   // type: "info" | "success" | "warn" | "error"
@@ -78,6 +79,16 @@ function cleanJsonString(str) {
     .trim();
 }
 
+function normalizeValue(v) {
+  if (v === undefined || v === null) return "";
+  if (typeof v === "string") return v.trim();
+  return v;
+}
+
+function isDifferent(a, b) {
+  return JSON.stringify(normalizeValue(a)) !== JSON.stringify(normalizeValue(b));
+}
+
 function section(title, bodyHtml) {
   if (!bodyHtml || bodyHtml.trim() === "") return "";
   return `<h3>${escapeHtml(title)}</h3>${bodyHtml}`;
@@ -122,7 +133,7 @@ function renderAfmetingen(val) {
   return `<p>${escapeHtml(String(val))}</p>`;
 }
 
-function renderStructured(maybeJson) {
+function renderStructured(maybeJson, prevJson = null) {
   let data;
 
   if (typeof maybeJson === "string") {
@@ -154,6 +165,21 @@ function renderStructured(maybeJson) {
   const title = data.title ?? "—";
   const intro = data.intro ?? "";
 
+  const prev = prevJson || null;
+
+  const changed = prev ? {
+    title: isDifferent(prev.title, data.title),
+    intro: isDifferent(prev.intro, data.intro),
+    algemene_beschrijving: isDifferent(prev.algemene_beschrijving, data.algemene_beschrijving),
+    belangrijkste_specificaties: isDifferent(prev.belangrijkste_specificaties, data.belangrijkste_specificaties),
+    afmetingen_en_compatibiliteit: isDifferent(prev.afmetingen_en_compatibiliteit, data.afmetingen_en_compatibiliteit),
+    functies: isDifferent(prev.functies, data.functies),
+    gebruik: isDifferent(prev.gebruik, data.gebruik),
+    onderhoud_en_duurzaamheid: isDifferent(prev.onderhoud_en_duurzaamheid, data.onderhoud_en_duurzaamheid),
+    in_de_verpakking: isDifferent(prev.in_de_verpakking, data.in_de_verpakking),
+  } : {};
+
+
   const belangrijksteSpecificaties = Array.isArray(data.belangrijkste_specificaties)
     ? data.belangrijkste_specificaties
     : [];
@@ -166,19 +192,58 @@ function renderStructured(maybeJson) {
   const onderhoudHtml  = data.onderhoud_en_duurzaamheid ? `<p>${escapeHtml(String(data.onderhoud_en_duurzaamheid))}</p>` : "";
   const verpakkingHtml = data.in_de_verpakking ? `<p>${escapeHtml(String(data.in_de_verpakking))}</p>` : "";
 
+  function wrapChanged(isChanged, innerHtml) {
+    if (!innerHtml || innerHtml.trim() === "") return "";
+    if (!isChanged) return innerHtml;
+
+    return `
+      <div class="diff-changed">
+        <div class="diff-badge">Gewijzigd</div>
+        ${innerHtml}
+      </div>
+    `;
+  }
+
   return `
     ${warningHtml}
     <div class="card" style="margin:0;">
-      <h2>${escapeHtml(title)}</h2>
-      ${intro ? `<p>${escapeHtml(intro)}</p>` : ""}
+      ${wrapChanged(changed.title, `<h2>${escapeHtml(title)}</h2>`)}
+      ${intro ? wrapChanged(changed.intro, `<p>${escapeHtml(intro)}</p>`) : ""}
 
-      ${section("Algemene beschrijving", algemeneBeschrijving ? `<p>${escapeHtml(algemeneBeschrijving)}</p>` : "")}
-      ${section("Belangrijkste specificaties", renderBelangrijksteSpecificaties(belangrijksteSpecificaties))}
-      ${section("Afmetingen & compatibiliteit", afmetingenHtml)}
-      ${section("Functies", functiesHtml)}
-      ${section("Gebruik", gebruikHtml)}
-      ${section("Onderhoud & duurzaamheid", onderhoudHtml)}
-      ${section("In de verpakking", verpakkingHtml)}
+      ${section("Algemene beschrijving",
+        wrapChanged(
+          changed.algemene_beschrijving,
+          algemeneBeschrijving ? `<p>${escapeHtml(algemeneBeschrijving)}</p>` : ""
+        )
+      )}
+
+      ${section("Belangrijkste specificaties",
+        wrapChanged(
+          changed.belangrijkste_specificaties,
+          renderBelangrijksteSpecificaties(belangrijksteSpecificaties)
+        )
+      )}
+
+      ${section("Afmetingen & compatibiliteit",
+        wrapChanged(changed.afmetingen_en_compatibiliteit, afmetingenHtml)
+      )}
+
+      ${section("Functies",
+        wrapChanged(changed.functies, functiesHtml)
+      )}
+
+      ${section("Gebruik",
+        wrapChanged(changed.gebruik, gebruikHtml)
+      )}
+
+      ${section("Onderhoud & duurzaamheid",
+        wrapChanged(changed.onderhoud_en_duurzaamheid, onderhoudHtml)
+      )}
+
+      ${section("In de verpakking",
+        wrapChanged(changed.in_de_verpakking, verpakkingHtml)
+      )}
+
 
       <details style="margin-top:.75rem;">
         <summary class="help-text">Ruwe JSON bekijken</summary>
@@ -234,7 +299,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   setLoading(true);
-  resultDiv.innerHTML = `<div class="alert" style="margin:0;">Bezig met genereren…</div>`;
+  //resultDiv.innerHTML = `<div class="alert" style="margin:0;">Bezig met genereren…</div>`;
 
   try {
     const payload = await postGenerate(csv_text);
@@ -242,12 +307,14 @@ form.addEventListener("submit", async (e) => {
     if (typeof payload.result === "string") {
       const cleaned = cleanJsonString(payload.result);
       try { productJson = JSON.parse(cleaned); } catch { productJson = null; }
-      resultDiv.innerHTML = renderStructured(cleaned);
+      resultDiv.innerHTML = renderStructured(cleaned, null);
+      lastRenderedJson = productJson ?? null;
 
       if (productJson) addVersion("Origineel", productJson);
     } else {
       productJson = payload.result;
-      resultDiv.innerHTML = renderStructured(productJson);
+      resultDiv.innerHTML = renderStructured(productJson, null);
+      lastRenderedJson = productJson;
 
       if (productJson) addVersion("Origineel", productJson);
     }
@@ -274,10 +341,13 @@ reviseBtn.addEventListener("click", async () => {
   setReviseLoading(true);
 
   try {
+    const prev = productJson; // onthoud vorige versie
     const revised = await postRevise(productJson, critique);
     productJson = revised;
 
-    resultDiv.innerHTML = renderStructured(revised);
+    resultDiv.innerHTML = renderStructured(revised, prev);
+    lastRenderedJson = revised;
+
 
     const revCount = versions.filter(v => v.label.startsWith("Revisie")).length + 1;
     addVersion(`Revisie ${revCount}`, revised);
@@ -300,8 +370,11 @@ versionSelect.addEventListener("change", (e) => {
   const chosen = versions[Number(index)];
   if (!chosen) return;
 
-  resultDiv.innerHTML = renderStructured(chosen.data);
+  const prev = lastRenderedJson;
+  resultDiv.innerHTML = renderStructured(chosen.data, prev);
   productJson = chosen.data;
+  lastRenderedJson = chosen.data;
+
   setStatus("info", `Versie geladen: ${chosen.label}`);
 });
 
@@ -333,6 +406,7 @@ clearBtn.addEventListener("click", () => {
   critiqueEl.value = "";
   versions = [];
   productJson = null;
+  lastRenderedJson = null;
   updateVersionDropdown();
   setResultEmpty();
   clearStatus();

@@ -1,55 +1,21 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="tools">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Productomschrijving generator</title>
 
-  <link rel="stylesheet" href="/assets/css/core.css" />
-  <link rel="stylesheet" href="/assets/css/tools.css" />
+  <link rel="stylesheet" href="/assets/css/productomsch.css" />
 
   <style>
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
-
-    .loader {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 5px solid rgba(0,0,0,.12);
-      border-top-color: rgba(99,102,241,.95);
-      animation: spin .9s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    textarea.csv { min-height: 190px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-    .toolbar {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .toolbar .right{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .hidden { display:none !important; }
+  
   </style>
 </head>
 
-<body class="tools">
+<body>
+  <div class="fx-datastream" aria-hidden="true"></div>
+  <div class="fx-aurora" aria-hidden="true"></div>
+
   <main class="page">
     <header class="page-title">
       <h1>Productomschrijving generator</h1>
@@ -58,10 +24,10 @@
 
     <section class="grid">
       <!-- LEFT: Input -->
-      <div class="card">
+      <div class="card tool-input">
         <div class="card-header">
           <div>
-            <h2 class="card-title">1) Input</h2>
+            <h2 class="card-title">Input</h2>
             <p class="card-subtitle">Tip: hoe completer je data, hoe beter de output.</p>
           </div>
         </div>
@@ -96,11 +62,11 @@ product_id,fabrikant_sku,eigen_sku,ean,merk
       </div>
 
       <!-- RIGHT: Output -->
-      <div class="card">
+      <div class="card tool-output">
         <div class="card-header">
           <div class="toolbar" style="width:100%;">
             <div>
-              <h2 class="card-title">2) Output</h2>
+              <h2 class="card-title">Output</h2>
               <p class="card-subtitle">Resultaat verschijnt hieronder (in leesbare secties).</p>
             </div>
 
@@ -124,10 +90,10 @@ product_id,fabrikant_sku,eigen_sku,ean,merk
     </section>
 
     <!-- Revision -->
-    <section class="card" style="margin-top:16px;">
+    <section class="card tool-revisie">
       <div class="card-header">
         <div>
-          <h2 class="card-title">3) Revisie</h2>
+          <h2 class="card-title">Revisie</h2>
           <p class="card-subtitle">Geef gerichte feedback, dan herschrijven we de productomschrijving.</p>
         </div>
       </div>
@@ -137,12 +103,16 @@ product_id,fabrikant_sku,eigen_sku,ean,merk
         <textarea id="critique" rows="5" placeholder="Bijv.: intro mag concreter, voeg bullets toe, focus meer op USP’s, minder marketingtaal…"></textarea>
 
         <div class="button-container">
-          <button id="reviseBtn" type="button" class="btn btn-primary">Herschrijf productomschrijving</button>
-          <div id="revisespinner" class="hidden" style="display:flex; align-items:center; gap:10px;">
-            <div class="loader" style="width:28px; height:28px; border-width:4px;"></div>
-            <span class="help-text">Bezig met reviseren…</span>
-          </div>
+          <button id="reviseBtn" type="button" class="btn btn-primary">
+            Herschrijf productomschrijving
+          </button>
         </div>
+
+        <div id="revisespinner" class="hidden revise-spinner">
+          <div class="loader"></div>
+          <div class="help-text">Bezig met reviseren…</div>
+        </div>
+
 
         <div class="help-text">
           Je kunt via “Versie” ook terugzetten naar een oudere versie en vanaf daar verder reviseren.
