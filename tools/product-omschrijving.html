@@ -100,12 +100,16 @@ product_id,fabrikant_sku,eigen_sku,ean,merk
         <textarea id="critique" rows="5" placeholder="Bijv.: intro mag concreter, voeg bullets toe, focus meer op USP’s, minder marketingtaal…"></textarea>
 
         <div class="button-container">
-          <button id="reviseBtn" type="button" class="btn btn-primary">Herschrijf productomschrijving</button>
-          <div id="revisespinner" class="hidden" style="display:flex; align-items:center; gap:10px;">
-            <div class="loader" style="width:28px; height:28px; border-width:4px;"></div>
-            <span class="help-text">Bezig met reviseren…</span>
-          </div>
+          <button id="reviseBtn" type="button" class="btn btn-primary">
+            Herschrijf productomschrijving
+          </button>
         </div>
+
+        <div id="revisespinner" class="hidden revise-spinner">
+          <div class="loader"></div>
+          <div class="help-text">Bezig met reviseren…</div>
+        </div>
+
 
         <div class="help-text">
           Je kunt via “Versie” ook terugzetten naar een oudere versie en vanaf daar verder reviseren.
