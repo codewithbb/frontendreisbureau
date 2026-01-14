@@ -184,11 +184,16 @@ dropdownCVs.addEventListener("change", async () => {
 // ====== Load CV lists ======
 async function loadCvs() {
   const cvs = await fetchJson(`${API_BASE_URL}/cv/get_available_cvs`);
-  fillGenericDropdown(dropdownCVs, cvs, "CV kiezen…");
-  fillGenericDropdown(viewerCv, cvs, "CV kiezen…");
+  if (dropdownCVs) fillGenericDropdown(dropdownCVs, cvs, "CV kiezen…");
+  if (viewerCv) fillGenericDropdown(viewerCv, cvs, "CV kiezen…");
 }
+// Expose helper zodat andere pagina's (zoals cv_reader_new.html) de dropdown kunnen verversen na upload
+window.CVTool = window.CVTool || {};
+window.CVTool.loadCvs = loadCvs;
 
-refreshCvsBtn.addEventListener("click", loadCvs);
+
+if (refreshCvsBtn) refreshCvsBtn.addEventListener("click", loadCvs);
+
 
 // ====== Generate profile (preview) ======
 function formatProfileOutput(data) {
@@ -294,73 +299,76 @@ async function createDropDownProfiles() {
   });
 }
 
-viewerCv.addEventListener("change", async () => {
-  clearAlert(viewerStatusProfiles);
-  profileView.innerHTML = `<p class="muted">Selecteer een profiel.</p>`;
-  setPre(responseBox, "Nog geen response");
-  shareBox.innerHTML = `<p class="muted">Klik op “Delen” om een link te genereren.</p>`;
-  responseBox2.classList.add("hidden");
-  try {
-    await createDropDownProfiles();
-  } catch (err) {
-    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profielen.");
-  }
-});
+if (viewerCv) {
+  viewerCv.addEventListener("change", async () => {
+    clearAlert(viewerStatusProfiles);
+    profileView.innerHTML = `<p class="muted">Selecteer een profiel.</p>`;
+    setPre(responseBox, "Nog geen response");
+    shareBox.innerHTML = `<p class="muted">Klik op “Delen” om een link te genereren.</p>`;
+    responseBox2.classList.add("hidden");
 
-BtnViewProfile.addEventListener("click", async () => {
-  clearAlert(viewerStatusProfiles);
-  const profileId = profilesDropdown.value;
-  if (!profileId) { setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); return; }
+    try {
+      await createDropDownProfiles();
+    } catch (err) {
+      setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profielen.");
+    }
+  });
+}
 
-  try {
-    setAlert(viewerStatusProfiles, "info", "Laden…");
-    const data = await fetchJson(`${API_BASE_URL}/profile_viewer/view_profile`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile_id: profileId })
-    });
+if (BtnViewProfile) {
+  BtnViewProfile.addEventListener("click", async () => {
+    clearAlert(viewerStatusProfiles);
+    const profileId = profilesDropdown.value;
+    if (!profileId) { 
+      setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); 
+      return; 
+    }
 
-    profileView.innerHTML = formatProfileOutput(data);
-    setPre(responseBox, data);
-    setAlert(viewerStatusProfiles, "success", "Profiel geladen.");
-  } catch (err) {
-    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profiel.");
-  }
-});
+    try {
+      setAlert(viewerStatusProfiles, "info", "Laden…");
+      const data = await fetchJson(`${API_BASE_URL}/profile_viewer/view_profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_id: profileId })
+      });
 
-BtnDelen.addEventListener("click", async () => {
-  clearAlert(viewerStatusProfiles);
-  const profileId = profilesDropdown.value;
-  if (!profileId) { setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); return; }
+      lastGeneratedProfile = data.result;
+      profileView.innerHTML = data.result.profile_text || "<em>Geen inhoud</em>";
+      setPre(responseBox, data);
 
-  try {
-    setAlert(viewerStatusProfiles, "info", "Link genereren…");
-    const data = await fetchJson(`${API_BASE_URL}/profile_viewer/share_profile`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile_id: profileId })
-    });
-
-    const fullUrl = `${API_BASE_URL}${data.share_url}`;
-    shareBox.innerHTML = `
-      <div class="share-row">
-        <div class="share-url">
-          <a href="${fullUrl}" target="_blank" rel="noopener">${fullUrl}</a>
-        </div>
-        <button class="btn btn-ghost" id="copyShareLink">Kopieer</button>
-      </div>
-    `;
-    document.getElementById("copyShareLink").addEventListener("click", async () => {
-      await navigator.clipboard.writeText(fullUrl);
-      setAlert(viewerStatusProfiles, "success", "Link gekopieerd.");
-    });
+      setAlert(viewerStatusProfiles, "success", "Profiel geladen.");
+    } catch (err) {
+      setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij laden profiel.");
+    }
+  });
+}
 
 
-    setAlert(viewerStatusProfiles, "success", "Deellink aangemaakt.");
-  } catch (err) {
-    setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij delen.");
-  }
-});
+if (BtnDelen) {
+  BtnDelen.addEventListener("click", async () => {
+    clearAlert(viewerStatusProfiles);
+    const profileId = profilesDropdown.value;
+    if (!profileId) { 
+      setAlert(viewerStatusProfiles, "warning", "Selecteer eerst een profiel."); 
+      return; 
+    }
+
+    try {
+      setAlert(viewerStatusProfiles, "info", "Link genereren…");
+      const data = await fetchJson(`${API_BASE_URL}/profile_viewer/share_profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_id: profileId })
+      });
+
+      shareBox.innerHTML = `<a href="${data.result.share_url}" target="_blank">${data.result.share_url}</a>`;
+      setAlert(viewerStatusProfiles, "success", "Deellink aangemaakt.");
+    } catch (err) {
+      setAlert(viewerStatusProfiles, "danger", err.message || "Fout bij delen.");
+    }
+  });
+}
+
 
 // init
 (async function init() {

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title>CV Tool – Vacature upload, notities & evalueren</title>
+
+  <link rel="stylesheet" href="/assets/css/cv.css" />
+
+  <style>
+    body.cv { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#f8fafc; }
+    .layout{ display:flex; min-height:100vh; }
+
+    .sidebar{
+      width:220px; background:#111827; color:#e5e7eb;
+      padding:24px 16px; box-sizing:border-box;
+      display:flex; flex-direction:column; align-items:stretch; gap:16px;
+    }
+    .sidebar-logo{ width:40px; height:40px; border-radius:12px; margin-bottom:4px; align-self:center; }
+    .sidebar-title{ font-size:20px; font-weight:600; text-align:center; margin-bottom:16px; }
+    .nav-btn{
+      display:block; width:100%; margin-bottom:6px; padding:8px 12px;
+      border-radius:999px; border:1px solid transparent;
+      background:#1f2937; color:#e5e7eb; text-align:left;
+      cursor:pointer; font-size:14px; text-decoration:none; box-sizing:border-box;
+    }
+    .nav-btn.active{ background:#0f62fe; border-color:#60a5fa; }
+    .nav-btn:not(.active):hover{ background:#111827; }
+
+    .main{ flex:1; padding:24px 32px; box-sizing:border-box; }
+    .main-header{ margin-bottom:16px; }
+    .main-header h1{ margin:0 0 4px 0; font-size:28px; }
+
+    .subheader-row{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:8px; margin-bottom:16px; gap:16px;
+    }
+
+    .card{
+      background:#fff; border-radius:16px; padding:16px 18px;
+      box-shadow:0 10px 22px rgba(2,6,23,.08);
+      box-sizing:border-box;
+    }
+    .stack{ display:flex; flex-direction:column; gap:12px; min-height:0; }
+
+    .section-title{ font-size:15px; font-weight:600; margin:0 0 8px 0; }
+    .muted{ color:#6b7280; font-size:13px; margin:0 0 10px 0; }
+    .hidden{ display:none !important; }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:minmax(0,340px) minmax(0,1fr);
+      gap:20px; align-items:stretch;
+    }
+    .grid-2 > .card{ height:100%; }
+
+    input[type="text"], input[type="file"], select, textarea{
+      width:100%; box-sizing:border-box; padding:8px 10px;
+      border-radius:8px; border:1px solid rgba(15,23,42,.14);
+      font-size:14px; font-family:inherit; background:#fff;
+    }
+    textarea{ resize:vertical; min-height:140px; }
+
+    .label-inline{ font-size:13px; color:#64748b; margin-bottom:4px; display:block; }
+    .btn-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      border-radius:999px; border:1px solid transparent;
+      padding:6px 14px; font-size:14px; cursor:pointer; font-family:inherit;
+    }
+    .btn-primary{ background:#0f62fe; color:#fff; box-shadow:0 12px 24px rgba(15,98,254,.20); }
+    .btn-ghost{ background:transparent; color:#111827; border-color:rgba(15,23,42,.14); }
+    .btn-ghost:hover{ background: rgba(148,163,184,.10); }
+
+    .alert{ border-radius:8px; padding:6px 10px; font-size:13px; margin-top:8px; }
+    .alert-info{ background:#eff6ff; color:#1d4ed8; }
+    .alert-success{ background:#ecfdf5; color:#15803d; }
+    .alert-warning{ background:#fffbeb; color:#92400e; }
+    .alert-danger{ background:#fef2f2; color:#b91c1c; }
+
+    /* Tabs */
+    .tabs{
+      display:inline-flex; border-radius:999px; background:#e5e7eb;
+      padding:2px; gap:2px;
+    }
+    .tab{
+      border-radius:999px; border:none; background:transparent;
+      padding:6px 12px; font-size:13px; cursor:pointer;
+    }
+    .tab.active{ background:#fff; box-shadow:0 1px 3px rgba(15,23,42,.15); }
+
+    /* Derde tab (Notities) mag NIET de .tab class gebruiken, anders pakt cv-vacature-analyse.js hem mee */
+    .tab-notes{
+      border-radius:999px; border:none; background:transparent;
+      padding:6px 12px; font-size:13px; cursor:pointer;
+    }
+    .tab-notes.active{ background:#fff; box-shadow:0 1px 3px rgba(15,23,42,.15); }
+
+    /* ---- Evalueren: 1 grote container met intern 2-koloms header + 2x2 grid ---- */
+    .eval-header{
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap:16px;
+      align-items:stretch;
+    }
+
+    .results-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    /* Boxes zoals cv_evaluation_new.html */
+    .box{
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,.14);
+      padding:12px 12px;
+      height:100%;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      background:#fff;
+    }
+    .box h3{ margin:0; font-size:14px; }
+    .box ul{ margin:0; padding-left:18px; font-size:13px; }
+    .box li{ margin:2px 0; }
+    .box p{ margin:0; font-size:13px; white-space: pre-wrap; }
+
+    .subgrid-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      align-items:start;
+    }
+
+    /* Kleuren gelijk aan cv_evaluation_new.html */
+    .box-green{ background:#e9f7e9; border-color: rgba(22,163,74,.25); }
+    .box-orange{ background:#fff3df; border-color: rgba(249,115,22,.30); }
+    .box-gray{ background:#f3f4f6; border-color: rgba(15,23,42,.20); }
+    .box-blue{ background:#eff6ff; border-color: rgba(59,130,246,.30); }
+
+    /* Nieuw: Red flags */
+    .box-red{ background:#fef2f2; border-color: rgba(239,68,68,.30); }
+
+    /* Extra instructies: compacter */
+    #vac_eval_notes{ min-height:70px; }
+
+    /* JS output pre verbergen, maar laten bestaan */
+    #vac_eval_response{ display:none !important; }
+    #viewer_save_response{ display:none !important; } /* geen zwarte outputbalk */
+
+    /* Notities: compacter editor (ongeveer helft) */
+    #viewer_notes{ min-height:90px; }
+
+    /* Notities preview: zelfde "preview vibe" als viewer, maar zonder zwarte codebalk */
+    #vacNotesPreviewText{
+      white-space: pre-wrap;
+      color:#0f172a;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    @media (max-width: 1100px){
+      .eval-header{ grid-template-columns: 1fr; }
+      .results-grid{ grid-template-columns: 1fr; }
+      .box{ height:auto; }
+    }
+  </style>
+</head>
+
+<body class="cv">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="/assets/img/logo.png" alt="logo" style="width:100%; height:100%; object-fit:contain;">
+      </div>
+      <div class="sidebar-title">CV Tool</div>
+
+      <nav>
+        <a class="nav-btn" href="/cv/index.html">Dashboard</a>
+        <a class="nav-btn" href="/cv/cv_reader_new.html">Upload &amp; Bekijk CV</a>
+        <a class="nav-btn" href="/cv/cv_evaluation_new.html">Evalueer CVs</a>
+        <a class="nav-btn" href="/cv/profile_viewer_new.html">Profielen</a>
+        <a class="nav-btn active" href="/cv/vacature_reader_new.html">Vacatures</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="main-header">
+        <h1>CV Tool - Vacature upload, notities &amp; evalueren</h1>
+        <div class="subheader-row">
+          <div></div>
+          <div class="tabs" aria-label="Viewer, Notities of Evalueren">
+            <!-- deze 2 zijn .tab (JS in cv-vacature-analyse.js verwacht viewer/analyse) -->
+            <button type="button" class="tab active" data-tab="viewer">Viewer</button>
+
+            <!-- derde tab: NIET .tab, anders tab-switch in js verbergt alles -->
+            <button type="button" class="tab-notes" id="notesTabBtn">Notities</button>
+
+            <button type="button" class="tab" data-tab="analyse">Evalueren</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB: VIEWER (hierin wisselen we intern tussen viewer-content en notities-content) -->
+      <section id="tab-viewer">
+        <section class="grid-2" aria-label="Vacature viewer/notities en bestaande vacatures">
+          <!-- Links: Viewer content -->
+          <section class="card stack" id="vacLeftViewer">
+            <div class="section-title">Upload &amp; bekijk vacature</div>
+            <p class="muted">Upload een vacaturebestand of plak de vacaturetekst. Dit wordt opgeslagen als vacature.</p>
+
+            <div>
+              <label for="vacTitle" class="label-inline">Titel (optioneel)</label>
+              <input id="vacTitle" type="text" placeholder="Bijv. Data Analyst – Amsterdam" />
+            </div>
+
+            <div>
+              <label for="vacFile" class="label-inline">Vacaturebestand uploaden</label>
+              <input type="file" id="vacFile" accept=".pdf,.doc,.docx,.txt" />
+            </div>
+
+            <div class="btn-row">
+              <button id="uploadVacBtn" class="btn btn-primary" type="button">Upload bestand</button>
+              <button id="uploadVacClear" class="btn btn-ghost" type="button">Wissen</button>
+            </div>
+
+            <div style="margin-top: 8px;">
+              <label for="vacText" class="label-inline">Of plak vacaturetekst</label>
+              <textarea id="vacText" placeholder="Plak hier de vacaturetekst…"></textarea>
+            </div>
+
+            <div class="btn-row" style="justify-content:flex-end;">
+              <button id="uploadVacTextBtn" class="btn btn-primary" type="button">Upload tekst</button>
+            </div>
+
+            <div id="uploadVacStatus" class="alert hidden"></div>
+            <pre id="vacUploadResponse" class="hidden"></pre>
+          </section>
+
+          <!-- Links: Notities content (zelfde plek als upload, maar compacter) -->
+          <section class="card stack hidden" id="vacLeftNotes">
+            <div class="section-title">Notities</div>
+            <p class="muted">Voeg notities toe aan de geselecteerde vacature. Opslaan werkt per vacature.</p>
+
+            <div>
+              <label for="viewer_notes" class="label-inline">Notities</label>
+              <!-- LET OP: id is bewust viewer_notes (JS gebruikt dit) -->
+              <textarea id="viewer_notes" placeholder="Schrijf hier je notities…"></textarea>
+            </div>
+
+            <div class="btn-row" style="justify-content:flex-end;">
+              <!-- LET OP: id is bewust viewer_save_notes (JS gebruikt dit) -->
+              <button id="viewer_save_notes" class="btn btn-primary" type="button">Opslaan</button>
+            </div>
+
+            <!-- statusmeldingen uit bestaande JS -->
+            <div id="viewerStatus" class="alert hidden"></div>
+            <pre id="viewer_save_response" class="hidden"></pre>
+          </section>
+
+          <!-- Rechts: gedeelde selectie -->
+          <section class="card stack">
+            <div class="section-title">Bestaande vacatures</div>
+            <p class="muted">Selecteer een opgeslagen vacature. De selectie blijft gelijk in Viewer, Notities en Evalueren.</p>
+
+            <select id="viewer_type" class="hidden">
+              <option value="vacancy" selected>vacancy</option>
+            </select>
+
+            <div>
+              <label for="viewer_id" class="label-inline">Vacature kiezen</label>
+              <select id="viewer_id"></select>
+            </div>
+
+            <!-- viewer_details bestaat voor JS (laden), maar tonen we hier niet -->
+            <div id="viewer_details" class="hidden"></div>
+
+            <!-- prettified meta hook (optioneel; mag hidden blijven) -->
+            <div id="viewer_details_pretty" class="hidden"></div>
+          </section>
+        </section>
+
+        <!-- Notities preview (alleen zichtbaar in notities-mode) -->
+        <section class="card stack hidden" id="vacNotesPreviewCard" style="margin-top:20px;">
+          <div class="section-title">Notities</div>
+          <div id="vacNotesPreviewText" class="muted">
+            Nog geen notities te zien. Selecteer eerst een vacature.
+          </div>
+        </section>
+      </section>
+
+      <!-- TAB: EVALUEREN -->
+      <section id="tab-analyse" class="hidden">
+        <section class="card stack">
+          <div class="section-title">Evalueren</div>
+          <p class="muted">Selecteer een vacature en genereer de analyse-output.</p>
+
+          <div class="eval-header" aria-label="Evalueren header">
+            <div class="stack" style="gap:12px;">
+              <div>
+                <label for="vac_eval_id" class="label-inline">Vacature kiezen</label>
+                <select id="vac_eval_id"></select>
+              </div>
+
+              <div>
+                <label for="vac_eval_notes" class="label-inline">Extra instructies (optioneel)</label>
+                <textarea id="vac_eval_notes" placeholder="Bijv. focus op senioriteit, tech stack, of cultuur…"></textarea>
+              </div>
+
+              <div class="btn-row" style="justify-content:flex-end;">
+                <button id="vac_eval_btn" type="button" class="btn btn-primary">Genereer analyse</button>
+              </div>
+
+              <div id="vacEvalStatus" class="alert hidden"></div>
+              <pre id="vac_eval_response" class="hidden"></pre>
+            </div>
+
+            <div class="box box-gray" aria-label="Samenvatting en gewenst profiel">
+              <h3>Samenvatting</h3>
+              <p id="out_summary" class="muted">Nog geen output. Genereer eerst een analyse.</p>
+
+              <div style="height:8px;"></div>
+
+              <h3>Gewenst profiel</h3>
+              <p id="out_profile" class="muted">Nog geen output. Genereer eerst een analyse.</p>
+            </div>
+          </div>
+
+          <div class="results-grid" aria-label="Analyse resultaat (4 vakken)">
+            <div class="box box-green">
+              <h3>Skills</h3>
+              <div class="subgrid-2">
+                <div>
+                  <div class="label-inline" style="font-weight:600; color:#0f172a;">Must-have</div>
+                  <ul id="out_must">
+                    <li class="muted">Nog geen output.</li>
+                  </ul>
+                </div>
+                <div>
+                  <div class="label-inline" style="font-weight:600; color:#0f172a;">Nice-to-have</div>
+                  <ul id="out_nice">
+                    <li class="muted">Nog geen output.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="box box-orange">
+              <h3>Traits/competenties om op te screenen</h3>
+              <ul id="out_traits">
+                <li class="muted">Nog geen output.</li>
+              </ul>
+            </div>
+
+            <div class="box box-blue">
+              <h3>Interviewvragen</h3>
+              <ul id="out_questions">
+                <li class="muted">Nog geen output.</li>
+              </ul>
+            </div>
+
+            <div class="box box-red">
+              <h3>Red flags/onduidelijkheden</h3>
+              <ul id="out_redflags">
+                <li class="muted">Nog geen output.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Required hidden stubs for cv-vacature-analyse.js -->
+          <div class="hidden">
+            <!-- CV upload required ids -->
+            <input type="file" id="cvFile" />
+            <button id="uploadBtn" type="button"></button>
+            <button id="uploadCvClear" type="button"></button>
+            <pre id="uploadResponse"></pre>
+            <div id="uploadCvStatus"></div>
+
+            <!-- “analyse” module ids (cv+vac matching) -->
+            <select id="eval_cv_id"></select>
+            <select id="eval_vacancy_id"></select>
+            <textarea id="eval_notes"></textarea>
+            <button id="evaluateBtn" type="button"></button>
+            <button id="evaluateClearBtn" type="button"></button>
+            <pre id="evalResponse"></pre>
+            <div id="evalStatus"></div>
+
+            <select id="match_vacancy_id"></select>
+            <button id="match_vacancy_btn" type="button"></button>
+            <pre id="match_vacancy_results"></pre>
+
+            <select id="match_cv_id"></select>
+            <button id="match_cv_btn" type="button"></button>
+            <pre id="match_cv_results"></pre>
+
+            <div id="ai-eval-card"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- jouw bestaande JS -->
+  <script src="/assets/js/cv-vacature-analyse.js" defer></script>
+
+  <!-- Sync viewer_id <-> vac_eval_id (zonder crash/loop) -->
+  <script>
+    (function () {
+      let isSyncing = false;
+
+      function hasOption(selectEl, value) {
+        if (!selectEl || !value) return false;
+        return Array.from(selectEl.options).some(o => o.value === value);
+      }
+
+      function safeSet(selectEl, value) {
+        if (!selectEl || !value) return false;
+        if (selectEl.value === value) return true;
+        if (!hasOption(selectEl, value)) return false;
+        selectEl.value = value;
+        return true;
+      }
+
+      function syncValue(sourceEl, targetEl) {
+        if (isSyncing) return;
+        const value = sourceEl?.value || "";
+        if (!value || !targetEl) return;
+        if (targetEl.value === value) return;
+
+        isSyncing = true;
+        safeSet(targetEl, value);
+        isSyncing = false;
+      }
+
+      function attach() {
+        const viewerSel = document.getElementById("viewer_id");
+        const evalSel = document.getElementById("vac_eval_id");
+        if (!viewerSel || !evalSel) return;
+
+        viewerSel.addEventListener("change", () => syncValue(viewerSel, evalSel));
+        evalSel.addEventListener("change", () => syncValue(evalSel, viewerSel));
+
+        const obs1 = new MutationObserver(() => syncValue(viewerSel, evalSel));
+        const obs2 = new MutationObserver(() => syncValue(evalSel, viewerSel));
+        obs1.observe(viewerSel, { childList: true });
+        obs2.observe(evalSel, { childList: true });
+      }
+
+      window.addEventListener("load", attach);
+    })();
+  </script>
+
+  <!-- Derde tab: Notities (route 2: extra HTML-script, zonder cv-vacature-analyse.js aanpassen) -->
+  <script>
+    (function () {
+      const notesBtn = document.getElementById("notesTabBtn");
+      const viewerTabBtn = document.querySelector('.tab[data-tab="viewer"]');
+      const analyseTabBtn = document.querySelector('.tab[data-tab="analyse"]');
+
+      const tabViewer = document.getElementById("tab-viewer");
+      const tabAnalyse = document.getElementById("tab-analyse");
+
+      const leftViewer = document.getElementById("vacLeftViewer");
+      const leftNotes = document.getElementById("vacLeftNotes");
+      const notesPreviewCard = document.getElementById("vacNotesPreviewCard");
+
+      const viewerId = document.getElementById("viewer_id");
+      const notesTextarea = document.getElementById("viewer_notes");
+      const previewEl = document.getElementById("vacNotesPreviewText");
+
+      function setPreview(text) {
+        const t = (text || "").trim();
+        if (!viewerId || !viewerId.value) {
+          previewEl.classList.add("muted");
+          previewEl.textContent = "Nog geen notities te zien. Selecteer eerst een CV.";
+          return;
+        }
+        if (!t) {
+          previewEl.classList.add("muted");
+          previewEl.textContent = "Nog geen notities te zien. Selecteer eerst een CV.";
+          return;
+        }
+        previewEl.classList.remove("muted");
+        previewEl.textContent = t;
+      }
+
+      function setMode(mode) {
+        const isNotes = mode === "notes";
+
+        // Zorg dat we altijd in het viewer-tab scherm blijven voor notes-mode (tab-viewer blijft zichtbaar)
+        tabViewer.classList.toggle("hidden", mode === "analyse");
+        tabAnalyse.classList.toggle("hidden", mode !== "analyse");
+
+        // links wisselt binnen tab-viewer
+        leftViewer.classList.toggle("hidden", isNotes);
+        leftNotes.classList.toggle("hidden", !isNotes);
+
+        // preview onder alleen bij notities
+        notesPreviewCard.classList.toggle("hidden", !isNotes);
+
+        // active state over 3 knoppen
+        if (viewerTabBtn) viewerTabBtn.classList.toggle("active", mode === "viewer");
+        if (analyseTabBtn) analyseTabBtn.classList.toggle("active", mode === "analyse");
+        if (notesBtn) notesBtn.classList.toggle("active", isNotes);
+
+        // bij notities: preview meteen vullen
+        if (isNotes) {
+          setPreview(notesTextarea ? notesTextarea.value : "");
+        }
+      }
+
+      if (notesBtn) {
+        notesBtn.addEventListener("click", () => setMode("notes"));
+      }
+
+      // Als gebruiker via bestaande JS naar viewer/analyse klikt: notes-state resetten
+      if (viewerTabBtn) viewerTabBtn.addEventListener("click", () => setMode("viewer"));
+      if (analyseTabBtn) analyseTabBtn.addEventListener("click", () => setMode("analyse"));
+
+      // Update preview bij typen
+      if (notesTextarea) {
+        notesTextarea.addEventListener("input", () => {
+          if (notesBtn && notesBtn.classList.contains("active")) {
+            setPreview(notesTextarea.value);
+          }
+        });
+      }
+
+      // Update preview zodra er nieuwe vacature geselecteerd wordt of notities geladen worden door JS
+      if (viewerId) {
+        viewerId.addEventListener("change", () => {
+          // cv-vacature-analyse.js laadt notities async; even een micro-delay helpt om preview juist te zetten
+          setTimeout(() => setPreview(notesTextarea ? notesTextarea.value : ""), 50);
+          setTimeout(() => setPreview(notesTextarea ? notesTextarea.value : ""), 250);
+        });
+      }
+
+      // init: start in viewer-mode
+      setMode("viewer");
+    })();
+  </script>
+
+  <!-- Render vac_eval_response naar UI-boxes -->
+  <script>
+    (function () {
+      function setText(el, text) {
+        if (!el) return;
+        const t = (text || "").trim();
+        el.classList.toggle("muted", !t);
+        el.textContent = t || "Nog geen output. Genereer eerst een analyse.";
+      }
+
+      function setList(ul, items) {
+        if (!ul) return;
+        ul.innerHTML = "";
+        if (!items || !items.length) {
+          const li = document.createElement("li");
+          li.className = "muted";
+          li.textContent = "Nog geen output.";
+          ul.appendChild(li);
+          return;
+        }
+        items.forEach(x => {
+          const li = document.createElement("li");
+          li.textContent = x;
+          ul.appendChild(li);
+        });
+      }
+
+      function parseSections(raw) {
+        const sections = {};
+        let current = null;
+
+        (raw || "").split("\n").forEach(line => {
+          const m = line.match(/^===\s*(.*?)\s*===$/);
+          if (m) {
+            current = m[1].trim();
+            sections[current] = [];
+            return;
+          }
+          if (!current) return;
+          sections[current].push(line);
+        });
+
+        for (const k of Object.keys(sections)) {
+          while (sections[k].length && sections[k][0].trim() === "") sections[k].shift();
+          while (sections[k].length && sections[k][sections[k].length - 1].trim() === "") sections[k].pop();
+        }
+        return sections;
+      }
+
+      function linesToList(lines) {
+        return (lines || [])
+          .map(x => x.trim())
+          .filter(x => x && x !== "- (geen)")
+          .map(x => x.startsWith("- ") ? x.slice(2).trim() : x);
+      }
+
+      function renderFromPre() {
+        const pre = document.getElementById("vac_eval_response");
+        if (!pre) return;
+
+        const raw = pre.textContent || "";
+        if (!raw.trim()) return;
+
+        const sections = parseSections(raw);
+
+        setText(document.getElementById("out_summary"), (sections["Samenvatting"] || []).join("\n"));
+        setText(document.getElementById("out_profile"), (sections["Gewenst profiel"] || []).join("\n"));
+
+        setList(document.getElementById("out_must"), linesToList(sections["Must-have skills"] || []));
+        setList(document.getElementById("out_nice"), linesToList(sections["Nice-to-have skills"] || []));
+        setList(document.getElementById("out_traits"), linesToList(sections["Traits/competenties om op te screenen"] || []));
+        setList(document.getElementById("out_questions"), linesToList(sections["Interviewvragen"] || []));
+        setList(document.getElementById("out_redflags"), linesToList(sections["Red flags / onduidelijkheden"] || []));
+      }
+
+      const pre = document.getElementById("vac_eval_response");
+      if (pre) {
+        const obs = new MutationObserver(() => renderFromPre());
+        obs.observe(pre, { childList: true, subtree: true, characterData: true });
+      }
+    })();
+  </script>
+</body>
+</html>
