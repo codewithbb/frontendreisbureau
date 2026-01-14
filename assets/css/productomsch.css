@@ -576,3 +576,46 @@ html, body{
   margin-bottom: 20px;  /* pas aan naar smaak: 10–16px */
   display: block;
 }
+
+.hidden {
+  display: none !important;
+}
+
+.btn:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner */
+.loader{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 4px solid rgba(15, 23, 42, .20);
+  border-top-color: var(--accent);
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to { transform: rotate(360deg); }
+}
+
+#spinner{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.revise-spinner{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  gap: 8px;
+  width: 100%;
+}
+

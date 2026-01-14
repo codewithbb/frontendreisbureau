@@ -234,7 +234,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   setLoading(true);
-  resultDiv.innerHTML = `<div class="alert" style="margin:0;">Bezig met genereren…</div>`;
+  //resultDiv.innerHTML = `<div class="alert" style="margin:0;">Bezig met genereren…</div>`;
 
   try {
     const payload = await postGenerate(csv_text);
