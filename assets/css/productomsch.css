@@ -654,3 +654,85 @@ html, body{
   margin-bottom: 4px;
   text-transform: uppercase;
 }
+
+/* =========================
+   Blueprint background + scanline (TOOLS)
+   ========================= */
+
+.tools body{
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Achtergrondlaag 1: blueprint grid + zachte glow */
+.tools body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  /* grid + glow */
+  background:
+    radial-gradient(900px 600px at 75% 15%, rgba(59,130,246,.18), transparent 60%),
+    radial-gradient(900px 600px at 15% 35%, rgba(37,99,235,.14), transparent 55%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(15,23,42,.06) 0px,
+      rgba(15,23,42,.06) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15,23,42,.06) 0px,
+      rgba(15,23,42,.06) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+
+  /* blend zodat het netter oogt */
+  mix-blend-mode: multiply;
+  opacity: .75;
+}
+
+/* Achtergrondlaag 2: scanline (langzaam bewegend) */
+.tools body::after{
+  content:"";
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(59,130,246,.10) 45%,
+      rgba(59,130,246,.18) 50%,
+      rgba(59,130,246,.10) 55%,
+      transparent 100%
+    );
+
+  transform: translateY(-35%);
+  animation: blueprint-scan 14s linear infinite;
+  opacity: .55;
+  filter: blur(0.2px);
+}
+
+/* Zorg dat je content altijd boven de background ligt */
+.tools .page{
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes blueprint-scan{
+  from { transform: translateY(-35%); }
+  to   { transform: translateY(35%); }
+}
+
+/* Respecteer reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .tools body::after{ animation: none; }
+}
+
