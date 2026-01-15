@@ -333,13 +333,17 @@
           <div id="left-viewer">
             <div class="section-title">Upload &amp; bekijk CV</div>
             <p class="muted">
-              Kies een CV-bestand (pdf/docx/txt). De tekst wordt via Azure Document Intelligence gelezen en daarna
-              door de LLM in onderdelen gesplitst.
+              Kies een CV-bestand (pdf/docx/txt/png/jpg).
             </p>
 
             <div>
               <label for="cvFile" class="label-inline">Bestand kiezen</label>
-              <input type="file" id="cvFile" accept=".pdf,.doc,.docx,.txt" />
+              <input
+  type="file"
+  id="cvFile"
+  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+/>
+
             </div>
 
             <div class="btn-row">
